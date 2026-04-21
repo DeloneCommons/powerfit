@@ -1,0 +1,17 @@
+\begin{table}[t]
+\caption{Compact synthetic validation summary. Detailed family-wise tables for
+Experiments~A--H are collected in the appendix.}
+\label{tab:synthetic_summary}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.44\textwidth}}
+\toprule
+Block & What it tests & Quantitative anchor \\
+\midrule
+A--D & Exact recovery, dense noise, missing rows, and hard feasibility on fixed realized supports. & Exact-support separator RMSE at machine precision; Gaussian/Laplace noise degrades smoothly; Huber helps mainly under sparse gross outliers; infeasible short cycles are detected in 100\% of archived cases. \\
+E--H & Strict supergraphs, periodic image ambiguity, and controlled wrong-model stress for the realization-aware workflow. & Selected-support F1 after refinement remains high on strict supergraphs (0.985--0.999), periodic wrong-image signatures are removed by shift-aware repair, and under combined wrong-model stress true-edge separator RMSE usually improves even when support F1 is mixed. \\
+\bottomrule
+\end{tabular}
+\end{table}

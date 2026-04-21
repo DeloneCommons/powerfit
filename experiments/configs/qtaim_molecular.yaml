@@ -1,0 +1,24 @@
+name: qtaim_molecular
+status: frozen_step1_definitions_for_experiment_J
+primary_manifest: data/qtaim_main/systems_final.csv
+showcase_manifest: data/qtaim_showcase/systems.csv
+low_offset_threshold_angstrom: 0.02
+candidate_cutoffs_angstrom:
+  - 4.0
+  - 4.5
+  - 5.0
+reference_candidate_cutoff_angstrom: 5.0
+connectivity_split: bonded_vs_nonbonded
+cleanup_defaults:
+  source: experiments/configs/active_set.yaml
+  policy: frozen_active_set_defaults_not_retuned_on_molecular_benchmark
+notes: >-
+  Step-1 frozen definitions for the molecular QTAIM benchmark. The 5.0 Å
+  candidate graph is treated as the domain-informed excessive support set for
+  H/C/N/O/F/S/Cl chemistry. The smaller 4.5 Å and 4.0 Å cutoffs are deliberate
+  undercoverage ablations used to study recoverability, not alternative
+  chemistry rules. The main contact split is bonded versus nonbonded in the
+  explicit-H RDKit connectivity graph. Exact graph distance is retained in the
+  edge-level exports for optional supplement use, but the main-text framing is
+  binary because, in the current acyclic subset, nonbonded QTAIM BCPs appear at
+  graph distance >= 4.

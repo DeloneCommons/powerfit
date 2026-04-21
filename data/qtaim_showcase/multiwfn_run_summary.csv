@@ -1,0 +1,8 @@
+system_label,status,molden_path,json_path,multiwfn_version,ncp,bcp,rcp,ccp,poincare_result,message
+carbon_dioxide_linear,success,molden/carbon_dioxide_linear.molden,qtaim/carbon_dioxide_linear.json,2026.3.27,3,2,0,0,1,ok
+methane_occlusion,success,molden/methane_occlusion.molden,qtaim/methane_occlusion.json,2026.3.27,5,4,0,0,1,ok
+ethane_ref,success,molden/ethane_ref.molden,qtaim/ethane_ref.json,2026.3.27,8,7,0,0,1,ok
+benzene_sym,success,molden/benzene_sym.molden,qtaim/benzene_sym.json,2026.3.27,12,12,1,0,1,ok
+benzene_broken,success,molden/benzene_broken.molden,qtaim/benzene_broken.json,2026.3.27,12,12,1,0,1,ok
+adamantane_sym,success,molden/adamantane_sym.molden,qtaim/adamantane_sym.json,2026.3.27,26,28,4,1,1,ok
+adamantane_broken,success,molden/adamantane_broken.molden,qtaim/adamantane_broken.json,2026.3.27,26,28,4,1,1,ok

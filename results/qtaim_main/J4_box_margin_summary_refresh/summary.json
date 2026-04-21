@@ -1,0 +1,15 @@
+{
+  "n_runs": 4,
+  "run_dirs": [
+    "results/qtaim_main/J4_mask_transfer_margin3_refresh",
+    "results/qtaim_main/J4_mask_transfer_refresh",
+    "results/qtaim_main/J4_mask_transfer_margin7_refresh",
+    "results/qtaim_main/J4_mask_transfer_margin10_refresh"
+  ],
+  "labels": [
+    "3A",
+    "5A",
+    "7A",
+    "10A"
+  ]
+}

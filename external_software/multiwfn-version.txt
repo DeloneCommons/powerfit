@@ -1,0 +1,8 @@
+Canonical package webpage: http://sobereva.com/multiwfn/index.html
+Selected artifact for this repository snapshot:
+  package version: 2026.3.27
+  artifact file: Multiwfn_noGUI
+  variant: noGUI / no-drawings Linux executable
+  platform tag: Linux
+  sha256: FD8137DE998FCFAB9EBAE44D10727F75C8A55137A261904695A09311750EB9B8
+  snapshot date: 2026-04-09

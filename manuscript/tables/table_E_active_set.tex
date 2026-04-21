@@ -1,0 +1,24 @@
+\begin{table}[H]
+\caption{Experiment E: realization-aware active-set refinement on strict supergraph inputs.}
+\label{tab:active_set_refinement}
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrrr}
+\toprule
+method & candidate graph & dim & n & cand. pairs & F1 & true-row sep. RMSE & outer iters & time (ms) \\
+\midrule
+one-shot fit & kNN supergraph & 2 & 16 & 109 & 0.979 & 0.0113 & 1 & 0.793 \\
+one-shot fit & kNN supergraph & 3 & 24 & 222 & 0.998 & 0.00553 & 1 & 1.6 \\
+one-shot fit & radius supergraph & 2 & 16 & 70.4 & 0.997 & 0.00875 & 1 & 0.611 \\
+one-shot fit & radius supergraph & 3 & 24 & 201 & 0.997 & 0.00603 & 1 & 1.55 \\
+self-consistent refinement & kNN supergraph & 2 & 16 & 109 & 0.985 & 0.00694 & 4.4 & 5.45 \\
+self-consistent refinement & kNN supergraph & 3 & 24 & 222 & 0.999 & 0.0024 & 4.6 & 11.1 \\
+self-consistent refinement & radius supergraph & 2 & 16 & 70.4 & 0.997 & 0.00366 & 4 & 4.67 \\
+self-consistent refinement & radius supergraph & 3 & 24 & 201 & 0.999 & 0.00241 & 5 & 11.9 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}

@@ -1,0 +1,5 @@
+- Fixed-site inverse fitting uses sparse pairwise separator observations
+- Exact compatibility reduces to graph cycle consistency
+- Quadratic fitting is a gauge-fixed weighted Laplacian solve
+- Connector visibility gives local support and clearance diagnostics
+- Molecular benchmark isolates bonded success and nonbonded diagnostic limits

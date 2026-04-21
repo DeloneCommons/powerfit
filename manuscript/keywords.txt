@@ -1,0 +1,6 @@
+Power diagram
+Laguerre tessellation
+Inverse problem
+Graph Laplacian
+Difference constraints
+Molecular benchmark

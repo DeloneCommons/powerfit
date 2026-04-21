@@ -1,0 +1,34 @@
+name: infeasible_constraints
+seed: 20260320
+dimensions:
+- 2
+- 3
+n_sites_by_dimension:
+  2:
+  - 16
+  3:
+  - 24
+replicates: 3
+measurement: fraction
+weight_scale: 0.08
+interval_halfwidth: 0.01
+contradiction_shift: 0.06
+between_points_interval:
+- 0.0
+- 1.0
+scenarios:
+- exact_equalities
+- narrow_intervals
+- contradictory_equalities
+- contradictory_intervals
+- between_points_violation
+max_generation_attempts: 80
+metrics:
+- feasible_detected
+- detection_correct
+- witness_term_count
+- negative_cycle_margin
+- max_violation
+- edge_difference_rmse_to_true
+- runtime_sec
+output_dir: results/infeasible

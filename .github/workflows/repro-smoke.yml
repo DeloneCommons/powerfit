@@ -1,0 +1,122 @@
+name: repro-smoke
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+          cache-dependency-path: environments/requirements-py313.txt
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r environments/requirements-py313.txt
+          python -m pip install external_software/pyvoro2-0.6.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+          python -m pip check
+
+      - name: Install PDF build and inspection tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cm-super \
+            latexmk \
+            poppler-utils \
+            texlive-fonts-recommended \
+            texlive-latex-base \
+            texlive-latex-extra \
+            texlive-latex-recommended \
+            texlive-pictures \
+            texlive-publishers \
+            texlive-science
+
+      - name: Rebuild manuscript-facing tables and figures from archived results
+        run: |
+          python scripts/build_manuscript_tables.py
+          python scripts/build_manuscript_figures.py
+
+      - name: Verify manuscript figure binary constancy in the CI environment
+        run: python scripts/check_figure_binary_constancy.py --suite manuscript
+
+      - name: Verify tracked tables and PNG figures are in sync
+        run: |
+          git diff --exit-code -- \
+            manuscript/tables \
+            manuscript/figures/figure_powerfit_workflow_overview.png \
+            manuscript/figures/figure_C_missing_data_composite.png \
+            manuscript/figures/figure_J4_geometry_cases.png \
+            manuscript/figures/figure_J4_mask_transfer.png
+
+      - name: Run repository consistency audit
+        run: python scripts/check_repo_consistency.py
+
+      - name: Run smoke subsets for Experiments A and B
+        run: |
+          python experiments/runners/run_exact_recovery.py \
+            --smoke \
+            --output-dir .smoke/exact_recovery
+          python experiments/analysis/analyze_exact_recovery.py \
+            --runs .smoke/exact_recovery/runs.csv \
+            --output-dir .smoke/exact_recovery_analysis
+          python experiments/runners/run_noise_robustness.py \
+            --smoke \
+            --output-dir .smoke/noise_robustness
+          python experiments/analysis/analyze_noise_robustness.py \
+            --runs .smoke/noise_robustness/runs.csv \
+            --output-dir .smoke/noise_robustness_analysis
+
+      - name: Run lightweight J1 smoke audit on showcase data
+        run: |
+          python scripts/qtaim/analyze_qtaim_dataset_audit.py \
+            data/qtaim_showcase/systems.csv \
+            --output-dir .smoke/J1_dataset_audit \
+            --no-progress \
+            --no-plots \
+            --require-all
+
+      - name: Build manuscript PDFs
+        run: bash scripts/build_manuscript_pdfs.sh
+
+      - name: Diagnose fonts in figure PDFs and manuscripts
+        if: always()
+        run: |
+          for f in manuscript/figures/*.pdf manuscript/manuscript.pdf submission/flat/manuscript.pdf; do
+            [ -f "$f" ] || continue
+            echo "==== $f"
+            pdffonts "$f"
+          done
+
+      - name: Verify tracked bibliography and flat bundle are in sync
+        run: |
+          git diff --exit-code -- \
+            manuscript/manuscript.bbl \
+            submission/flat
+
+      - name: Verify final PDFs do not contain Type 3 fonts
+        run: |
+          check_no_type3() {
+            local pdf=$1
+            local report
+            report=$(pdffonts "$pdf")
+            echo "$report"
+            if echo "$report" | grep -q 'Type 3'; then
+              echo "error: Type 3 fonts detected in $pdf" >&2
+              exit 1
+            fi
+          }
+          check_no_type3 manuscript/manuscript.pdf
+          check_no_type3 submission/flat/manuscript.pdf

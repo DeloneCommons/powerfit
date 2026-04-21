@@ -1,0 +1,32 @@
+name: missing_data
+seed: 20260319
+dimensions:
+- 2
+- 3
+n_sites_by_dimension:
+  2:
+  - 16
+  3:
+  - 24
+replicates: 3
+measurement: fraction
+weight_scale: 0.08
+edge_keep_fractions:
+- 1.0
+- 0.75
+- 0.5
+- 0.3
+- 0.15
+solver: analytic
+max_base_generation_attempts: 50
+metrics:
+- connected
+- n_components
+- recoverable_pair_fraction
+- observed_separator_rmse
+- componentwise_aligned_weight_rmse
+- global_centered_weight_rmse
+- all_pair_difference_rmse
+- component_shift_std
+- runtime_sec
+output_dir: results/missing_data

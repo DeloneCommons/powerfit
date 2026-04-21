@@ -1,0 +1,8 @@
+system_id,name,smiles,is_idealized,group,charge,multiplicity,xyz_path,molden_path,json_path
+0,carbon dioxide,O=C=O,true,linear/tree,0,1,structures/carbon_dioxide_linear.xyz,molden/carbon_dioxide_linear.molden,qtaim/carbon_dioxide_linear.json
+1,methane,C,true,linear/tree,0,1,structures/methane_occlusion.xyz,molden/methane_occlusion.molden,qtaim/methane_occlusion.json
+2,ethane,CC,true,linear/tree,0,1,structures/ethane_ref.xyz,molden/ethane_ref.molden,qtaim/ethane_ref.json
+3,benzene D6h,c1ccccc1,true,ring,0,1,structures/benzene_sym.xyz,molden/benzene_sym.molden,qtaim/benzene_sym.json
+4,benzene C1,c1ccccc1,false,ring,0,1,structures/benzene_broken.xyz,molden/benzene_broken.molden,qtaim/benzene_broken.json
+5,adamantane Th,C1C2CC3CC1CC(C2)C3,true,cage,0,1,structures/adamantane_sym.xyz,molden/adamantane_sym.molden,qtaim/adamantane_sym.json
+6,adamantane C1,C1C2CC3CC1CC(C2)C3,false,cage,0,1,structures/adamantane_broken.xyz,molden/adamantane_broken.molden,qtaim/adamantane_broken.json

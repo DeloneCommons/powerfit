@@ -1,0 +1,23 @@
+name: missing_data_manuscript
+seed: 20260320
+dimensions: [2, 3]
+n_sites_by_dimension:
+  2: [16, 24, 32, 48, 64, 96, 128]
+  3: [24, 32, 48, 64, 96, 128]
+replicates: 10
+measurement: fraction
+weight_scale: 0.08
+edge_keep_fractions: [1.0, 0.95, 0.90, 0.85, 0.80, 0.75, 0.70, 0.65, 0.60, 0.55, 0.50, 0.45, 0.40, 0.35, 0.30, 0.25, 0.20, 0.15, 0.10]
+solver: analytic
+max_base_generation_attempts: 50
+metrics:
+  - connected
+  - n_components
+  - recoverable_pair_fraction
+  - observed_separator_rmse
+  - componentwise_aligned_weight_rmse
+  - global_centered_weight_rmse
+  - all_pair_difference_rmse
+  - component_shift_std
+  - runtime_sec
+output_dir: results/missing_data_manuscript

@@ -1,0 +1,17 @@
+scaffold,model,kind,pairs
+benzene,voronoi,raw_only_in_first,"[(2, 10)]"
+benzene,voronoi,raw_only_in_second,"[(0, 4), (0, 6), (0, 8), (0, 11), (2, 5), (2, 8), (3, 4), (5, 6), (6, 9), (6, 10), (8, 11), (9, 10)]"
+benzene,voronoi,visible_only_in_first,[]
+benzene,voronoi,visible_only_in_second,[]
+benzene,powerfit,raw_only_in_first,[]
+benzene,powerfit,raw_only_in_second,"[(0, 4), (0, 8), (0, 11), (2, 5), (2, 8), (3, 4), (4, 8), (5, 6), (6, 9), (6, 10), (8, 11), (9, 10)]"
+benzene,powerfit,visible_only_in_first,"[(0, 6)]"
+benzene,powerfit,visible_only_in_second,[]
+adamantane,voronoi,raw_only_in_first,[]
+adamantane,voronoi,raw_only_in_second,"[(0, 19), (1, 4), (2, 7), (2, 10), (2, 16), (2, 23), (2, 25), (4, 7), (4, 13), (4, 22), (4, 25), (6, 17), (7, 9), (8, 10), (8, 17), (8, 20), (9, 11), (9, 16), (9, 19)]"
+adamantane,voronoi,visible_only_in_first,[]
+adamantane,voronoi,visible_only_in_second,"[(2, 7), (4, 7)]"
+adamantane,powerfit,raw_only_in_first,"[(1, 6), (1, 8)]"
+adamantane,powerfit,raw_only_in_second,"[(0, 19), (2, 7), (2, 10), (2, 16), (2, 23), (2, 25), (4, 7), (4, 13), (4, 22), (4, 25), (6, 17), (7, 9), (8, 10), (8, 17), (8, 20), (9, 11), (9, 16), (9, 19)]"
+adamantane,powerfit,visible_only_in_first,"[(1, 4), (1, 6), (1, 8)]"
+adamantane,powerfit,visible_only_in_second,"[(2, 7), (4, 7), (7, 9)]"

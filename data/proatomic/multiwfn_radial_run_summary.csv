@@ -1,0 +1,8 @@
+species_label,status,element,molden_path,raw_dir,multiwfn_version,rmax_angstrom,n_radial_points,n_shell_points,rdf_path,sphavg_path,message
+H,success,H,molden/H.molden,radial/raw/H,2026.3.27,5.000000,501,2030,radial/raw/H/RDF.txt,radial/raw/H/sphavgval.txt,ok
+C,success,C,molden/C.molden,radial/raw/C,2026.3.27,5.000000,501,2030,radial/raw/C/RDF.txt,radial/raw/C/sphavgval.txt,ok
+N,success,N,molden/N.molden,radial/raw/N,2026.3.27,5.000000,501,2030,radial/raw/N/RDF.txt,radial/raw/N/sphavgval.txt,ok
+O,success,O,molden/O.molden,radial/raw/O,2026.3.27,5.000000,501,2030,radial/raw/O/RDF.txt,radial/raw/O/sphavgval.txt,ok
+F,success,F,molden/F.molden,radial/raw/F,2026.3.27,5.000000,501,2030,radial/raw/F/RDF.txt,radial/raw/F/sphavgval.txt,ok
+S,success,S,molden/S.molden,radial/raw/S,2026.3.27,5.000000,501,2030,radial/raw/S/RDF.txt,radial/raw/S/sphavgval.txt,ok
+Cl,success,Cl,molden/Cl.molden,radial/raw/Cl,2026.3.27,5.000000,501,2030,radial/raw/Cl/RDF.txt,radial/raw/Cl/sphavgval.txt,ok

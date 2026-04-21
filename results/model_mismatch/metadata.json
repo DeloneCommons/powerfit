@@ -1,0 +1,213 @@
+{
+  "config": {
+    "name": "model_mismatch",
+    "seed": 20260321,
+    "dimensions": [
+      2,
+      3
+    ],
+    "geometry_families": [
+      "hard_core_random",
+      "perturbed_lattice"
+    ],
+    "n_sites_by_dimension": {
+      "2": [
+        32,
+        64,
+        128
+      ],
+      "3": [
+        24,
+        48,
+        96
+      ]
+    },
+    "replicates": 10,
+    "measurement": "fraction",
+    "weight_scale": 0.08,
+    "n_types": 3,
+    "local_context_k": 4,
+    "clip_interval": [
+      0.05,
+      0.95
+    ],
+    "solver": "analytic",
+    "laws": {
+      "exact_control": {
+        "enabled": true
+      },
+      "type_cycle": {
+        "enabled": true,
+        "etas": [
+          0.0,
+          0.03,
+          0.06,
+          0.1,
+          0.15,
+          0.2,
+          0.3,
+          0.4,
+          0.5
+        ]
+      },
+      "local_context": {
+        "enabled": true,
+        "etas": [
+          0.0,
+          0.03,
+          0.06,
+          0.1,
+          0.15,
+          0.2,
+          0.3,
+          0.4,
+          0.5
+        ]
+      }
+    },
+    "metrics": [
+      "measurement_rmse",
+      "projection_residual_rmse",
+      "cycle_rms",
+      "realized_graph_f1",
+      "runtime_sec"
+    ],
+    "output_dir": "results/model_mismatch",
+    "status": "archived_manuscript_preset"
+  },
+  "preset": "archived",
+  "n_runs": 2280,
+  "law_cases": [
+    [
+      "exact_control",
+      0.0
+    ],
+    [
+      "type_cycle",
+      0.0
+    ],
+    [
+      "type_cycle",
+      0.03
+    ],
+    [
+      "type_cycle",
+      0.06
+    ],
+    [
+      "type_cycle",
+      0.1
+    ],
+    [
+      "type_cycle",
+      0.15
+    ],
+    [
+      "type_cycle",
+      0.2
+    ],
+    [
+      "type_cycle",
+      0.3
+    ],
+    [
+      "type_cycle",
+      0.4
+    ],
+    [
+      "type_cycle",
+      0.5
+    ],
+    [
+      "local_context",
+      0.0
+    ],
+    [
+      "local_context",
+      0.03
+    ],
+    [
+      "local_context",
+      0.06
+    ],
+    [
+      "local_context",
+      0.1
+    ],
+    [
+      "local_context",
+      0.15
+    ],
+    [
+      "local_context",
+      0.2
+    ],
+    [
+      "local_context",
+      0.3
+    ],
+    [
+      "local_context",
+      0.4
+    ],
+    [
+      "local_context",
+      0.5
+    ]
+  ],
+  "output_files": {
+    "runs": "runs.csv",
+    "summary": "summary.csv"
+  },
+  "provenance": {
+    "generated_at_utc": "2026-04-20T23:50:28.484341+00:00",
+    "python": {
+      "version": "3.13.13",
+      "executable": "python",
+      "implementation": "CPython"
+    },
+    "platform": {
+      "system": "Linux",
+      "release": "6.6.87.2-microsoft-standard-WSL2",
+      "machine": "x86_64"
+    },
+    "package_versions": {
+      "pyvoro2": "0.6.3",
+      "numpy": "2.4.4",
+      "pandas": "3.0.2",
+      "scipy": "1.17.1",
+      "matplotlib": "3.10.8",
+      "yaml": "6.0.3",
+      "jinja2": "3.1.6"
+    },
+    "pyvoro2_artifact": {
+      "canonical_package_repository": "https://github.com/DeloneCommons/pyvoro2",
+      "paper_reproducibility_repository": "https://github.com/DeloneCommons/powerfit",
+      "zenodo_record_url": "https://zenodo.org/records/19143984",
+      "zenodo_version_doi": "10.5281/zenodo.19143984",
+      "zenodo_concept_doi_note": "all-versions DOI is exposed on the Zenodo landing page",
+      "package_name": "pyvoro2",
+      "package_version": "0.6.3",
+      "artifact_file": "pyvoro2-0.6.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "python_tag": "cp313",
+      "platform_tag": "manylinux_2_24_x86_64.manylinux_2_28_x86_64",
+      "declared_python_requirement": ">=3.10",
+      "upstream_project_url": "https://github.com/DeloneCommons/pyvoro2",
+      "upstream_documentation_url": "https://delonecommons.github.io/pyvoro2/",
+      "pypi_project_url": "https://pypi.org/project/pyvoro2/0.6.3/",
+      "license": "LGPL-3.0-or-later",
+      "sha256": "049f08de86f6ff41bf4d9b51b0bba167e6240db7167a9fe6e9b3c7940f584a44",
+      "snapshot_date": "2026-03-21",
+      "artifact_path": "external_software/pyvoro2-0.6.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "artifact_sha256_actual": "049f08de86f6ff41bf4d9b51b0bba167e6240db7167a9fe6e9b3c7940f584a44"
+    },
+    "git": {
+      "git_commit": "9dac6344b89505f4fa6ba3a0fa9531b927f9c240",
+      "git_branch": "main",
+      "git_dirty": true
+    },
+    "nondeterministic_columns": [
+      "runtime_sec"
+    ]
+  }
+}

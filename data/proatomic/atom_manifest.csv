@@ -1,0 +1,8 @@
+species_key,element,charge,multiplicity,molden_path,basis,xc,notes
+H,H,0,2,molden/H.molden,def2svp,b3lyp,Neutral ground-state atom
+C,C,0,3,molden/C.molden,def2svp,b3lyp,Neutral ground-state atom
+N,N,0,4,molden/N.molden,def2svp,b3lyp,Neutral ground-state atom
+O,O,0,3,molden/O.molden,def2svp,b3lyp,Neutral ground-state atom
+F,F,0,2,molden/F.molden,def2svp,b3lyp,Neutral ground-state atom
+S,S,0,3,molden/S.molden,def2svp,b3lyp,Neutral ground-state atom
+Cl,Cl,0,2,molden/Cl.molden,def2svp,b3lyp,Neutral ground-state atom

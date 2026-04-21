@@ -1,0 +1,1537 @@
+{
+  "schema_version": 1,
+  "system_label": "acyclic_pubchem_010",
+  "source_paths": {
+    "xyz_path": "structures/acyclic_pubchem_010.xyz",
+    "molden_path": "molden/acyclic_pubchem_010.molden",
+    "multiwfn_stdout_path": "multiwfn_raw/acyclic_pubchem_010/stdout.txt",
+    "multiwfn_stderr_path": "multiwfn_raw/acyclic_pubchem_010/stderr.txt",
+    "multiwfn_stdin_path": "multiwfn_raw/acyclic_pubchem_010/stdin.txt"
+  },
+  "software": {
+    "multiwfn_binary": "../../external_software/Multiwfn_noGUI",
+    "multiwfn_variant": "noGUI",
+    "multiwfn_version": "2026.3.27"
+  },
+  "search_protocol": {
+    "topology_menu_sequence": [
+      2,
+      3,
+      4,
+      5,
+      8,
+      0
+    ],
+    "notes": "Critical-point coordinates reported by Multiwfn topology analysis are in Bohr."
+  },
+  "units": {
+    "xyz_atoms": "angstrom",
+    "critical_points": {
+      "position_bohr": "bohr",
+      "position_angstrom": "angstrom"
+    }
+  },
+  "atoms": [
+    {
+      "atom_index": 1,
+      "element": "C",
+      "position_angstrom": [
+        -2.5200494882,
+        0.2739480786,
+        -0.5091828955
+      ]
+    },
+    {
+      "atom_index": 2,
+      "element": "C",
+      "position_angstrom": [
+        -1.1733524811,
+        -0.263972885,
+        0.0202864934
+      ]
+    },
+    {
+      "atom_index": 3,
+      "element": "C",
+      "position_angstrom": [
+        -1.0609683122,
+        -1.7447643962,
+        -0.3964578693
+      ]
+    },
+    {
+      "atom_index": 4,
+      "element": "C",
+      "position_angstrom": [
+        -1.1604725135,
+        -0.1744113566,
+        1.5578037789
+      ]
+    },
+    {
+      "atom_index": 5,
+      "element": "C",
+      "position_angstrom": [
+        0.003448921,
+        0.5652094103,
+        -0.6227100348
+      ]
+    },
+    {
+      "atom_index": 6,
+      "element": "C",
+      "position_angstrom": [
+        1.3934958339,
+        0.4316146726,
+        0.040376988
+      ]
+    },
+    {
+      "atom_index": 7,
+      "element": "N",
+      "position_angstrom": [
+        1.9344263683,
+        -0.9165421671,
+        0.0472507989
+      ]
+    },
+    {
+      "atom_index": 8,
+      "element": "C",
+      "position_angstrom": [
+        3.2526301226,
+        -1.0148251282,
+        0.6452766513
+      ]
+    },
+    {
+      "atom_index": 9,
+      "element": "C",
+      "position_angstrom": [
+        -0.3027464784,
+        2.0446117997,
+        -0.6837750478
+      ]
+    },
+    {
+      "atom_index": 10,
+      "element": "N",
+      "position_angstrom": [
+        -0.3241443039,
+        2.6821162595,
+        -1.7834111089
+      ]
+    },
+    {
+      "atom_index": 11,
+      "element": "H",
+      "position_angstrom": [
+        -2.5324856193,
+        0.3076065689,
+        -1.6104794997
+      ]
+    },
+    {
+      "atom_index": 12,
+      "element": "H",
+      "position_angstrom": [
+        -2.7376680819,
+        1.2910011885,
+        -0.1465110133
+      ]
+    },
+    {
+      "atom_index": 13,
+      "element": "H",
+      "position_angstrom": [
+        -3.3460500722,
+        -0.3772744453,
+        -0.1797971219
+      ]
+    },
+    {
+      "atom_index": 14,
+      "element": "H",
+      "position_angstrom": [
+        -1.8992185925,
+        -2.3244765328,
+        0.0251974126
+      ]
+    },
+    {
+      "atom_index": 15,
+      "element": "H",
+      "position_angstrom": [
+        -1.1058789949,
+        -1.8494475458,
+        -1.4936935297
+      ]
+    },
+    {
+      "atom_index": 16,
+      "element": "H",
+      "position_angstrom": [
+        -0.1188108316,
+        -2.1831940848,
+        -0.0428598391
+      ]
+    },
+    {
+      "atom_index": 17,
+      "element": "H",
+      "position_angstrom": [
+        -2.0379173161,
+        -0.6948748684,
+        1.9754702466
+      ]
+    },
+    {
+      "atom_index": 18,
+      "element": "H",
+      "position_angstrom": [
+        -0.2620974454,
+        -0.6488894257,
+        1.9805359679
+      ]
+    },
+    {
+      "atom_index": 19,
+      "element": "H",
+      "position_angstrom": [
+        -1.2007582636,
+        0.8682889172,
+        1.9146726673
+      ]
+    },
+    {
+      "atom_index": 20,
+      "element": "H",
+      "position_angstrom": [
+        0.0953172172,
+        0.2496287959,
+        -1.6770091906
+      ]
+    },
+    {
+      "atom_index": 21,
+      "element": "H",
+      "position_angstrom": [
+        2.073379209,
+        1.1490254583,
+        -0.4748140959
+      ]
+    },
+    {
+      "atom_index": 22,
+      "element": "H",
+      "position_angstrom": [
+        1.3387043776,
+        0.7806998188,
+        1.0872756941
+      ]
+    },
+    {
+      "atom_index": 23,
+      "element": "H",
+      "position_angstrom": [
+        1.9550958226,
+        -1.2823762667,
+        -0.9042198094
+      ]
+    },
+    {
+      "atom_index": 24,
+      "element": "H",
+      "position_angstrom": [
+        3.6276827166,
+        -2.0468563719,
+        0.5627157343
+      ]
+    },
+    {
+      "atom_index": 25,
+      "element": "H",
+      "position_angstrom": [
+        3.196865709,
+        -0.7704570892,
+        1.7197572263
+      ]
+    },
+    {
+      "atom_index": 26,
+      "element": "H",
+      "position_angstrom": [
+        4.0124835253,
+        -0.3361897189,
+        0.1959432313
+      ]
+    },
+    {
+      "atom_index": 27,
+      "element": "H",
+      "position_angstrom": [
+        -0.4757245596,
+        2.5363359449,
+        0.2963052858
+      ]
+    },
+    {
+      "atom_index": 28,
+      "element": "H",
+      "position_angstrom": [
+        -0.5254819282,
+        3.6758902747,
+        -1.6192906674
+      ]
+    }
+  ],
+  "counts": {
+    "ncp": 28,
+    "bcp": 28,
+    "rcp": 1,
+    "ccp": 0
+  },
+  "poincare_hopf": {
+    "ncp": 28,
+    "bcp": 28,
+    "rcp": 1,
+    "ccp": 0,
+    "result": 1,
+    "satisfied": true
+  },
+  "generated_path_count": 56,
+  "critical_points": [
+    {
+      "cp_index": 1,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -3.54793763,
+        -4.36330019,
+        0.02703669
+      ],
+      "position_angstrom": [
+        -1.8774877395011997,
+        -2.3089590248767298,
+        0.014307200206249029
+      ],
+      "nucleus_atom_index": 14,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 2,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -0.27459893,
+        -4.10301372,
+        -0.09981991
+      ],
+      "position_angstrom": [
+        -0.14531149589434814,
+        -2.1712213566463423,
+        -0.05282242156638847
+      ],
+      "nucleus_atom_index": 16,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 3,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -2.00494055,
+        -3.29712935,
+        -0.74919817
+      ],
+      "position_angstrom": [
+        -1.0609688482753268,
+        -1.7447657134194212,
+        -0.3964585980142316
+      ],
+      "nucleus_atom_index": 3,
+      "nucleus_element": "C"
+    },
+    {
+      "cp_index": 4,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        6.83591912,
+        -3.81556287,
+        1.06692758
+      ],
+      "position_angstrom": [
+        3.6174126138800897,
+        -2.019108917571646,
+        0.5645937610198873
+      ],
+      "nucleus_atom_index": 24,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 5,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -2.08755312,
+        -3.48905263,
+        -2.76867344
+      ],
+      "position_angstrom": [
+        -1.1046855376534555,
+        -1.8463271394371767,
+        -1.4651188888804145
+      ],
+      "nucleus_atom_index": 15,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 6,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -3.80766981,
+        -1.28726643,
+        3.71169812
+      ],
+      "position_angstrom": [
+        -2.014932090095356,
+        -0.6811920591164619,
+        1.9641460588555084
+      ],
+      "nucleus_atom_index": 17,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 7,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -0.54069964,
+        -1.20189439,
+        3.72109632
+      ],
+      "position_angstrom": [
+        -0.28612592743145615,
+        -0.6360151211001626,
+        1.969119372119017
+      ],
+      "nucleus_atom_index": 18,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 8,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        6.04351117,
+        -1.46766454,
+        3.19577641
+      ],
+      "position_angstrom": [
+        3.1980883850017263,
+        -0.7766546278184344,
+        1.6911320473134022
+      ],
+      "nucleus_atom_index": 25,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 9,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        6.14657797,
+        -1.91774164,
+        1.21939525
+      ],
+      "position_angstrom": [
+        3.2526289867624234,
+        -1.014825172287745,
+        0.6452761773833664
+      ],
+      "nucleus_atom_index": 8,
+      "nucleus_element": "C"
+    },
+    {
+      "cp_index": 10,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        3.69477012,
+        -2.39405883,
+        -1.63858502
+      ],
+      "position_angstrom": [
+        1.9551881470293424,
+        -1.2668813743970995,
+        -0.8671018507110364
+      ],
+      "nucleus_atom_index": 23,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 11,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -2.19297549,
+        -0.32958895,
+        2.94382565
+      ],
+      "position_angstrom": [
+        -1.1604726533768395,
+        -0.1744109613054483,
+        1.5578054468517109
+      ],
+      "nucleus_atom_index": 4,
+      "nucleus_element": "C"
+    },
+    {
+      "cp_index": 12,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -6.28156532,
+        -0.68089476,
+        -0.35578406
+      ],
+      "position_angstrom": [
+        -3.3240612161426104,
+        -0.36031399001526754,
+        -0.18827281655454559
+      ],
+      "nucleus_atom_index": 13,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 13,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        3.65554783,
+        -1.73200333,
+        0.08928045
+      ],
+      "position_angstrom": [
+        1.9344326050019138,
+        -0.9165366914441082,
+        0.047245179519164744
+      ],
+      "nucleus_atom_index": 7,
+      "nucleus_element": "N"
+    },
+    {
+      "cp_index": 14,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -2.21731434,
+        -0.49883545,
+        0.03833584
+      ],
+      "position_angstrom": [
+        -1.1733522181364262,
+        -0.2639723521305429,
+        0.020286452888823664
+      ],
+      "nucleus_atom_index": 2,
+      "nucleus_element": "C"
+    },
+    {
+      "cp_index": 15,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        7.54589755,
+        -0.66733946,
+        0.39124478
+      ],
+      "position_angstrom": [
+        3.993117019268781,
+        -0.3531408341683141,
+        0.20703782146075783
+      ],
+      "nucleus_atom_index": 26,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 16,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -4.76220626,
+        0.51768804,
+        -0.96221708
+      ],
+      "position_angstrom": [
+        -2.5200510264116067,
+        0.2739487131250407,
+        -0.5091833506776288
+      ],
+      "nucleus_atom_index": 1,
+      "nucleus_element": "C"
+    },
+    {
+      "cp_index": 17,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -2.26692512,
+        1.58988072,
+        3.59977458
+      ],
+      "position_angstrom": [
+        -1.1996051123275484,
+        0.8413286450780535,
+        1.9049186721239182
+      ],
+      "nucleus_atom_index": 19,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 18,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -4.7845229,
+        0.57920658,
+        -2.98796425
+      ],
+      "position_angstrom": [
+        -2.531860483723533,
+        0.3065029225410653,
+        -1.5811625880928741
+      ],
+      "nucleus_atom_index": 11,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 19,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        2.63332724,
+        0.81563103,
+        0.07630247
+      ],
+      "position_angstrom": [
+        1.3934967642580947,
+        0.4316133535813411,
+        0.04037752825960982
+      ],
+      "nucleus_atom_index": 6,
+      "nucleus_element": "C"
+    },
+    {
+      "cp_index": 20,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        2.53229987,
+        1.45800935,
+        2.00359022
+      ],
+      "position_angstrom": [
+        1.3400353823766296,
+        0.7715453213034958,
+        1.060254284412128
+      ],
+      "nucleus_atom_index": 22,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 21,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        0.17606513,
+        0.48617973,
+        -3.11710202
+      ],
+      "position_angstrom": [
+        0.0931696544306741,
+        0.2572752335189736,
+        -1.6494993530437072
+      ],
+      "nucleus_atom_index": 20,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 22,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        0.00651857,
+        1.0680917,
+        -1.17675119
+      ],
+      "position_angstrom": [
+        0.0034494786916759684,
+        0.5652097867946438,
+        -0.6227099126509862
+      ],
+      "nucleus_atom_index": 5,
+      "nucleus_element": "C"
+    },
+    {
+      "cp_index": 23,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -5.1617652,
+        2.38949348,
+        -0.29434489
+      ],
+      "position_angstrom": [
+        -2.7314885118721657,
+        1.2644654952173033,
+        -0.15576060793375035
+      ],
+      "nucleus_atom_index": 12,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 24,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        3.88621504,
+        2.13754479,
+        -0.87333691
+      ],
+      "position_angstrom": [
+        2.0564964358364906,
+        1.1311399901524388,
+        -0.4621499902124443
+      ],
+      "nucleus_atom_index": 21,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 25,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -0.57210852,
+        3.8637578,
+        -1.292146
+      ],
+      "position_angstrom": [
+        -0.30274679094744317,
+        2.0446125762087113,
+        -0.6837742163594678
+      ],
+      "nucleus_atom_index": 9,
+      "nucleus_element": "C"
+    },
+    {
+      "cp_index": 26,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -0.89052004,
+        4.76881413,
+        0.51245735
+      ],
+      "position_angstrom": [
+        -0.4712429110204279,
+        2.523547760628216,
+        0.2711807511797425
+      ],
+      "nucleus_atom_index": 27,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 27,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -0.61254763,
+        5.06847498,
+        -3.37013718
+      ],
+      "position_angstrom": [
+        -0.3241462463886428,
+        2.6821214534480387,
+        -1.7833997932729015
+      ],
+      "nucleus_atom_index": 10,
+      "nucleus_element": "N"
+    },
+    {
+      "cp_index": 28,
+      "cp_signature": "(3,-3)",
+      "cp_type": "ncp",
+      "position_bohr": [
+        -0.97868696,
+        6.87430804,
+        -3.06852341
+      ],
+      "position_angstrom": [
+        -0.5178988358399359,
+        3.637727155495268,
+        -1.6237926596943626
+      ],
+      "nucleus_atom_index": 28,
+      "nucleus_element": "H"
+    },
+    {
+      "cp_index": 29,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -2.9926122,
+        -3.96904094,
+        -0.25081587
+      ],
+      "position_angstrom": [
+        -1.5836221773102908,
+        -2.1003260145890215,
+        -0.13272604253680942
+      ],
+      "atom_i": 14,
+      "atom_j": 3,
+      "elements": [
+        "H",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 30,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -0.8727332,
+        -3.8225252,
+        -0.32314571
+      ],
+      "position_angstrom": [
+        -0.46183052063845004,
+        -2.022793223942432,
+        -0.17100134553306964
+      ],
+      "atom_i": 16,
+      "atom_j": 3,
+      "elements": [
+        "H",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 31,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -2.05816196,
+        -3.41061632,
+        -2.03579039
+      ],
+      "position_angstrom": [
+        -1.0891324055794518,
+        -1.8048204316778536,
+        -1.0772938805633305
+      ],
+      "atom_i": 3,
+      "atom_j": 15,
+      "elements": [
+        "C",
+        "H"
+      ]
+    },
+    {
+      "cp_index": 32,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        1.30206752,
+        -3.11907317,
+        0.07960353
+      ],
+      "position_angstrom": [
+        0.6890244586409862,
+        -1.6505424407029787,
+        0.042124373983433286
+      ],
+      "atom_i": 16,
+      "atom_j": 7,
+      "elements": [
+        "H",
+        "N"
+      ]
+    },
+    {
+      "cp_index": 33,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        6.58808892,
+        -3.14648704,
+        1.11454829
+      ],
+      "position_angstrom": [
+        3.486266519866557,
+        -1.665049235969636,
+        0.589793555518908
+      ],
+      "atom_i": 24,
+      "atom_j": 8,
+      "elements": [
+        "H",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 34,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -3.22886868,
+        -0.94357481,
+        3.42732102
+      ],
+      "position_angstrom": [
+        -1.7086437224544513,
+        -0.4993182862341281,
+        1.813660178232825
+      ],
+      "atom_i": 17,
+      "atom_j": 4,
+      "elements": [
+        "H",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 35,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -2.1058384,
+        -1.90072972,
+        -0.3592691
+      ],
+      "position_angstrom": [
+        -1.114361691124436,
+        -1.00582285191004,
+        -0.190117020301631
+      ],
+      "atom_i": 3,
+      "atom_j": 2,
+      "elements": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 36,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -1.12614191,
+        -0.89093373,
+        3.43929746
+      ],
+      "position_angstrom": [
+        -0.5959286350147772,
+        -0.4714618263408064,
+        1.8199978373485721
+      ],
+      "atom_i": 18,
+      "atom_j": 4,
+      "elements": [
+        "H",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 37,
+      "cp_signature": "(3,+1)",
+      "cp_type": "rcp",
+      "position_bohr": [
+        0.68070828,
+        -1.81583504,
+        -0.12499317
+      ],
+      "position_angstrom": [
+        0.36021530904897836,
+        -0.9608985219271374,
+        -0.06614353708252453
+      ]
+    },
+    {
+      "cp_index": 38,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        6.07381533,
+        -1.62283762,
+        2.49448601
+      ],
+      "position_angstrom": [
+        3.2141246558692846,
+        -0.8587686855000626,
+        1.320025149408353
+      ],
+      "atom_i": 25,
+      "atom_j": 8,
+      "elements": [
+        "H",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 39,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        3.69194015,
+        -2.24665925,
+        -1.2725224
+      ],
+      "position_angstrom": [
+        1.9536905913978033,
+        -1.1888808757644258,
+        -0.6733898544435917
+      ],
+      "atom_i": 23,
+      "atom_j": 7,
+      "elements": [
+        "H",
+        "N"
+      ]
+    },
+    {
+      "cp_index": 40,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        5.16317136,
+        -1.82194963,
+        0.75345851
+      ],
+      "position_angstrom": [
+        2.732232619699049,
+        -0.9641342236091527,
+        0.3987130728529301
+      ],
+      "atom_i": 8,
+      "atom_j": 7,
+      "elements": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "cp_index": 41,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -2.20096666,
+        -0.40777699,
+        1.48289579
+      ],
+      "position_angstrom": [
+        -1.1647013984292915,
+        -0.2157862902386205,
+        0.7847146582120007
+      ],
+      "atom_i": 4,
+      "atom_j": 2,
+      "elements": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 42,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -5.72833643,
+        -0.25383772,
+        -0.56988723
+      ],
+      "position_angstrom": [
+        -3.0313050951414477,
+        -0.13432513669157664,
+        -0.3015713349006364
+      ],
+      "atom_i": 13,
+      "atom_j": 1,
+      "elements": [
+        "H",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 43,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        7.03469882,
+        -1.11448469,
+        0.68243525
+      ],
+      "position_angstrom": [
+        3.722602301110225,
+        -0.5897598998482946,
+        0.36112918221689155
+      ],
+      "atom_i": 8,
+      "atom_j": 26,
+      "elements": [
+        "C",
+        "H"
+      ]
+    },
+    {
+      "cp_index": 44,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -2.2390646,
+        0.89431707,
+        3.352729
+      ],
+      "position_angstrom": [
+        -1.184861960059641,
+        0.473252212765543,
+        1.7741877811336042
+      ],
+      "atom_i": 4,
+      "atom_j": 19,
+      "elements": [
+        "C",
+        "H"
+      ]
+    },
+    {
+      "cp_index": 45,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -3.47955768,
+        0.01531378,
+        -0.45999511
+      ],
+      "position_angstrom": [
+        -1.8413026282785132,
+        0.008103703388782144,
+        -0.24341892933881865
+      ],
+      "atom_i": 2,
+      "atom_j": 1,
+      "elements": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 46,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        3.0544123,
+        -0.19306754,
+        0.06704262
+      ],
+      "position_angstrom": [
+        1.6163253818618173,
+        -0.10216694233310339,
+        0.03547742666322968
+      ],
+      "atom_i": 7,
+      "atom_j": 6,
+      "elements": [
+        "N",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 47,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -1.11296625,
+        0.27903943,
+        -0.54297369
+      ],
+      "position_angstrom": [
+        -0.588956376004171,
+        0.1476613072993629,
+        -0.2873293028679101
+      ],
+      "atom_i": 2,
+      "atom_j": 5,
+      "elements": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 48,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -4.76962835,
+        0.55419518,
+        -2.26341091
+      ],
+      "position_angstrom": [
+        -2.5239786272968776,
+        0.29326745964828604,
+        -1.197745472481221
+      ],
+      "atom_i": 1,
+      "atom_j": 11,
+      "elements": [
+        "C",
+        "H"
+      ]
+    },
+    {
+      "cp_index": 49,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        2.56595549,
+        1.22374941,
+        1.31442725
+      ],
+      "position_angstrom": [
+        1.3578451694994405,
+        0.6475802996279917,
+        0.6955649460899003
+      ],
+      "atom_i": 6,
+      "atom_j": 22,
+      "elements": [
+        "C",
+        "H"
+      ]
+    },
+    {
+      "cp_index": 50,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        1.30105198,
+        0.92138484,
+        -0.5444598
+      ],
+      "position_angstrom": [
+        0.6884870580162257,
+        0.48757585979950685,
+        -0.2881157184128052
+      ],
+      "atom_i": 6,
+      "atom_j": 5,
+      "elements": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 51,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -5.00829509,
+        1.71153233,
+        -0.53238423
+      ],
+      "position_angstrom": [
+        -2.650275627105389,
+        0.905703904759713,
+        -0.28172560196014124
+      ],
+      "atom_i": 1,
+      "atom_j": 12,
+      "elements": [
+        "C",
+        "H"
+      ]
+    },
+    {
+      "cp_index": 52,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        0.11607967,
+        0.69112603,
+        -2.42070262
+      ],
+      "position_angstrom": [
+        0.061426716013140634,
+        0.36572814493786304,
+        -1.2809806608771845
+      ],
+      "atom_i": 20,
+      "atom_j": 5,
+      "elements": [
+        "H",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 53,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        3.43410649,
+        1.65506566,
+        -0.53703095
+      ],
+      "position_angstrom": [
+        1.8172508943220909,
+        0.8758230298201328,
+        -0.28418454028958845
+      ],
+      "atom_i": 6,
+      "atom_j": 21,
+      "elements": [
+        "C",
+        "H"
+      ]
+    },
+    {
+      "cp_index": 54,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -0.28093455,
+        2.42621469,
+        -1.22639958
+      ],
+      "position_angstrom": [
+        -0.1486641616152894,
+        1.2838975227060867,
+        -0.6489827091970106
+      ],
+      "atom_i": 5,
+      "atom_j": 9,
+      "elements": [
+        "C",
+        "C"
+      ]
+    },
+    {
+      "cp_index": 55,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -0.77759543,
+        4.44606217,
+        -0.12793474
+      ],
+      "position_angstrom": [
+        -0.41148578085831894,
+        2.35275477862194,
+        -0.06770014889080046
+      ],
+      "atom_i": 9,
+      "atom_j": 27,
+      "elements": [
+        "C",
+        "H"
+      ]
+    },
+    {
+      "cp_index": 56,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -0.59156979,
+        4.29661927,
+        -1.99017583
+      ],
+      "position_angstrom": [
+        -0.3130452515266734,
+        2.2736730016106836,
+        -1.053155694925963
+      ],
+      "atom_i": 9,
+      "atom_j": 10,
+      "elements": [
+        "C",
+        "N"
+      ]
+    },
+    {
+      "cp_index": 57,
+      "cp_signature": "(3,-1)",
+      "cp_type": "bcp",
+      "position_bohr": [
+        -0.90071991,
+        6.48604229,
+        -3.12409905
+      ],
+      "position_angstrom": [
+        -0.4766404497786011,
+        3.432265768821107,
+        -1.6532020218637118
+      ],
+      "atom_i": 10,
+      "atom_j": 28,
+      "elements": [
+        "N",
+        "H"
+      ]
+    }
+  ],
+  "bcp_graph": [
+    {
+      "atom_i": 3,
+      "atom_j": 14,
+      "cp_index": 29
+    },
+    {
+      "atom_i": 3,
+      "atom_j": 16,
+      "cp_index": 30
+    },
+    {
+      "atom_i": 3,
+      "atom_j": 15,
+      "cp_index": 31
+    },
+    {
+      "atom_i": 7,
+      "atom_j": 16,
+      "cp_index": 32
+    },
+    {
+      "atom_i": 8,
+      "atom_j": 24,
+      "cp_index": 33
+    },
+    {
+      "atom_i": 4,
+      "atom_j": 17,
+      "cp_index": 34
+    },
+    {
+      "atom_i": 2,
+      "atom_j": 3,
+      "cp_index": 35
+    },
+    {
+      "atom_i": 4,
+      "atom_j": 18,
+      "cp_index": 36
+    },
+    {
+      "atom_i": 8,
+      "atom_j": 25,
+      "cp_index": 38
+    },
+    {
+      "atom_i": 7,
+      "atom_j": 23,
+      "cp_index": 39
+    },
+    {
+      "atom_i": 7,
+      "atom_j": 8,
+      "cp_index": 40
+    },
+    {
+      "atom_i": 2,
+      "atom_j": 4,
+      "cp_index": 41
+    },
+    {
+      "atom_i": 1,
+      "atom_j": 13,
+      "cp_index": 42
+    },
+    {
+      "atom_i": 8,
+      "atom_j": 26,
+      "cp_index": 43
+    },
+    {
+      "atom_i": 4,
+      "atom_j": 19,
+      "cp_index": 44
+    },
+    {
+      "atom_i": 1,
+      "atom_j": 2,
+      "cp_index": 45
+    },
+    {
+      "atom_i": 6,
+      "atom_j": 7,
+      "cp_index": 46
+    },
+    {
+      "atom_i": 2,
+      "atom_j": 5,
+      "cp_index": 47
+    },
+    {
+      "atom_i": 1,
+      "atom_j": 11,
+      "cp_index": 48
+    },
+    {
+      "atom_i": 6,
+      "atom_j": 22,
+      "cp_index": 49
+    },
+    {
+      "atom_i": 5,
+      "atom_j": 6,
+      "cp_index": 50
+    },
+    {
+      "atom_i": 1,
+      "atom_j": 12,
+      "cp_index": 51
+    },
+    {
+      "atom_i": 5,
+      "atom_j": 20,
+      "cp_index": 52
+    },
+    {
+      "atom_i": 6,
+      "atom_j": 21,
+      "cp_index": 53
+    },
+    {
+      "atom_i": 5,
+      "atom_j": 9,
+      "cp_index": 54
+    },
+    {
+      "atom_i": 9,
+      "atom_j": 27,
+      "cp_index": 55
+    },
+    {
+      "atom_i": 9,
+      "atom_j": 10,
+      "cp_index": 56
+    },
+    {
+      "atom_i": 10,
+      "atom_j": 28,
+      "cp_index": 57
+    }
+  ],
+  "motif_summary": {
+    "n_bcp": 28,
+    "n_rcp": 1,
+    "n_ccp": 0,
+    "ring_cp_indices": [
+      37
+    ],
+    "cage_cp_indices": [],
+    "has_ring_cp": true,
+    "has_cage_cp": false
+  }
+}

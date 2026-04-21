@@ -1,0 +1,8 @@
+species_label,status,element,molden_path,charge,multiplicity,xc,basis,grid_level,converged,total_energy_hartree,message
+H,success,H,molden/H.molden,0,2,b3lyp,def2svp,5,True,-0.501258852118,ok
+C,success,C,molden/C.molden,0,3,b3lyp,def2svp,5,True,-37.814060698272,ok
+N,success,N,molden/N.molden,0,4,b3lyp,def2svp,5,True,-54.537781668497,ok
+O,success,O,molden/O.molden,0,3,b3lyp,def2svp,5,True,-75.000758936241,ok
+F,success,F,molden/F.molden,0,2,b3lyp,def2svp,5,True,-99.640474729030,ok
+S,success,S,molden/S.molden,0,3,b3lyp,def2svp,5,True,-397.995159746695,ok
+Cl,success,Cl,molden/Cl.molden,0,2,b3lyp,def2svp,5,True,-460.006004706704,ok

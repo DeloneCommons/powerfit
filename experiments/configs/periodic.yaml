@@ -1,0 +1,27 @@
+name: periodic_cases
+seed: 20260317
+measurement: fraction
+weight_scale: 0.08
+dimensions:
+- 2
+- 3
+n_sites_by_dimension:
+  2:
+  - 16
+  3:
+  - 24
+replicates: 6
+noise_sigma_control: 0.01
+corruption_fractions:
+- 0.10
+- 0.25
+- 0.50
+fit_solver: analytic
+shift_refinement_max_iter: 3
+scenarios:
+- correct_images
+- noisy_correct_images
+- wrong_images_authoritative
+- nearest_image_inference
+- realized_shift_refinement
+output_dir: results/periodic

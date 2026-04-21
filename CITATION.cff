@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: >-
+  If you use this repository, please cite this reproducibility repository and,
+  when available, the associated manuscript or article.
+title: >-
+  powerfit: reproducibility materials for inverse fitting of
+  power-diagram weights from pairwise separator data
+type: software
+authors:
+  - family-names: Chernyshov
+    given-names: Ivan Yu.
+    affiliation: ITMO University
+    orcid: "https://orcid.org/0000-0002-4452-2025"
+repository-code: https://github.com/DeloneCommons/powerfit
+doi: 10.5281/zenodo.19673558
+url: https://doi.org/10.5281/zenodo.19673558
+license: MIT
+version: 1.0.0
+abstract: >-
+  Manuscript, benchmark definitions, final figure/table generation scripts, and
+  reproducibility materials for a manuscript on inverse fitting of
+  power-diagram weights from pairwise separator constraints. The MIT license
+  applies to first-party materials; bundled third-party artifacts retain their
+  upstream licenses and notices.
+keywords:
+  - power diagram
+  - Laguerre tessellation
+  - inverse problem
+  - graph Laplacian
+  - reproducibility
+references:
+  - type: software
+    title: pyvoro2
+    repository-code: https://github.com/DeloneCommons/pyvoro2
+    url: https://zenodo.org/records/19143984
+    doi: 10.5281/zenodo.19143984
+    version: 0.6.3

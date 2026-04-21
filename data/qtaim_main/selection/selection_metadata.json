@@ -1,0 +1,52 @@
+{
+  "allowed_elements": [
+    "C",
+    "Cl",
+    "F",
+    "H",
+    "N",
+    "O",
+    "S"
+  ],
+  "api_key_used": false,
+  "audit_path": "data/qtaim_main/selection/selection_audit.csv",
+  "created_utc": "2026-04-10T03:03:22Z",
+  "email": "ivan-chernyshoff@yandex.ru",
+  "manifest_path": "data/qtaim_main/selection/systems.csv",
+  "page_size": 200,
+  "property_fields": [
+    "ConnectivitySMILES",
+    "CanonicalSMILES",
+    "IsomericSMILES",
+    "MolecularFormula",
+    "HeavyAtomCount"
+  ],
+  "rejections_path": "data/qtaim_main/selection/selection_rejections.csv",
+  "reserve_path": "data/qtaim_main/selection/systems_reserve.csv",
+  "seed": 20260410,
+  "selection": {
+    "acyclic": {
+      "accepted_pool_size": 118,
+      "name": "acyclic",
+      "pages_available": 52504,
+      "pages_checked": 5,
+      "query": "0[CHG] AND 1[CUC] AND 6:15[HAC]",
+      "reserve": 25,
+      "selected_pool_size": 75,
+      "target": 50,
+      "total_search_count": 10500700
+    },
+    "cyclic": {
+      "accepted_pool_size": 110,
+      "name": "cyclic",
+      "pages_available": 388095,
+      "pages_checked": 1,
+      "query": "0[CHG] AND 1[CUC] AND 12:30[HAC]",
+      "reserve": 25,
+      "selected_pool_size": 75,
+      "target": 50,
+      "total_search_count": 77618944
+    }
+  },
+  "tool": "powerfit_qtaim_sampler"
+}

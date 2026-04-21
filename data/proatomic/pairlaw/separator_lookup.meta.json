@@ -1,0 +1,147 @@
+{
+  "distance_grid": {
+    "max": 5.0000000000000036,
+    "min": 0.5,
+    "n_points": 451,
+    "step": 0.01,
+    "units": "angstrom"
+  },
+  "elements": [
+    "C",
+    "Cl",
+    "F",
+    "H",
+    "N",
+    "O",
+    "S"
+  ],
+  "mode": "promolecule_density_minimum",
+  "ordered_pairs": 49,
+  "rows_written": 22099,
+  "solver": {
+    "method": "scipy.optimize.minimize_scalar(method=\"bounded\")",
+    "xatol_angstrom": 1e-06
+  },
+  "source_radial_density_grid": "data/proatomic/radial/radial_density_grid.csv",
+  "source_radial_density_meta": {
+    "aggregated_outputs": {
+      "radial_density_grid_csv": "radial/radial_density_grid.csv",
+      "radius_unit": "angstrom",
+      "rdf_grid_csv": "radial/rdf_grid.csv"
+    },
+    "multiwfn": {
+      "binary": "../../external_software/Multiwfn_noGUI",
+      "variant": "noGUI",
+      "version": "2026.3.27"
+    },
+    "radial_protocol": {
+      "center_angstrom": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exports": {
+        "rdf_txt": {
+          "filename": "RDF.txt",
+          "radius_unit": "angstrom",
+          "value_description": "Multiwfn radial distribution function export for electron density"
+        },
+        "sphavg_txt": {
+          "filename": "sphavgval.txt",
+          "radius_unit": "bohr",
+          "value_description": "Multiwfn spherically averaged real-space function export for electron density"
+        }
+      },
+      "main_menu_sequence": [
+        200,
+        5
+      ],
+      "n_radial_points": 501,
+      "n_shell_points": 2030,
+      "real_space_function": 1,
+      "rmax_angstrom": 5.0,
+      "rmin_angstrom": 0.0
+    },
+    "schema_version": 1,
+    "source_manifest": "atom_manifest.csv",
+    "species": [
+      {
+        "basis": "def2svp",
+        "charge": 0,
+        "element": "H",
+        "molden_path": "molden/H.molden",
+        "multiplicity": 2,
+        "notes": "Neutral ground-state atom",
+        "raw_dir": "radial/raw/H",
+        "species_label": "H",
+        "xc": "b3lyp"
+      },
+      {
+        "basis": "def2svp",
+        "charge": 0,
+        "element": "C",
+        "molden_path": "molden/C.molden",
+        "multiplicity": 3,
+        "notes": "Neutral ground-state atom",
+        "raw_dir": "radial/raw/C",
+        "species_label": "C",
+        "xc": "b3lyp"
+      },
+      {
+        "basis": "def2svp",
+        "charge": 0,
+        "element": "N",
+        "molden_path": "molden/N.molden",
+        "multiplicity": 4,
+        "notes": "Neutral ground-state atom",
+        "raw_dir": "radial/raw/N",
+        "species_label": "N",
+        "xc": "b3lyp"
+      },
+      {
+        "basis": "def2svp",
+        "charge": 0,
+        "element": "O",
+        "molden_path": "molden/O.molden",
+        "multiplicity": 3,
+        "notes": "Neutral ground-state atom",
+        "raw_dir": "radial/raw/O",
+        "species_label": "O",
+        "xc": "b3lyp"
+      },
+      {
+        "basis": "def2svp",
+        "charge": 0,
+        "element": "F",
+        "molden_path": "molden/F.molden",
+        "multiplicity": 2,
+        "notes": "Neutral ground-state atom",
+        "raw_dir": "radial/raw/F",
+        "species_label": "F",
+        "xc": "b3lyp"
+      },
+      {
+        "basis": "def2svp",
+        "charge": 0,
+        "element": "S",
+        "molden_path": "molden/S.molden",
+        "multiplicity": 3,
+        "notes": "Neutral ground-state atom",
+        "raw_dir": "radial/raw/S",
+        "species_label": "S",
+        "xc": "b3lyp"
+      },
+      {
+        "basis": "def2svp",
+        "charge": 0,
+        "element": "Cl",
+        "molden_path": "molden/Cl.molden",
+        "multiplicity": 2,
+        "notes": "Neutral ground-state atom",
+        "raw_dir": "radial/raw/Cl",
+        "species_label": "Cl",
+        "xc": "b3lyp"
+      }
+    ]
+  }
+}

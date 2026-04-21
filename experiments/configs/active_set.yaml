@@ -1,0 +1,44 @@
+name: active_set_refinement
+seed: 20260318
+measurement: fraction
+weight_scale: 0.08
+true_row_noise_sigma: 0.005
+extra_row_noise_sigma: 0.03
+extra_row_model: midpoint_surrogate
+fit_solver: analytic
+dimensions:
+- 2
+- 3
+n_sites_by_dimension:
+  2:
+  - 16
+  3:
+  - 24
+replicates: 5
+candidate_graphs:
+- name: knn_supergraph
+  parameter_by_dimension:
+    2: 12
+    3: 16
+- name: radius_supergraph
+  parameter_by_dimension:
+    2: 4.0
+    3: 4.0
+active_set_options:
+  add_after: 1
+  drop_after: 2
+  relax: 1.0
+  max_iter: 25
+  cycle_window: 8
+  weight_step_tol: 1.0e-08
+compare:
+- one_shot_fit
+- self_consistent_refinement
+metrics:
+- candidate_pair_precision
+- selected_pair_precision
+- selected_pair_recall
+- selected_pair_f1
+- true_realized_separator_rmse
+- outer_iterations
+output_dir: results/active_set

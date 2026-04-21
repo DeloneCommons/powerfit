@@ -1,0 +1,31 @@
+{
+  "edge_level_csv": "results/qtaim_main/J4_mask_transfer_refresh/edge_level.csv",
+  "n_models": 2,
+  "total_faces": 38746,
+  "total_visible_faces": 11677,
+  "total_visibility_mismatches": 0,
+  "max_abs_clearance_diff": 3.524958103184872e-15,
+  "mean_abs_clearance_diff": 3.602092787200682e-16,
+  "by_model": [
+    {
+      "model": "voronoi",
+      "n_faces": 19278,
+      "n_visible_faces": 5974,
+      "n_visibility_mismatches": 0,
+      "visibility_agreement_fraction": 1.0,
+      "max_abs_clearance_diff": 3.524958103184872e-15,
+      "mean_abs_clearance_diff": 3.2709435358785167e-16,
+      "median_abs_clearance_diff": 2.220446049250313e-16
+    },
+    {
+      "model": "recovered_powerfit",
+      "n_faces": 19468,
+      "n_visible_faces": 5703,
+      "n_visibility_mismatches": 0,
+      "visibility_agreement_fraction": 1.0,
+      "max_abs_clearance_diff": 3.1086244689504383e-15,
+      "mean_abs_clearance_diff": 3.9332420385228477e-16,
+      "median_abs_clearance_diff": 2.7755575615628914e-16
+    }
+  ]
+}

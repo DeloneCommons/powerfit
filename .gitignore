@@ -1,0 +1,66 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IPython / Jupyter
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# Virtual environments
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE / OS files
+.spyderproject
+.spyproject
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# LaTeX build artifacts
+*.aux
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.nlo
+*.nls
+*.out
+*.run.xml
+*.spl
+*.synctex.gz
+*.toc
+*.xdv
+/manuscript.bbl
+/manuscript.pdf
+manuscript/manuscript.pdf
+submission/flat/manuscript.pdf
+
+# Submission/build outputs
+.smoke/
+
+# Wheel policy: keep only the selected cp313 artifact in git
+external_software/*.whl
+!external_software/pyvoro2-0.6.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+# QTAIM helper workflow outputs
+data/qtaim_showcase/multiwfn_raw/**
+!data/qtaim_showcase/multiwfn_raw/.gitkeep
+*.chk
+*.pyscf.log
+pyscf_errors.log
+multiwfn_errors.log

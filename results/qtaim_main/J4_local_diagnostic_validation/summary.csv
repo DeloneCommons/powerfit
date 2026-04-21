@@ -1,0 +1,3 @@
+model,n_faces,n_visible_faces,n_visibility_mismatches,visibility_agreement_fraction,max_abs_clearance_diff,mean_abs_clearance_diff,median_abs_clearance_diff
+voronoi,19278,5974,0,1.0,3.524958103184872e-15,3.2709435358785167e-16,2.220446049250313e-16
+recovered_powerfit,19468,5703,0,1.0,3.1086244689504383e-15,3.9332420385228477e-16,2.7755575615628914e-16

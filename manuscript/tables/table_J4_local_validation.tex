@@ -1,0 +1,18 @@
+\begin{table}[H]
+\caption{Experiment~J4a local-diagnostic validation. Analytic clipped visibility and clearance are compared with tessellation-based connector-line diagnostics on the released edge-level archive; clearance errors are computed on visible faces only.}
+\label{tab:j4_local_validation}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.1}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}rrr>{\raggedright\arraybackslash}p{0.24\textwidth}}
+\toprule
+Model & Faces checked & Visibility mismatches & Visible faces & Max / mean $|\Delta c|$ \\
+\midrule
+Voronoi & 19278 & 0 & 5974 & $3.5\times 10^{-15}$ / $3.3\times 10^{-16}$ \\
+Recovered powerfit & 19468 & 0 & 5703 & $3.1\times 10^{-15}$ / $3.9\times 10^{-16}$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}

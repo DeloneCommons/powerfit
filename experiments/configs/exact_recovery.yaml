@@ -1,0 +1,28 @@
+name: exact_recovery
+seed: 20260317
+dimensions:
+- 2
+- 3
+periodic:
+- false
+- true
+n_sites_by_dimension:
+  2:
+  - 16
+  3:
+  - 24
+replicates: 2
+graph_variants:
+- full_realized
+- two_component_subgraph
+measurement: fraction
+weight_scale: 0.08
+solver: analytic
+validate_periodic_planar_shifts: false
+metrics:
+- separator_rmse
+- edge_difference_rmse
+- centered_weight_rmse
+- realized_same_shift_recall
+- realized_any_recall
+output_dir: results/exact_recovery

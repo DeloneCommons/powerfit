@@ -1,0 +1,48 @@
+name: supergraph_mismatch
+seed: 20260322
+measurement: fraction
+weight_scale: 0.08
+fit_solver: analytic
+law_family: type_cycle
+etas:
+  - 0.00
+  - 0.10
+  - 0.20
+  - 0.40
+n_types: 3
+local_context_k: 4
+clip_interval: [0.05, 0.95]
+dimensions:
+  - 2
+  - 3
+n_sites_by_dimension:
+  2:
+    - 16
+  3:
+    - 24
+replicates: 6
+candidate_graphs:
+  - name: knn_supergraph
+    parameter_by_dimension:
+      2: 12
+      3: 16
+  - name: radius_supergraph
+    parameter_by_dimension:
+      2: 4.0
+      3: 4.0
+active_set_options:
+  add_after: 1
+  drop_after: 2
+  relax: 1.0
+  max_iter: 25
+  cycle_window: 8
+  weight_step_tol: 1.0e-08
+metrics:
+  - selected_pair_precision
+  - selected_pair_recall
+  - selected_pair_f1
+  - true_realized_separator_rmse
+  - projection_residual_rmse
+  - outer_iterations
+output_dir: results/supergraph_mismatch
+status: archived_manuscript_preset

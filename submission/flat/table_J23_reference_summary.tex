@@ -1,0 +1,39 @@
+\begin{table}[H]
+\caption{Reference quantitative anchors for Experiments~J2 and~J3. Panel~A reports true-support separator RMSE in \AA{} on QTAIM-supported pairs. Panel~B reports support recovery from the reference 5.0~\AA{} candidate graph, which covers all QTAIM-supported edges. Ordinary Voronoi is the midpoint-target baseline.}
+\label{tab:j23_reference_summary}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4.5pt}
+\renewcommand{\arraystretch}{1.10}
+
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.19\textwidth}rrrr}
+\toprule
+\multicolumn{5}{l}{\textbf{Panel A: J2 true-support separator RMSE (\AA{})}} \\\\
+\midrule
+Subset & Midpoint & Proatomic & One-shot powerfit & Ceiling \\\\
+\midrule
+All & 0.1332 & 0.0452 & 0.0473 & 0.0169 \\
+Bonded & 0.1317 & 0.0457 & 0.0461 & 0.0062 \\
+Nonbonded & 0.1528 & 0.0372 & 0.0619 & 0.0605 \\
+Heteronuclear & 0.1643 & 0.0549 & 0.0575 & 0.0199 \\
+Low-offset heteronuclear & 0.1602 & 0.0547 & 0.0551 & 0.0060 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.65em}
+
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedleft\arraybackslash}p{0.18\textwidth}>{\raggedleft\arraybackslash}p{0.12\textwidth}>{\raggedleft\arraybackslash}p{0.19\textwidth}>{\raggedleft\arraybackslash}p{0.10\textwidth}}
+\toprule
+\multicolumn{5}{l}{\textbf{Panel B: J3 support recovery at 5.0~\AA{} candidate cutoff}} \\\\
+\midrule
+Subset & \multicolumn{1}{c}{\shortstack[c]{Candidate\\precision / F1}} & \multicolumn{1}{c}{\shortstack[c]{Raw recovered\\F1}} & \multicolumn{1}{c}{\shortstack[c]{Visible\\precision / F1}} & \multicolumn{1}{c}{\shortstack[c]{Visible\\recall}} \\\\
+\midrule
+All & 0.102 / 0.185 & 0.339 & 0.697 / 0.821 & 0.999 \\
+Bonded & 0.999 / 1.000 & 1.000 & 0.999 / 1.000 & 1.000 \\
+Nonbonded & 0.008 / 0.015 & 0.034 & 0.135 / 0.238 & 0.993 \\
+Heteronuclear & 0.114 / 0.205 & 0.376 & 0.803 / 0.891 & 1.000 \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{4.5pt}
+\end{table}

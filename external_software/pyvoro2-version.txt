@@ -1,0 +1,19 @@
+Canonical package repository: https://github.com/DeloneCommons/pyvoro2
+Paper reproducibility repository: https://github.com/DeloneCommons/powerfit
+Zenodo record URL: https://zenodo.org/records/19143984
+Zenodo version DOI: 10.5281/zenodo.19143984
+Zenodo concept DOI note: all-versions DOI is exposed on the Zenodo landing page
+
+Selected artifact for this repository snapshot:
+  package name: pyvoro2
+  package version: 0.6.3
+  artifact file: pyvoro2-0.6.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+  python tag: cp313
+  platform tag: manylinux_2_24_x86_64.manylinux_2_28_x86_64
+  declared python requirement: >=3.10
+  upstream project URL: https://github.com/DeloneCommons/pyvoro2
+  upstream documentation URL: https://delonecommons.github.io/pyvoro2/
+  PyPI project URL: https://pypi.org/project/pyvoro2/0.6.3/
+  license: LGPL-3.0-or-later
+  sha256: 049f08de86f6ff41bf4d9b51b0bba167e6240db7167a9fe6e9b3c7940f584a44
+  snapshot date: 2026-03-21

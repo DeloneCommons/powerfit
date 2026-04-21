@@ -1,0 +1,6 @@
+pyscf>=2.12
+geometric>=1.0
+rdkit>=2024.03
+scipy>=1.11
+pandas>=2.1
+tqdm>=4.66

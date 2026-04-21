@@ -1,0 +1,61 @@
+name: model_mismatch
+seed: 20260321
+dimensions:
+- 2
+- 3
+geometry_families:
+- hard_core_random
+- perturbed_lattice
+n_sites_by_dimension:
+  2:
+  - 32
+  - 64
+  - 128
+  3:
+  - 24
+  - 48
+  - 96
+replicates: 10
+measurement: fraction
+weight_scale: 0.08
+n_types: 3
+local_context_k: 4
+clip_interval:
+- 0.05
+- 0.95
+solver: analytic
+laws:
+  exact_control:
+    enabled: true
+  type_cycle:
+    enabled: true
+    etas:
+    - 0.0
+    - 0.03
+    - 0.06
+    - 0.1
+    - 0.15
+    - 0.2
+    - 0.3
+    - 0.4
+    - 0.5
+  local_context:
+    enabled: true
+    etas:
+    - 0.0
+    - 0.03
+    - 0.06
+    - 0.1
+    - 0.15
+    - 0.2
+    - 0.3
+    - 0.4
+    - 0.5
+metrics:
+- measurement_rmse
+- projection_residual_rmse
+- cycle_rms
+- realized_graph_f1
+- runtime_sec
+output_dir: results/model_mismatch
+status: archived_manuscript_preset

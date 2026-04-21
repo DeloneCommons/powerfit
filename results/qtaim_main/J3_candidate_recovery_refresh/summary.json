@@ -1,0 +1,19 @@
+{
+  "box_margin_angstrom": 5.0,
+  "cutoffs_angstrom": [
+    4.0,
+    4.5,
+    5.0
+  ],
+  "lookup_csv": "data/proatomic/pairlaw/separator_lookup.csv",
+  "manifest_csv": "data/qtaim_main/systems_final.csv",
+  "n_candidate_edges_total_across_cutoffs": 99223,
+  "n_cutoff_runs": 300,
+  "n_manifest_rows": 100,
+  "n_processed_rows": 100,
+  "n_selected_edges_total_across_cutoffs": 58403,
+  "n_skipped_rows": 0,
+  "n_true_edges_total_across_cutoffs": 11925,
+  "offset_threshold_angstrom": 0.02,
+  "reference_cutoff_angstrom": 5.0
+}

@@ -1,0 +1,31 @@
+{
+  "title": "powerfit: reproducibility materials for inverse fitting of power-diagram weights",
+  "creators": [
+    {
+      "name": "Chernyshov, Ivan Yu.",
+      "orcid": "0000-0002-4452-2025",
+      "affiliation": "ITMO University"
+    }
+  ],
+  "description": "Citable DOI: 10.5281/zenodo.19673558. Manuscript source, benchmark definitions, final figure/table generation scripts, and reproducibility materials for a manuscript on inverse fitting of power-diagram weights from pairwise separator data. This is a mixed-license reproducibility snapshot: first-party repository content is released under the MIT license, while bundled third-party artifacts under external_software retain their own upstream licenses and notices, documented in THIRD_PARTY_LICENSES.md. The Zenodo license field is therefore set to Other (Open) for the archive as a whole rather than relicensing third-party artifacts under MIT.",
+  "upload_type": "software",
+  "license": "other-open",
+  "access_right": "open",
+  "keywords": [
+    "power diagram",
+    "Laguerre tessellation",
+    "inverse problem",
+    "graph Laplacian",
+    "reproducibility"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.19143984",
+      "relation": "references",
+      "resource_type": "software",
+      "scheme": "doi"
+    }
+  ],
+  "version": "1.0.0",
+  "language": "eng"
+}
