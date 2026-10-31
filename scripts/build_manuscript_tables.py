@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Build manuscript table fragments for the archived experiment outputs."""
+"""Historical v1.0.0 table exports; the current article keeps its tables inline.
+
+Outputs go to build/legacy/tables and are never consumed by the current build.
+"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -10,8 +13,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTDIR = ROOT / 'manuscript' / 'tables'
-OUTDIR.mkdir(parents=True, exist_ok=True)
+OUTDIR = ROOT / 'build' / 'legacy' / 'tables'
 
 
 def _write_fragment(stem: str, text: str) -> None:
@@ -701,6 +703,7 @@ def table_j4_clearance_ranking() -> None:
     _write_fragment('table_J4_clearance_ranking', '\n'.join(parts))
 
 def main() -> int:
+    OUTDIR.mkdir(parents=True, exist_ok=True)
     table_j1_dataset_audit()
     table_j23_reference_summary()
     table_j4_local_validation()
@@ -712,7 +715,7 @@ def main() -> int:
     table_f()
     table_g()
     table_h()
-    print(f'Wrote manuscript tables to {OUTDIR}')
+    print(f'Wrote historical tables to {OUTDIR}')
     return 0
 
 

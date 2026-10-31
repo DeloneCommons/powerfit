@@ -1,99 +1,130 @@
 # Scripts
 
-Utility scripts for the frozen paper repository.
+These helpers build and verify the current article using the frozen experimental
+evidence. Run the commands below from the repository root.
 
-## Read these scripts in this order
+## Current article workflow
 
-- `check_repo_consistency.py` — fast audit for broken markdown links, leaked
-  machine-specific absolute paths, missing documented runtime requirements,
-  bundled-binary digest mismatches, and flat-bundle dependency collisions.
-- `rerun_paper_results.sh` — rerun Experiments A--H, rerun the committed-data
-  Experiment J analyses, call the canonical manuscript build, and finish with
-  the repository consistency audit.
-- `capture_environment_snapshot.py` — one-time release helper that records the
-  exact Python lock file and system note under `environments/`.
-- `build_manuscript_tables.py` — regenerate the manuscript-side table fragments
-  that are actually used by `manuscript/manuscript.tex`.
-- `build_manuscript_figures.py` — regenerate manuscript-facing figure files from
-  source scripts and archived result files.
-- `_figure_io.py` — deterministic Matplotlib save helper used by the
-  manuscript-facing figure generators and by the current Python plot writers
-  under `experiments/analysis/` and `scripts/qtaim/`.
-- `check_figure_binary_constancy.py` — rerun a representative subset of the
-  figure generators twice in a throwaway directory and compare output hashes.
-  This is intentionally heavier than the fast repo audit and is meant for
-  release-time or post-refactor verification in the locked environment.
-- `make_submission_bundle.py` — create the flat journal-submission source bundle
-  from `manuscript/`, preferring PDF figures when both PDF and PNG copies exist.
-- `build_manuscript_pdfs.sh` — refresh manuscript tables and figures, build the
-  local `manuscript/manuscript.pdf`, rebuild the tracked `submission/flat/`
-  source bundle, optionally build the ignored verification PDF
-  `submission/flat/manuscript.pdf`, clean auxiliary LaTeX byproducts, and fail
-  immediately if `latexmk` or `bibtex` is unavailable on `PATH`.
-- `qtaim/README.md` — optional molecular-data regeneration helpers; not needed
-  for ordinary manuscript review or for rerunning the already archived results.
-
-## Manuscript table source map
-
-Run the targeted table-only refresh with:
-
-```bash
-python scripts/build_manuscript_tables.py
-```
-
-For targeted edits, the same script contains one function per generated table:
-
-| Manuscript file | Generator function | Main archived inputs |
+| Task | Command | Effect |
 |---|---|---|
-| `manuscript/tables/table_A_exact_recovery.tex` | `table_a()` | `results/exact_recovery/` |
-| `manuscript/tables/table_B_noise_response.tex` | `table_b()` | `results/noise_robustness/` |
-| `manuscript/tables/table_D_infeasible_constraints.tex` | `table_d()` | `results/infeasible/` |
-| `manuscript/tables/table_E_active_set.tex` | `table_e()` | `results/active_set/` |
-| `manuscript/tables/table_F_periodic.tex` | `table_f()` | `results/periodic/` |
-| `manuscript/tables/table_G_model_mismatch.tex` | `table_g()` | `results/model_mismatch/` |
-| `manuscript/tables/table_H_supergraph_mismatch.tex` | `table_h()` | `results/supergraph_mismatch/` |
-| `manuscript/tables/table_J1_dataset_audit.tex` | `table_j1_dataset_audit()` | `results/qtaim_main/J1_dataset_audit/` |
-| `manuscript/tables/table_J23_reference_summary.tex` | `table_j23_reference_summary()` | `results/qtaim_main/J2_true_support_ladder/`, `results/qtaim_main/J3_candidate_recovery_refresh/` |
-| `manuscript/tables/table_J4_local_validation.tex` | `table_j4_local_validation()` | `results/qtaim_main/J4_local_diagnostic_validation/` |
-| `manuscript/tables/table_J4_clearance_ranking.tex` | `table_j4_clearance_ranking()` | `results/qtaim_main/J4_mask_transfer_refresh/` |
+| Compile the article | `bash scripts/build_manuscript_pdfs.sh` | Uses the committed TeX and figure PDFs to build `manuscript/manuscript.pdf` and its bibliography. |
+| Regenerate seven figures | `python scripts/build_manuscript_figures.py` | Reads local frozen results and exact schematic constructions; writes the current figure set. |
+| Check repository consistency | `python scripts/check_repo_consistency.py` | Audits current manuscript dependencies, documentation, frozen evidence, and bundled-artifact provenance. |
+| Check current figure reproduction | `python scripts/check_manuscript_figures.py` | Generates temporary outputs, checks repeatability, and compares rendered figures with the committed PDFs. |
+| Run focused tests | `python -m unittest discover -s tests -v` | Checks construction and build-helper behavior without scientific reruns. |
+| Make an arXiv source ZIP | `python scripts/make_arxiv_bundle.py --output build/powerfit-arxiv.zip` | Builds a fresh bibliography and packages the nested TeX/figure source tree. |
 
-The compact synthetic main-text table `table_synthetic_summary.tex` is
-hand-maintained because it is a narrative summary rather than a direct aggregate
-export.
+Compilation, figure generation, and packaging are separate tasks. The canonical
+PDF build does not generate figures or tables and does not run experiments.
+The arXiv helper builds before packaging so that `manuscript.bbl` belongs to
+the current sources. Its ZIP is ignored; no submission or release is performed.
 
-## Manuscript figure source map
+The article has four tables embedded directly in
+`manuscript/sections/06_experiments.tex`,
+`manuscript/sections/07_molecular.tex`, and
+`manuscript/appendices/appendix_e.tex`. Historical table fragments are not
+dependencies of the current TeX source.
 
-Run the targeted figure-only refresh with:
+### Figure generators
 
 ```bash
-python scripts/build_manuscript_figures.py
+python scripts/build_manuscript_figures.py --output-dir build/figures
 ```
 
-Targeted figure rebuilds are:
+Omit `--output-dir` to write to `manuscript/figures/`. The wrapper is the
+standard entry point and uses these generators:
 
-| Manuscript file | Generator / source | Notes |
+| Script | Current outputs | Main inputs |
 |---|---|---|
-| `manuscript/figures/figure_powerfit_workflow_overview.{pdf,png}` | `python scripts/make_workflow_schematic.py --figure-path manuscript/figures/figure_powerfit_workflow_overview.png` | Introductory workflow schematic. |
-| `manuscript/figures/figure_C_missing_data_composite.{pdf,png}` | `python experiments/analysis/plot_missing_data_manuscript.py --figure-path manuscript/figures/figure_C_missing_data_composite.png` | Experiment C missing-data transition. |
-| `manuscript/figures/figure_J4_geometry_cases.{pdf,png}` | `python scripts/make_j4_geometry_cases.py` | Geometry-first showcase drawn from `data/qtaim_showcase/structures/` and `results/qtaim_showcase_voronoi/`. Use `--view-methane`, `--view-benzene`, and `--view-adamantane` to tune the borderless 3D projections. |
-| `manuscript/figures/figure_J4_mask_transfer.{pdf,png}` | `python scripts/make_j4_mask_transfer_figure.py` | One-panel precision--recall transition from `results/qtaim_main/J4_mask_transfer_refresh/`; precision is the horizontal axis and both legends are kept outside the data pane. |
+| `plot_theory_figures.py` | `figure_02_separators`, `figure_03_cycle`, `figure_04_realization`, `figure_05_workflow` | Exact constructions and declared workflow routes. |
+| `plot_editorial_figures.py` | `figure_C_identifiability.pdf`, `figure_E_bcp_projection.pdf` | Frozen Experiment C data and an analytic conceptual density. |
+| `plot_experiment_g.py` | `figure_G_mismatch.pdf` | Frozen Experiment G results. |
 
-For the canonical end-to-end manuscript rebuild, use `bash scripts/build_manuscript_pdfs.sh`; the targeted table and figure refreshers above are for asset-specific edits.
+See [the complete figure source map](../manuscript/figures/README.md) for
+placement, data populations, and scientific qualifications. Figure generation
+requires Python 3.10+, NumPy, Matplotlib, and pandas. The article uses only the
+seven vector PDFs; extra SVG exports are not TeX dependencies.
 
-The manuscript-facing figure generators listed above save both PNG and PDF
-outputs through the deterministic helper in `_figure_io.py`. In the same locked
-Python environment recorded under `environments/`, those paired files are
-expected to be byte-identical across rebuilds. The guarantee is intentionally
-narrow: it covers the generated figure assets, not the final LaTeX-built
-`manuscript/manuscript.pdf` or `submission/flat/manuscript.pdf`. To verify that
-property without touching tracked outputs, run:
+Repeated generation is checked within one environment. PDF bytes can differ
+between font and rendering installations, and the current figure checker also
+compares renderings against the committed figures. The compiled article PDF is
+a separate build product and is outside the figure repeatability check.
+
+### TeX dependencies
+
+Use `latexmk`, pdfLaTeX, BibTeX, and `kpsewhich` with the pinned official
+`elsarticle` 3.5 class and `elsarticle-num` style in `manuscript/`. The bundled
+pair takes precedence over the distribution's versions; provenance and upstream
+source/license material are in
+[manuscript/tex-support/README.md](../manuscript/tex-support/README.md).
+The arXiv helper includes this same pair and the allowlisted `tex-support/`
+files. Python 3.10+ runs standard-library checks, and Poppler
+supplies PDF inspection and rendering tools. The package list and Debian/Ubuntu
+installation command, including `texlive-publishers`, `cm-super`, and
+`poppler-utils`, are in
+[manuscript/README.md](../manuscript/README.md#compile-the-article).
+
+## Historical asset helpers
+
+The following utilities retain the older asset-generation paths for inspecting
+the archived evidence. Their output is isolated under ignored `build/legacy/`
+directories; they do not supply the revised article's tables or figures.
+
+| Script | Historical role | Default output |
+|---|---|---|
+| `build_manuscript_tables.py` | Export the older per-experiment table fragments from archived results. | `build/legacy/tables/` |
+| `build_legacy_figures.py` | Rebuild the previous workflow, missing-data, J4 geometry, and J4 mask-transfer figure set. | `build/legacy/figures/` |
+| `make_workflow_schematic.py` | Draw the previous workflow schematic. | Under `build/legacy/`. |
+| `make_j4_geometry_cases.py` | Draw the archived molecular geometry examples. | Under `build/legacy/`. |
+| `make_j4_mask_transfer_figure.py` | Draw the archived J4 mask-transfer plot. | Under `build/legacy/`. |
+| `check_figure_binary_constancy.py` | Compare repeated output of the historical generator suite. | Temporary output; use `check_manuscript_figures.py` for current article figures. |
+
+The shared `_figure_io.py` helper remains in use by historical and frozen
+scientific plot writers. The experiment/data/result README files preserve their
+original asset references and numbering. Use the
+[current experiment crosswalk](../README.md#frozen-records-and-the-current-manuscript)
+for present manuscript locations and the current article for evaluation
+conventions.
+
+## Full scientific rerun
 
 ```bash
-python scripts/check_figure_binary_constancy.py
+bash scripts/rerun_paper_results.sh
 ```
 
-Use `--suite manuscript` for a faster check limited to the four manuscript
-figure generators.
+Use a disposable checkout with the archived Python environment and `pyvoro2`
+0.6.3 installed. Install the paper requirements with their archived constraints:
 
-Legacy helper scripts and non-current result branches are intentionally not
-part of the main build path in this released paper artifact.
+```bash
+python -m pip install -r environments/requirements-py313.txt -c environments/requirements-lock-py313.txt
+```
+
+The constraints preserve the recorded package pins without rewriting the
+environment files. This script writes experimental outputs: it runs Experiments
+A–H and the committed-data Experiment J analyses, then builds the article from
+the reviewed source and figure PDFs and runs the consistency check with
+`--skip-frozen`. The scientific commands are retained from the archived
+workflow. This is not needed to compile the article, regenerate its figures
+from frozen results, or prepare its source ZIP. A deliberately rerun result tree
+is no longer the untouched frozen evidence; compare it against v1.0.0 in a
+separate checkout.
+
+The current article figures and inline tables remain reviewed assets until
+explicitly updated. The C/G figure generators check frozen input digests, so
+the full rerun does not feed newly computed CSVs into them or claim that new
+outputs retain the archived hashes.
+
+The full rerun does not regenerate the upstream PySCF/Multiwfn molecular
+calculations. Those optional workflows are documented in
+[qtaim/README.md](qtaim/README.md), together with their separate dependencies.
+
+## Environment capture and releases
+
+`capture_environment_snapshot.py` records a Python lock file and a system note
+under `environments/`. Running it rewrites archived environment files, so it is
+not part of ordinary manuscript builds or figure reproduction. Use it only when
+deliberately preparing a new computational snapshot; do not relabel a local
+rendering environment as the environment that produced the frozen evidence.
+
+See [docs/releasing.md](../docs/releasing.md) for metadata, source/PDF inclusion,
+review, DOI verification, and publication gates.

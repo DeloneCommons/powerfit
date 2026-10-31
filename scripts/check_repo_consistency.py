@@ -7,18 +7,22 @@ is moved between machines:
 
 - broken relative markdown links;
 - leaked machine-specific absolute paths in text artifacts;
-- submission-bundle dependency resolution and flat-name collisions;
+- canonical manuscript source dependencies;
 - missing documented Python runtime requirements;
-- mismatched digests for pinned third-party binary artifacts.
+- mismatched digests for pinned third-party binary artifacts;
+- missing, changed, or added files in the frozen scientific artifact.
 
 The script is safe to run locally or in CI. It exits with status 0 only when
 all checks pass.
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
-import importlib.util
+import json
+import os
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -71,7 +75,21 @@ TEXT_SCAN_SUFFIXES = {
     ".cfg",
     ".bib",
 }
-SKIP_DIR_NAMES = {".git", ".venv", "__pycache__"}
+SKIP_DIR_NAMES = {
+    ".git", ".venv", "venv", "env", "ENV", "__pycache__", "node_modules",
+    ".pytest_cache", ".ruff_cache", ".mypy_cache", ".ipynb_checkpoints",
+}
+SKIP_ROOT_DIR_NAMES = {"build", ".smoke", ".tmp_figure_binary_constancy"}
+FROZEN_MANIFEST_PATH = Path("scripts/frozen_artifacts.sha256.json")
+FROZEN_DIRECTORIES = (
+    "experiments", "results", "data", "environments", "external_software",
+    "scripts/qtaim",
+)
+FROZEN_FILES = ("scripts/_figure_io.py",)
+FROZEN_CACHE_DIR_NAMES = {
+    "__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache",
+    ".ipynb_checkpoints",
+}
 ABSOLUTE_PATH_ALLOWLIST = {
     Path("external_software/settings.ini"),
     Path("scripts/check_repo_consistency.py"),
@@ -134,17 +152,24 @@ def _repo_rel(path: Path) -> str:
 
 
 def _iter_candidate_files() -> Iterable[Path]:
-    for path in REPO_ROOT.rglob("*"):
-        if not path.is_file():
-            continue
-        parts = path.relative_to(REPO_ROOT).parts
-        if any(part in SKIP_DIR_NAMES for part in parts):
-            continue
-        if path.suffix.lower() in BINARY_SUFFIXES:
-            continue
-        if path.suffix and path.suffix.lower() not in TEXT_SCAN_SUFFIXES:
-            continue
-        yield path
+    # Prune before descending: archives, smoke reports, and installed packages
+    # are generated outputs, not repository sources to audit.
+    for directory, children, names in os.walk(REPO_ROOT, followlinks=False):
+        parent = Path(directory)
+        excluded = SKIP_DIR_NAMES | (SKIP_ROOT_DIR_NAMES if parent == REPO_ROOT else set())
+        children[:] = sorted(
+            name for name in children
+            if name not in excluded and not (parent / name).is_symlink()
+        )
+        for name in sorted(names):
+            path = parent / name
+            if path.is_symlink() or not path.is_file():
+                continue
+            if path.suffix.lower() in BINARY_SUFFIXES:
+                continue
+            if path.suffix and path.suffix.lower() not in TEXT_SCAN_SUFFIXES:
+                continue
+            yield path
 
 
 def _read_text(path: Path) -> str:
@@ -153,8 +178,8 @@ def _read_text(path: Path) -> str:
 
 def _check_markdown_links() -> list[Problem]:
     problems: list[Problem] = []
-    for md_path in REPO_ROOT.rglob(f"*{MARKDOWN_SUFFIX}"):
-        if not md_path.is_file():
+    for md_path in _iter_candidate_files():
+        if md_path.suffix.lower() != MARKDOWN_SUFFIX:
             continue
         text = _read_text(md_path)
         for raw_target in MARKDOWN_LINK_RE.findall(text):
@@ -186,41 +211,22 @@ def _check_absolute_paths() -> list[Problem]:
     return problems
 
 
-def _load_submission_module():
-    module_path = REPO_ROOT / "scripts" / "make_submission_bundle.py"
-    spec = importlib.util.spec_from_file_location("make_submission_bundle", module_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Could not load submission helper from {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _check_submission_dependencies() -> list[Problem]:
-    problems: list[Problem] = []
+def _check_manuscript_dependencies() -> list[Problem]:
+    relative = Path("scripts/check_manuscript.py")
+    script = REPO_ROOT / relative
+    if not script.is_file():
+        return [Problem(relative.as_posix(), "missing manuscript source checker")]
     try:
-        module = _load_submission_module()
-        deps = list(module.collect_dependencies())
-    except Exception as exc:  # pragma: no cover - surfaced in CLI output
-        return [Problem("scripts/make_submission_bundle.py", f"dependency collection failed: {exc}")]
-
-    seen_names: dict[str, Path] = {}
-    for dep in deps:
-        if not dep.exists():
-            problems.append(Problem(_repo_rel(dep), "declared submission dependency does not exist"))
-            continue
-        name = dep.name
-        other = seen_names.get(name)
-        if other is not None and other.resolve() != dep.resolve():
-            problems.append(
-                Problem(
-                    _repo_rel(dep),
-                    f"flat-bundle name collision with {_repo_rel(other)} -> {name}",
-                )
-            )
-        else:
-            seen_names[name] = dep
-    return problems
+        result = subprocess.run(
+            [sys.executable, str(script)], cwd=REPO_ROOT,
+            text=True, capture_output=True, check=False,
+        )
+    except OSError as exc:
+        return [Problem(relative.as_posix(), f"cannot run manuscript source checker: {exc}")]
+    if result.returncode:
+        detail = "\n".join(part.strip() for part in (result.stdout, result.stderr) if part.strip())
+        return [Problem(relative.as_posix(), detail or f"source checker exited with status {result.returncode}")]
+    return []
 
 
 
@@ -240,6 +246,94 @@ def _sha256_digest(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             hasher.update(chunk)
     return hasher.hexdigest()
+
+
+def _check_frozen_artifacts() -> list[Problem]:
+    """Verify the recorded Git baseline without requiring Git at runtime.
+
+    The manifest is an archival record, not a cache to refresh after changes.
+    Only Python/tool caches are ignored inside protected directories; new
+    scientific files must not silently become part of the frozen snapshot.
+    """
+    manifest_name = FROZEN_MANIFEST_PATH.as_posix()
+    try:
+        payload = json.loads((REPO_ROOT / FROZEN_MANIFEST_PATH).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [Problem(manifest_name, f"cannot read frozen artifact manifest: {exc}")]
+    if not isinstance(payload, dict) or payload.get("schema_version") != 1:
+        return [Problem(manifest_name, "invalid frozen artifact manifest schema")]
+    if (
+        payload.get("protected_directories") != list(FROZEN_DIRECTORIES)
+        or payload.get("protected_files") != list(FROZEN_FILES)
+        or not re.fullmatch(r"[0-9a-f]{40}", str(payload.get("baseline_commit", "")))
+    ):
+        return [Problem(manifest_name, "invalid protected paths or baseline commit in frozen artifact manifest")]
+    entries = payload.get("files")
+    if not isinstance(entries, dict) or not entries:
+        return [Problem(manifest_name, "invalid or empty files map in frozen artifact manifest")]
+
+    problems: list[Problem] = []
+    for relative, digest in entries.items():
+        path = Path(relative)
+        protected = relative in FROZEN_FILES or any(
+            relative.startswith(directory + "/") for directory in FROZEN_DIRECTORIES
+        )
+        if (
+            path.is_absolute() or ".." in path.parts or "\\" in relative
+            or path.as_posix() != relative or not protected
+        ):
+            problems.append(Problem(manifest_name, f"invalid frozen artifact path: {relative!r}"))
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            problems.append(Problem(manifest_name, f"invalid SHA256 digest for {relative!r}"))
+    for directory in FROZEN_DIRECTORIES:
+        if not any(relative.startswith(directory + "/") for relative in entries):
+            problems.append(Problem(manifest_name, f"invalid manifest: no entries for {directory}"))
+    for relative in FROZEN_FILES:
+        if relative not in entries:
+            problems.append(Problem(manifest_name, f"invalid manifest: missing entry for {relative}"))
+    if problems:
+        return problems
+
+    for relative, expected in sorted(entries.items()):
+        path = REPO_ROOT / relative
+        if any((REPO_ROOT / part).is_symlink() for part in [Path(relative), *Path(relative).parents] if part != Path(".")):
+            problems.append(Problem(relative, "symlink cannot replace a frozen artifact"))
+        elif not path.is_file():
+            problems.append(Problem(relative, "missing frozen artifact"))
+        else:
+            try:
+                actual = _sha256_digest(path)
+            except OSError as exc:
+                problems.append(Problem(relative, f"cannot read frozen artifact: {exc}"))
+                continue
+            if actual != expected:
+                problems.append(Problem(relative, f"frozen artifact digest mismatch: expected {expected}, got {actual}"))
+
+    for protected in FROZEN_DIRECTORIES:
+        start = REPO_ROOT / protected
+        if start.is_symlink():
+            problems.append(Problem(protected, "symlink cannot replace a frozen directory"))
+            continue
+        for directory, children, names in os.walk(start, followlinks=False):
+            parent = Path(directory)
+            retained = []
+            for name in sorted(children):
+                if name in FROZEN_CACHE_DIR_NAMES:
+                    continue
+                path = parent / name
+                if path.is_symlink():
+                    problems.append(Problem(_repo_rel(path), "unexpected symlink in frozen directory"))
+                else:
+                    retained.append(name)
+            children[:] = retained
+            for name in sorted(names):
+                path = parent / name
+                if path.suffix in {".pyc", ".pyo"}:
+                    continue
+                relative = _repo_rel(path)
+                if relative not in entries:
+                    problems.append(Problem(relative, "unexpected file in frozen directory (absent from baseline manifest)"))
+    return problems
 
 
 def _check_bundled_binary_hashes() -> list[Problem]:
@@ -352,41 +446,40 @@ def _print_group(title: str, problems: list[Problem]) -> None:
         print(f"  - {problem.path}: {problem.detail}")
 
 
-def main() -> int:
-    markdown_problems = _check_markdown_links()
-    absolute_path_problems = _check_absolute_paths()
-    submission_problems = _check_submission_dependencies()
-    requirements_problems = _check_requirements()
-    bundled_binary_problems = _check_bundled_binary_hashes()
-
-    total = (
-        len(markdown_problems)
-        + len(absolute_path_problems)
-        + len(submission_problems)
-        + len(requirements_problems)
-        + len(bundled_binary_problems)
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--skip-frozen", action="store_true",
+        help="Skip archived scientific-file digests after an explicitly requested full rerun; keep all other checks.",
     )
-    if total:
+    args = parser.parse_args(argv)
+    groups = [
+        ("markdown-links", _check_markdown_links()),
+        ("absolute-paths", _check_absolute_paths()),
+        ("manuscript", _check_manuscript_dependencies()),
+        ("requirements", _check_requirements()),
+        ("bundled-binaries", _check_bundled_binary_hashes()),
+    ]
+    if args.skip_frozen:
+        print("[frozen-artifacts] skipped by explicit --skip-frozen; the baseline manifest is unchanged.")
+    else:
+        groups.append(("frozen-artifacts", _check_frozen_artifacts()))
+    if any(problems for _, problems in groups):
         print("Repository consistency check failed.")
-        if markdown_problems:
-            _print_group("markdown-links", markdown_problems)
-        if absolute_path_problems:
-            _print_group("absolute-paths", absolute_path_problems)
-        if submission_problems:
-            _print_group("submission-bundle", submission_problems)
-        if requirements_problems:
-            _print_group("requirements", requirements_problems)
-        if bundled_binary_problems:
-            _print_group("bundled-binaries", bundled_binary_problems)
+        for title, problems in groups:
+            if problems:
+                _print_group(title, problems)
         return 1
 
     n_scanned = sum(1 for _ in _iter_candidate_files())
     print(
         "Repository consistency check passed: "
         f"{n_scanned} text-like files scanned, markdown links resolved, "
-        "requirements documented, bundled binary digests verified, and "
-        "submission dependencies flattened cleanly."
+        "requirements documented, bundled binary digests verified, "
+        "and canonical manuscript sources validated."
     )
+    if not args.skip_frozen:
+        print("[frozen-artifacts] all archived file digests match; no scientific files added or removed.")
     return 0
 
 

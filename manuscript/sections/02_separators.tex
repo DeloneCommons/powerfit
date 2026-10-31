@@ -1,0 +1,55 @@
+\section{Pairwise separator observations}
+
+Let $p_1,\ldots,p_n\in\mathbb R^d$ be distinct fixed sites. Their real scalar weights $w_1,\ldots,w_n$ have squared-length units. A power diagram assigns each point $x$ to a site minimizing its \emph{power distance} \cite{Aurenhammer1987}
+\begin{equation}
+\pi_i(x)=\|x-p_i\|^2-w_i.
+\end{equation}
+For any pair $i\ne j$, the equality $\pi_i(x)=\pi_j(x)$ defines a hyperplane $H_{ij}$ perpendicular to the line joining the two sites. If these are the only sites, $H_{ij}$ is their separating boundary.
+
+\begin{samepage}
+Set $\delta_{ij}=p_j-p_i$ and $d_{ij}=\|\delta_{ij}\|>0$. We call the full affine line through the two sites their \emph{connector line} and describe its intersection with $H_{ij}$ by $x=p_i+t_{ij}(w)\delta_{ij}$. Equating the two power distances gives
+\begin{equation*}
+ t_{ij}(w)^2d_{ij}^2-w_i=[1-t_{ij}(w)]^2d_{ij}^2-w_j,
+\end{equation*}
+and hence
+\begin{equation}
+\boxed{t_{ij}(w)=\frac12+\frac{w_i-w_j}{2d_{ij}^2}.}
+\label{eq:pair-coordinate}
+\end{equation}
+\end{samepage}
+Equal weights place the bisector at the midpoint; increasing $w_i$ moves it toward $p_j$. The coordinate is not restricted to $[0,1]$.
+
+An observed coordinate $t_{ij}^{\mathrm{obs}}$ therefore specifies a target difference
+\begin{equation}
+ z_{ij}=(2t_{ij}^{\mathrm{obs}}-1)d_{ij}^2.
+ \label{eq:target-difference}
+\end{equation}
+It determines $w_i-w_j$, not the individual weights. Figure~\ref{fig:two-site-separators} illustrates this relation with two fixed sites.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=\linewidth]{figures/figure_02_separators.pdf}
+\caption{Two-site geometry for $p_i=(0,0)$ and $p_j=(2,0)$. The regions labeled $C_i$ and $C_j$ are the power cells, where the corresponding site minimizes the power distance. Blue lines are equal-power separators and, with only these two sites, are genuine shared boundaries. (a) Equal weights give the midpoint separator $x_1=1$. (b) Increasing $w_j$ from $0$ to $2$ moves the separator toward $p_i$ (arrow), to $x_1=1/2$. The observed coordinate $t_{ij}^{\mathrm{obs}}=1/4$ therefore specifies $z_{ij}=w_i-w_j=-2$. The diamond marks the connector intersection; both panels have the same scale.}
+\label{fig:two-site-separators}
+\end{figure}
+
+The data may specify a normalized coordinate $t_{ij}^{\mathrm{obs}}$, a signed distance $\ell_{ij}^{\mathrm{obs}}=d_{ij}t_{ij}^{\mathrm{obs}}$ measured from $p_i$ toward $p_j$, or a point $x_{ij}^{\mathrm{obs}}\in\mathbb R^d$ on or near the intended bisector. In the last case, projection onto the connector gives
+\begin{equation}
+ t_{ij}^{\mathrm{obs}}=\frac{(x_{ij}^{\mathrm{obs}}-p_i)\cdot\delta_{ij}}{d_{ij}^2}.
+\end{equation}
+Only the longitudinal component of the point enters the inferred weight difference; its perpendicular displacement has no effect on Eq.~\eqref{eq:target-difference}.
+
+Several measurements or predictions may refer to the same pair of sites and yield different target differences. We therefore index \emph{observations}, rather than just pairs, by $r$. Let $(i_r,j_r)$ denote the ordered site pair, $y_r$ the measured normalized coordinate or signed distance, and $\varepsilon_r$ its error in the original measurement units. Both conventions have the affine form
+\begin{align}
+ y_r&=\beta_r+\alpha_r(w_{i_r}-w_{j_r})+\varepsilon_r,\label{eq:observation-model}\\
+ (\beta_r,\alpha_r)&=
+ \begin{cases}
+ (\frac12,\frac{1}{2d_r^2}), &\text{normalized coordinate},\\[4pt]
+ (\frac{d_r}{2},\frac{1}{2d_r}), &\text{signed distance},
+ \end{cases}
+\end{align}
+where $d_r=\|p_{j_r}-p_{i_r}\|>0$ in the nonperiodic case. Each observation provides an approximate target difference $z_r=(y_r-\beta_r)/\alpha_r$; weighting and reconciling these targets is addressed in Section~3.
+
+For periodic systems, let $1\le\nu\le d$ and let the columns of $\Lambda\in\mathbb R^{d\times\nu}$ form a linearly independent basis of a fixed translation lattice. Each observation specifies a shift $s_r\in\mathbb Z^\nu$ selecting the image $p_{j_r}^{(s_r)}=p_{j_r}+\Lambda s_r$ relative to $p_{i_r}$; this image replaces $p_{j_r}$ in the connector and in $d_r$. We require $i_r\ne j_r$ and $d_r>0$, excluding same-base observations and coincident selected endpoints. The image retains its base-site weight $w_{j_r}$. Different shifts label distinct geometric observations, even though their weight variables may coincide. Coincident unselected images are discussed in~\ref{app:geometry-periodic}.
+
+A pairwise equal-power hyperplane need not contain an actual shared face of the full diagram: another site may dominate it. We address geometric realization in Section~4. First, we ask whether one vector of site weights can satisfy all the observed differences and how to fit them when they are incompatible.

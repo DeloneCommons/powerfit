@@ -388,7 +388,7 @@ def main() -> int:
     parser.add_argument(
         '--figure-path',
         type=Path,
-        default=Path('manuscript/figures/figure_powerfit_workflow_overview.png'),
+        default=Path(__file__).resolve().parents[1] / 'build/legacy/figures/figure_powerfit_workflow_overview.png',
         help='PNG output path; a PDF with the same stem is written alongside it.',
     )
     args = parser.parse_args()

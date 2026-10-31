@@ -1,0 +1,296 @@
+\section{Algorithmic and experimental details}
+\label{app:algorithm-details}
+
+We first analyze the streak-based update of Section~\ref{subsec:workflow-active-mask}. Its \emph{hysteresis} requires consecutive consistent diagnostics before changing a row's membership. We then specify the implementation conventions and document the synthetic protocols and evaluation populations used in Section~\ref{sec:numerical-experiments}.
+
+\subsection{Conditional rowwise hysteresis stabilization}
+\label{app:algorithm-hysteresis}
+
+Let $a^{(k)}\in\{0,1\}^m$ be the active observation mask \emph{before} evaluation $k$, and let $v^{(k)}\in\{0,1\}^m$ be its requested-image realized-face diagnostic. Each row has nonnegative integer add/drop streak counters, with fixed thresholds $A_{\mathrm{add}},A_{\mathrm{drop}}\in\mathbb Z_{\ge1}$. An incoming one increases its add counter and resets its drop counter; an incoming zero does the reverse. The update to $a^{(k+1)}$ activates an inactive row once its add counter reaches $A_{\mathrm{add}}$, and deactivates an active row once its drop counter reaches $A_{\mathrm{drop}}$.
+
+\begin{proposition}[Conditional hysteresis]
+\label{prop:rowwise-hysteresis}
+Set $h=\max\{A_{\mathrm{add}},A_{\mathrm{drop}}\}$. Suppose that $h$ consecutive rowwise updates are actually executed and their incoming diagnostic masks satisfy
+\[
+v^{(k)}=v^\star
+\qquad(k=k_0,\ldots,k_0+h-1)
+\]
+for one fixed $v^\star\in\{0,1\}^m$. Then $a^{(k_0+h)}=v^\star$, regardless of the preceding active mask and streak counters. If subsequent evaluated masks also equal $v^\star$, active-mask agreement persists for those subsequent updates.
+\end{proposition}
+
+\begin{proof}
+Fix a row $r$. If $v_r^\star=1$, each update in the specified window increments the add streak and resets the drop streak. After at most $A_{\mathrm{add}}\le h$ updates the row is active, and it cannot be dropped while that incoming value remains one. If $v_r^\star=0$, the analogous argument with the drop streak makes the row inactive after at most $A_{\mathrm{drop}}\le h$ updates, and it cannot be added while the incoming value remains zero. This holds independently for each row and therefore for the whole mask.
+\end{proof}
+
+This is a property of the Boolean update \emph{conditional on executed mask updates with a stationary incoming mask}. It neither proves that the fit and tessellation generate such a stationary mask nor guarantees that the loop survives its other stopping tests for $h$ updates. In particular, it supplies no convergence theorem for the outer solver. Stability of a connector-visibility sign under a fixed-site weight perturbation, proved in Section~4.4, does not establish stability of the requested-image realized-face predicate used here.
+
+\subsection{Implementation scope and final-state conventions}
+\label{app:algorithm-implementation}
+
+The conventions below describe \texttt{pyvoro2} 0.6.3, source snapshot
+\texttt{eaffdcb} \cite{Pyvoro2_063}.
+
+\paragraph{Inputs and image diagnostics}
+The realization procedure operates on resolved observations in two or three spatial dimensions. A fitting call selects one measurement convention, and any hard restriction applies the same interval or fixed value in those units to every supplied row. Subsetting removes the restrictions on omitted rows. Supplied periodic shifts are preserved; missing shifts are resolved before fitting by the selected input policy, not by the mask update.
+
+Requested-row matching distinguishes exact image identity from realization at another shift. The separate unaccounted-pair diagnostic instead checks whether an unordered base-site pair is absent from the candidate list. It excludes same-base image pairs and does not count additional shifts of an already represented base pair as unaccounted; it records the realized shifts of wholly absent base pairs. For each candidate row, the optional boundary measure refers to the requested image when that image is realized. Otherwise, if another image of the base pair is realized, the measure refers to the lexicographically first realized shift in the row's orientation; with no realized image, the measure is unavailable.
+
+\paragraph{Weight regularization}
+The declared and reported weight penalty in version~0.6.3 is
+\[
+\mathcal R(w)=\gamma\sum_i(w_i-w_i^{\mathrm{ref}})^2,
+\qquad \gamma\ge0,
+\]
+where $w^{\mathrm{ref}}$ is the supplied reference vector, or zero when none
+is supplied. Its strength is independent of the observation confidences.
+For squared mismatch, the implementation uses
+$\sum_r\lambda_r(y_r-\widehat y_r)^2$, where $\widehat y_r$ is the affine
+prediction from Eq.~\eqref{eq:observation-model}, without the factor $1/2$
+used in Eq.~\eqref{eq:measured-least-squares}.
+The analytic quadratic solver is consistent with this reported
+mismatch-plus-regularization objective.
+The frozen weight update in the alternating direction method of
+multipliers (ADMM) \cite{Boyd2011}, however, uses the effective penalty
+$(\gamma/2)\sum_i(w_i-w_i^{\mathrm{ref}})^2$, while the objective
+reporter retains the coefficient $\gamma$. At positive regularization
+strength, ADMM convergence therefore does not certify minimization of
+the reported objective. The benchmark fits in
+Sections~\ref{sec:numerical-experiments} and
+\ref{sec:molecular-application} use zero weight-regularization strength.
+
+\paragraph{Component representatives}
+For mismatch-only fitting, the effective graph contains the positive-confidence rows. If hard restrictions or any additional penalties are configured, all supplied rows are included. With nonempty observations and zero weight-regularization strength, the standalone component solves pin one site per nontrivial component. A connected effective graph retains that pinned representative. For a disconnected effective graph, each component is subsequently shifted to zero mean, or to the mean of a supplied reference vector on that component even when its regularization strength is zero. Thus the raw connected output need not equal the component-centered representative of~\ref{app:stability-estimator}. With no observations, the standalone solver returns the reference vector if supplied, and otherwise zeros; the same convention applies to singleton effective components when all observation confidences are zero and no restrictions or additional penalties are configured.
+
+Positive weight regularization removes the need for the internal anchors, and the standalone solver does not subsequently center its result. The outer procedure nevertheless aligns every current effective component to the preceding evaluated weights whenever such a vector exists, including during final refitting. For an unregularized objective this changes only its component representatives. With positive regularization, it can change the regularization term after the inner solve; the stored inner fitting status is retained after alignment. For example, an empty active set has a regularization-only solution equal to the reference, but alignment of its singleton components restores the previous evaluated weights. Component offsets must therefore be interpreted as a continuation convention, not as new information recovered from absent pair data.
+
+\paragraph{Stopping and finalization}
+The self-consistency test requires equality of the current, proposed, and requested-image realization masks, together with an evaluated-weight step at most the tolerance. The first step is defined as zero. An inner iterative fit that reaches its iteration limit can still supply weights to this test, so outer self-consistency does not certify inner convergence. After the self-consistency test, a changed proposed mask is checked against previous recorded mask entries. The initial mask is recorded at iteration zero, and timestamps are updated only on mask changes. The cycle window measures outer iterations since a recorded entry; unchanged persistence does not refresh it. No full-state periodic orbit is certified, and an outer-iteration limit has no implied self-consistency.
+
+An inner failure that returns no weights exits the loop immediately, with all-false realization flags and unavailable predictions rather than diagnostics from a constructed tessellation. After a normal loop stop, the updated active mask is used for a final unrelaxed fitting attempt. Returned weights are aligned and rematched, so the final diagram can differ from the last relaxed intermediate diagram. Final numerical failure replaces the outer label by \texttt{numerical\_failure} and clears the outer convergence flag. Final hard infeasibility is recorded as \texttt{infeasible\_hard\_constraints} in the nested fit and need not replace the preceding outer label. If the final fit returns no weights, the realization diagnostics are retained from the preceding evaluation and all-candidate predictions are unavailable (stored as NaN). The nested fit status and weight availability must therefore be checked before treating those diagnostics as a newly fitted diagram.
+
+\paragraph{Residual populations}
+For available final weights, the returned residual fields have distinct populations:
+\begin{center}
+\begin{tabular}{@{}p{0.62\linewidth}p{0.31\linewidth}@{}}
+\toprule
+Residual fields & Population \\
+\midrule
+\raggedright\texttt{fit.residuals}, \texttt{fit.rms\_residual}, \texttt{fit.max\_residual} & \raggedright Final active rows \tabularnewline
+\raggedright\texttt{diagnostics.residuals}, \texttt{rms\_residual\_all}, \texttt{max\_residual\_all} & \raggedright All original candidate rows \tabularnewline
+\bottomrule
+\end{tabular}
+\end{center}
+Both RMS summaries are the square root of the unweighted arithmetic mean of squared residuals in the selected measurement units, irrespective of the confidence weights used in fitting. An empty population is assigned zero. The iteration history and path summary describe the evaluated outer-loop path; the final refit and rematching do not add another outer-iteration record.
+
+\subsection{Synthetic experimental protocols and evaluation populations}
+\label{app:numerical-protocols}
+
+The frozen \texttt{powerfit} 1.0.0 archive, source snapshot \texttt{80933a1},
+contains the experiment code and numerical outputs \cite{PowerfitArchive2026}.
+Its \path{experiments/registry/README.md} and \path{results/README.md} map
+the labels A--H to their scripts and result directories. The Experiment C
+results reported here use the dense sweep in
+\path{results/missing_data_manuscript/}.
+
+\subsubsection{Exact recovery, missing observations, and hard feasibility}
+\label{app:synthetic-controls}
+
+Experiment A contains eight configurations with two runs each: two or three
+dimensions, periodic or nonperiodic domains, and either the full realized-pair
+graph or an observation subgraph with two components. The site counts are 16
+in two dimensions and 24 in three. Requested-image face recall is the fraction
+of supplied observations whose specified pair and image share a face after
+fitting. In the nonperiodic three-dimensional two-component configuration,
+its mean over the two runs is $0.994$. This population comprises the supplied
+observations, rather than every adjacency of the generating diagram.
+
+Experiment C contains 2,470 noiseless runs, with ten independently generated
+instances at each dimension, site count and requested retention level. The
+requested fractions range from $0.10$ to $1.00$ in steps of $0.05$. A connected
+generating pair graph is sampled for each instance; the number of retained
+observations is the requested fraction times the original count, rounded to
+an integer and bounded between one and the original count. Different
+retention levels therefore use independent instances, rather than nested
+removals from one common diagram. Requested and actual retained fractions
+can differ slightly because of rounding.
+
+Both weight errors average over all sites. Global alignment subtracts the
+mean fitted-to-generating weight difference once, while componentwise
+alignment subtracts that mean separately within each observed component.
+The latter uses the \emph{known generating weights}; it is an oracle
+evaluation convention, not an estimator of unidentified intercomponent
+offsets. Figure~\ref{fig:missing-observations} uses $n=128$ in both dimensions.
+At each requested fraction, the median \emph{per-run weight RMSE} is taken
+before applying the display floor $10^{-16}$, so its logarithmic ordinate
+corresponds to
+$\log_{10}(\max\{\operatorname{median}(\mathrm{RMSE}),10^{-16}\})$,
+not the median of log errors. The connected fraction is empirical across
+the ten runs and does not specify a universal connectivity threshold.
+
+Experiment D applies a separate experiment-side difference-bound feasibility
+checker to 30 generated three-observation cycles. Its individual observations
+admit separate bounds, unlike the common measurement restriction in the
+fitting interface described in Section~\ref{subsec:workflow-fixed-fit}.
+In the between-points contradiction, one observation is restricted to
+$[0,1]$ while the other two retain exact equality targets; the interval
+$[0,1]$ alone is not asserted to make a complete cycle infeasible. The
+experiment-side Bellman--Ford implementation correctly classifies these
+controlled instances. It does not exercise the production hard-bound precheck
+or establish its behavior on arbitrary numerical inputs.
+
+\subsubsection{Observation noise and outliers}
+\label{app:synthetic-noise}
+
+Experiment B contains 144 runs on nonperiodic generating diagrams, with
+16 sites in two dimensions and 24 in three. There are six replicates for
+each method, dimension and noise condition. Gaussian and Laplace errors have
+standard deviations $0.005$ or $0.02$ in normalized separator coordinates;
+the Laplace scale is the specified standard deviation divided by $\sqrt2$.
+The sparse-outlier conditions instead use a Gaussian background of standard
+deviation $0.005$ and add independently signed offsets of magnitude $0.05$
+to nominal fractions $f=0.05$ or $0.10$ of the observations. For $m$
+observations, $\operatorname{round}(fm)$ distinct rows are sampled without
+replacement, so the realized contamination fraction need not equal $f$.
+
+The quadratic fit uses the analytic solver. The Huber fit uses threshold
+$0.03$ in those same fraction units and ADMM \cite{Boyd2011},
+with the archived limit of
+5,000 iterations and ADMM penalty parameter $\rho=1$. Clean-reference separator RMSE is
+evaluated on the original generating pair observations against their
+uncorrupted targets. In the two-dimensional nominal $10\%$ outlier condition,
+the mean of the six per-run RMSE values is $0.00959$ for quadratic fitting
+and $0.00904$ for Huber fitting. Together with the $5\%$ comparison in
+Section~\ref{subsec:numerical-accuracy}, these are results for the specified
+outlier conditions; the Gaussian and Laplace comparisons do not establish
+uniform Huber superiority.
+
+\subsubsection{Periodic image choices}
+\label{app:synthetic-images}
+
+Experiment F contains 132 archived result records based on six generating
+instances per dimension, with 16 sites in two dimensions and 24 in three.
+The scenarios include correct supplied images, a correct-image control with
+Gaussian fraction noise of standard deviation $0.01$, deliberately incorrect
+supplied images, nearest-image inference after removing the labels, and a
+separate realized-shift refinement of the inferred images. Nominal image
+corruption fractions are $0.10$, $0.25$ and $0.50$.
+
+In the supplied-label scenario, the selected shifts are authoritative:
+weight fitting preserves them. At nominal $25\%$ corruption in three
+dimensions, the mean fraction of labels agreeing with the generating shifts
+is $0.750$, whereas the mean fraction of rows with a positive
+\texttt{realized\_other\_shift} diagnostic is approximately $0.249$.
+The first compares input choices with known truth; the second detects another
+image in the fitted geometry. Each is calculated on the supplied rows within
+a run and then averaged over the six instances.
+
+For the separate inference scenarios, removing the image labels produces
+identical inputs across the three nominal corruption fractions for a given
+generating instance. Those repeated records are not independent
+corruption-sweep results. The realized-shift procedure starts from nearest
+images and permits up to three rounds of reassignment using uniquely realized
+shifts. In the three-dimensional cases its mean correct-image fraction is
+$0.924$, despite a requested-image realization rate of one and an
+other-image diagnostic rate of zero. It revises inferred shifts on the
+stripped-label input; it neither repairs the authoritative labels in the
+other scenario nor tests the face-driven active-observation update of
+Section~\ref{subsec:workflow-active-mask}.
+
+\subsubsection{Structured mismatch and optional refinement}
+\label{app:synthetic-mismatch}
+
+\paragraph{Perturbation laws and graph comparison}
+Experiments G and H add $\eta\psi_{ij}$ to exact normalized separator
+coordinates $t_{ij}^{0}$. For the type-cycle law, assign three site types
+$\tau_i$ and use a preference matrix with
+$P_{12}=P_{23}=P_{31}=1$, $P_{21}=P_{32}=P_{13}=-1$ and zero diagonal:
+\[
+\psi_{ij}=P_{\tau_i\tau_j}
+\exp\!\left[-\frac12\left(\frac{d_{ij}/d_{\rm med}-1}{0.55}\right)^2\right],
+\]
+where $d_{\rm med}$ is the median distance among the supplied pairs.
+G also uses a local-context law
+\[
+\psi_{ij}=\frac{\tanh\!\left(0.75(c_i-c_j)\right)}
+                  {1+(d_{ij}/d_{\rm med})^2},
+\]
+where $c_i$ is the negative mean distance to the four nearest sites,
+standardized over sites to zero mean and unit variance. The generator sets
+all $c_i$ to zero if the unstandardized standard deviation is at most
+$10^{-12}$. In both laws, the perturbed target is clipped to
+$[\min\{t_{ij}^{0},0.05\},\max\{t_{ij}^{0},0.95\}]$; thus exact targets
+outside the nominal clipping interval are preserved when $\eta=0$.
+
+G keeps the generating diagram's true pair graph as its observation set.
+Its 2,280 runs combine random geometries with a minimum site separation and
+perturbed lattices, two dimensions with $n\in\{32,64,128\}$, three dimensions
+with $n\in\{24,48,96\}$, and ten replicates per configuration. Besides the
+exact control, each perturbation law uses amplitudes $0$, $0.03$, $0.06$,
+$0.1$, $0.15$, $0.2$, $0.3$, $0.4$ and $0.5$.
+Separator error compares the fit or midpoint prediction with the imposed
+targets used in fitting. Graph precision, recall and F1 instead compare all
+unordered realized adjacency pairs with the generating pair graph.
+
+At $\eta=0.2$, the two geometries, two dimensions, three sizes per dimension
+and two laws give 24 groups with ten runs each. Relative to the midpoint
+baseline, realized-graph F1 decreases in 193 of these 240 runs, increases in
+36 and is unchanged in 11; fitted target RMSE decreases in all 240.
+The representative 60-run averages in Section~\ref{subsec:numerical-geometry}
+combine both geometries and all three sizes for the two-dimensional type-cycle
+cases. They are arithmetic means of per-run RMSE and F1 values, rather than
+RMSE pooled over observations or F1 pooled over graph-edge counts.
+
+\paragraph{Candidate sets, fitting settings and evaluation populations}
+E and H use 16 sites in two dimensions and 24 in three. Their candidate sets
+unite all generating true pairs with either a symmetric nearest-neighbor
+graph ($k=12$ in two dimensions and $k=16$ in three) or pairs within four
+times the median nearest-neighbor distance. Candidate recall is therefore
+one by construction. E applies independent Gaussian noise of standard
+deviation $0.005$ to true-pair fractions and assigns midpoint-centered
+Gaussian surrogate targets of standard deviation $0.03$ to additional pairs.
+H applies the type-cycle law to all candidate fractions at
+$\eta\in\{0,0.1,0.2,0.4\}$.
+
+Both studies use analytic inner fits. The outer settings are addition
+threshold one, removal threshold two, relaxation one, at most 25 outer
+iterations, an eight-iteration mask-history window and weight-step tolerance
+$10^{-8}$. These runs do not test under-relaxation. E has 20 paired instances;
+H has 96, of which 72 have positive mismatch. The E/H table excludes H's
+24 zero-mismatch comparisons, while its stopping counts include them.
+
+For the one-pass fit, selection uses the
+\texttt{realized\_same\_shift} diagnostic. Refinement instead returns the
+final active observation mask. Selected-pair precision, recall and F1 compare these masks
+with the fixed generating true-pair mask on the original candidate set.
+They do not score the entire realized adjacency graph, and a retained
+observation need not be realized after the final refit. Both methods'
+separator errors use the same fixed generating true-pair subset, without
+filtering by either selection: E compares with clean generating-power
+separators, whereas H compares with the imposed, potentially incompatible
+targets. The table reports arithmetic means of per-run scores and paired
+change counts, not pooled-row errors.
+
+All 20 E refinements stop as \texttt{self\_consistent}. Across all 96 H
+refinements, the outer labels are 85 \texttt{self\_consistent} and
+11 \texttt{cycle\_detected}, while the recorded \emph{final} inner fits have
+optimal status. The latter does not certify every preceding inner iteration
+or convergence of the outer updates. A repeated active mask is distinct
+from an infeasible difference-constraint cycle and does not establish a
+periodic orbit of the full numerical state.
+
+% Frozen-source provenance (powerfit-80933a1; pyvoro2 0.6.3):
+% A: results/exact_recovery/summary.csv.
+% C: results/missing_data_manuscript/{metadata.json,runs.csv};
+%    experiments/generators/missing_data.py and runners/run_missing_data.py.
+% D: results/infeasible/summary.csv;
+%    experiments/{generators/infeasible_constraints.py,runners/run_infeasible_constraints.py}.
+% B: results/noise_robustness/{metadata.json,analysis/summary.csv};
+%    experiments/generators/noise_robustness.py.
+% F: results/periodic/{metadata.json,runs.csv,analysis/summary.csv};
+%    experiments/{generators/periodic_cases.py,runners/run_periodic_cases.py}.
+% G: results/model_mismatch/{metadata.json,runs.csv,analysis/summary.csv};
+%    experiments/{generators/model_mismatch.py,runners/run_model_mismatch.py}.
+% E/H: results/active_set/{metadata.json,analysis/refinement_paired_comparison.csv}
+%      and results/supergraph_mismatch/{metadata.json,runs.csv};
+%      experiments/generators/{active_set,supergraph_mismatch}.py.
+

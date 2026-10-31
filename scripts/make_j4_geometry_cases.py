@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the manuscript-facing J4 geometry case-study figure."""
+"""Build the historical v1.0.0 J4 geometry case-study figure."""
 
 from __future__ import annotations
 
@@ -35,10 +35,10 @@ DEFAULT_POWERFIT_EDGES = (
     REPO_ROOT / 'results' / 'qtaim_showcase_voronoi' / 'powerfit_edges.csv'
 )
 DEFAULT_OUTPUT_PDF = (
-    REPO_ROOT / 'manuscript' / 'figures' / 'figure_J4_geometry_cases.pdf'
+    REPO_ROOT / 'build' / 'legacy' / 'figures' / 'figure_J4_geometry_cases.pdf'
 )
 DEFAULT_OUTPUT_PNG = (
-    REPO_ROOT / 'manuscript' / 'figures' / 'figure_J4_geometry_cases.png'
+    REPO_ROOT / 'build' / 'legacy' / 'figures' / 'figure_J4_geometry_cases.png'
 )
 
 TRUE_EDGE = '0.34'

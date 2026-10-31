@@ -1,72 +1,137 @@
-# Manuscript directory
+# Manuscript
 
-This directory contains the LaTeX source for the manuscript.
+This directory contains the source of **“Fixed-site inverse fitting of
+power-diagram weights from pairwise separator data.”** All commands below are
+run from the repository root.
 
-## Read this directory in this order
+## Source structure
 
-1. `manuscript.tex` — primary manuscript source.
-2. [figures/README.md](figures/README.md) — figures wired into the manuscript.
-3. [tables/README.md](tables/README.md) — editable table fragments.
-4. `refs.bib`, `highlights.txt`, `keywords.txt` — supporting submission files.
+| Path | Role |
+|---|---|
+| [manuscript.tex](manuscript.tex) | Article entry point, abstract, front matter, availability and acknowledgments, bibliography, and includes. |
+| [sections/](sections/) | Sections 1–9: introduction; observations; graph fitting; geometric realization; computational workflow; synthetic experiments; molecular application; discussion; conclusions. |
+| [appendices/](appendices/) | Appendices A–E: graph and optimization arguments; geometry; perturbation estimates; algorithm and synthetic protocols; molecular background and protocols. |
+| [refs.bib](refs.bib) | Bibliography source, including separate project and frozen-evidence DOI entries. |
+| [figures/README.md](figures/README.md) | Source and interpretation map for the seven vector figure PDFs. |
+| [elsarticle.cls](elsarticle.cls), [elsarticle-num.bst](elsarticle-num.bst) | Pinned, unmodified official `elsarticle` 3.5 class and numerical bibliography style. |
+| [tex-support/README.md](tex-support/README.md) | Publisher-file provenance, source files, and retained upstream license information. |
 
-## Current manuscript state
+The article uses 15 authored TeX files, seven figure PDFs, and 32 bibliography
+entries. Four tables are embedded directly in the TeX source:
 
-- The numerical story is organized as a compact synthetic block plus the
-  molecular J1–J4 benchmark, with J4 split into local validation, representative
-  geometry, quantitative mask transfer, and box-margin robustness.
-- Section 5 includes theorem-backed connector-visibility and clearance
-  diagnostics, with proofs in the appendix.
-- The manuscript-facing figures and tables are materialized under `figures/`
-  and `tables/`.
+| Table | Source file |
+|---|---|
+| One-pass and refined fits in Experiments E and H | [sections/06_experiments.tex](sections/06_experiments.tex) |
+| Molecular separator errors on known reference pairs (J2) | [sections/07_molecular.tex](sections/07_molecular.tex) |
+| Clearance, distance, and area rankings (J4b) | [sections/07_molecular.tex](sections/07_molecular.tex) |
+| Candidate-pair cutoff comparison (J3) | [appendices/appendix_e.tex](appendices/appendix_e.tex) |
 
+There is no generated table-fragment dependency. The historical table exporter
+writes to `build/legacy/tables/` and does not update these tables. The Experiment
+H candidate graphic is not part of the article; the E/H table and accompanying
+discussion present that comparison.
 
-## Manuscript asset source map
+## Compile the article
 
-For a targeted table or figure edit, use these entry points before opening the
-script internals:
+The build requires `latexmk`, pdfLaTeX, BibTeX, `kpsewhich`, and Poppler's
+`pdfinfo` and `pdffonts` commands on `PATH`, plus Python 3.10+ for standard-library
+source and PDF checks. It uses the pinned official `elsarticle` 3.5 class
+(2026-01-09) and `elsarticle-num` bibliography style included in this directory.
+Their upstream contents and headers are retained unchanged. The preamble
+also uses `fontenc`, `inputenc`, `amsmath`, `amssymb`, `amsthm`, `mathtools`,
+`graphicx`, `placeins`, `needspace`, `booktabs`, and `hyperref`.
+The unmodified upstream `tex-support/glyphtounicode-cmr.tex` supplies
+mathematical Unicode mappings for reliable text extraction across TeX versions;
+it does not change the typeset content or load the `pdfx` package.
 
-| Asset family | Main refresh command | Targeted map |
-|---|---|---|
-| Generated tables | `python scripts/build_manuscript_tables.py` | [tables/README.md](tables/README.md) lists each table and its generator function. |
-| Generated figures | `python scripts/build_manuscript_figures.py` | [figures/README.md](figures/README.md) lists each figure and its source script or archived source file. |
-| Flat submission bundle | `python scripts/make_submission_bundle.py` | The bundle is rebuilt from `manuscript.tex` dependencies; stale files are removed first. |
-| Local and optional flat verification PDFs | `bash scripts/build_manuscript_pdfs.sh` | Runs the table refresh, figure refresh, local PDF build, flat-bundle rebuild, and an ignored flat verification PDF build. |
-
-## Build notes
-
-`manuscript/manuscript.pdf` and `../submission/flat/manuscript.pdf` are local
-build products, not committed artifacts. The tracked submission material is the
-flat source bundle under `../submission/flat/`. The canonical manuscript build
-requires both `latexmk` and `bibtex` on `PATH`. To run the canonical end-to-end
-manuscript build (tables, figures, local PDF, and flat bundle), use:
+For Debian or Ubuntu:
 
 ```bash
-bash ../scripts/build_manuscript_pdfs.sh
+sudo apt-get update
+sudo apt-get install python3 latexmk poppler-utils cm-super \
+  texlive-latex-base texlive-latex-recommended texlive-latex-extra \
+  texlive-publishers texlive-fonts-recommended
 ```
 
-For targeted refreshes of only the manuscript-side tables or figures from the
-archived results, run:
+The bundled official class and style take precedence over the versions supplied
+by `texlive-publishers`. This pin keeps the reviewed layout independent of the
+distribution's publisher-class version. See
+[tex-support/README.md](tex-support/README.md) for upstream provenance and source
+files. `cm-super` supplies scalable Computer Modern fonts for T1 encoding, and
+`poppler-utils` supplies the PDF inspection and rendering tools. No scientific
+Python packages are needed to compile the article.
 
 ```bash
-python ../scripts/build_manuscript_tables.py
-python ../scripts/build_manuscript_figures.py
+bash scripts/build_manuscript_pdfs.sh
 ```
 
-For a one-off manual build from the repository root, prefer
-`latexmk -cd manuscript/manuscript.tex`; the repo-level `.latexmkrc` applies
-the same source-local behavior to plain `latexmk manuscript/manuscript.tex`
-runs so artifacts do not spill into the repo root.
+This compiles the committed sources and figures into
+`manuscript/manuscript.pdf` and runs the bibliography build. It does not run
+figure generators, export tables, or recompute scientific results. The article
+PDF, generated `manuscript.bbl`, and auxiliary files are ignored build outputs.
 
-The manuscript-facing figure pairs under `figures/` are written through a
-deterministic Matplotlib save helper. In the same locked Python environment
-recorded under `environments/`, both the PNG and PDF copies are expected to be
-byte-identical across rebuilds. Outside that locked environment, visual
-equivalence remains the relevant check. This guarantee does not extend to the
-LaTeX-built `manuscript/manuscript.pdf`. The dedicated verification helper is
-`python scripts/check_figure_binary_constancy.py --suite manuscript`.
+The build rejects Type 3 fonts and checks font embedding. The approved exception
+is the standard PDF Base14 `Times-Roman` heading in the workflow figure
+(`figure_05_workflow.pdf`); it remains unembedded in that figure and in the
+compiled article. All other fonts are required to be embedded.
 
-## Internal planning files
+## Regenerate or check figures
 
-Historical revision-planning notes were removed from this directory so that the
-manuscript tree contains only current source files and generated manuscript
-assets.
+```bash
+python scripts/build_manuscript_figures.py
+python scripts/check_manuscript_figures.py
+python -m unittest discover -s tests -v
+```
+
+The figure builder reads the local frozen result files and supports
+`--output-dir build/figures` for a separate output directory. It needs Python
+3.10+, NumPy, Matplotlib, and pandas. The figure checker also uses Poppler,
+writes temporary outputs, checks repeatability within the same environment, and compares the
+rendered figures with their committed counterparts. Consult
+[figures/README.md](figures/README.md) before changing any scientific
+construction, data selection, or aggregation convention.
+
+## Build an arXiv source archive
+
+```bash
+python scripts/make_arxiv_bundle.py --output build/powerfit-arxiv.zip
+```
+
+The helper performs a fresh article build before packaging the bibliography.
+The source ZIP preserves the layout required by the TeX `\input` and
+`\includegraphics` commands:
+
+| Archive path | Contents |
+|---|---|
+| `manuscript.tex` | Main article source at the archive root. |
+| `sections/*.tex` | Nine included section files. |
+| `appendices/*.tex` | Five included appendix files. |
+| `figures/*.pdf` | The seven article figures. |
+| `refs.bib` | Bibliography source. |
+| `manuscript.bbl` | Bibliography generated by the fresh build. |
+| `elsarticle.cls`, `elsarticle-num.bst` | The pinned official class and numerical bibliography style. |
+| `tex-support/README.md`, `tex-support/README.upstream` | Provenance and retained upstream documentation/license information. |
+| `tex-support/elsarticle.dtx`, `tex-support/elsarticle.ins` | Upstream class source and extraction instructions. |
+| `tex-support/glyphtounicode-cmr.tex` | Unmodified upstream Computer Modern Unicode mappings and license notice. |
+
+The archive carries the same unmodified official class/style and their support
+sources as the canonical build. The remaining packages are TeX-distribution
+dependencies. The ZIP is an ignored output under `build/`; it is not a
+tracked flat submission tree. Review the built PDF and the archive before any
+submission. Creating the archive does not publish a release or submit to arXiv.
+
+## Evidence and release status
+
+The numerical evidence is the frozen
+[powerfit v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558), and the
+reported fitting software is
+[pyvoro2 0.6.3](https://doi.org/10.5281/zenodo.19143984). The
+[all-versions project DOI](https://doi.org/10.5281/zenodo.19673557) tracks the
+latest published project release. Until a revised release is deposited, that
+concept DOI still points to v1.0.0.
+
+The frozen experiment registry retains its historical numbering and asset
+references. Use the [current experiment crosswalk](../README.md#frozen-records-and-the-current-manuscript)
+and the article itself for present placement and evaluation conventions. Release
+version, date, PDF inclusion, and any future publication identifiers must be
+resolved using [docs/releasing.md](../docs/releasing.md).

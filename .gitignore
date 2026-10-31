@@ -30,6 +30,7 @@ Thumbs.db
 # LaTeX build artifacts
 *.aux
 *.bcf
+*.bbl
 *.blg
 *.fdb_latexmk
 *.fls
@@ -49,10 +50,11 @@ Thumbs.db
 /manuscript.bbl
 /manuscript.pdf
 manuscript/manuscript.pdf
-submission/flat/manuscript.pdf
+manuscript/figures/*.svg
 
 # Submission/build outputs
 .smoke/
+/build/
 
 # Wheel policy: keep only the selected cp313 artifact in git
 external_software/*.whl

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Verify byte-stable figure outputs for a representative generator subset.
+"""Historical v1.0.0 figure checks; current figures use check_manuscript_figures.py.
+
+Verify byte-stable figure outputs for a representative generator subset.
 
 This script is intentionally separate from ``check_repo_consistency.py``. It
 reruns a small representative subset of the figure generators twice inside a
@@ -191,6 +193,8 @@ def _manuscript_cases() -> list[FigureCase]:
             build_command=lambda run_dir: [
                 PYTHON,
                 'experiments/analysis/plot_missing_data_manuscript.py',
+                '--output-dir',
+                str(run_dir / 'missing_data_analysis'),
                 '--figure-path',
                 str(run_dir / 'figure_C_missing_data_composite.png'),
             ],

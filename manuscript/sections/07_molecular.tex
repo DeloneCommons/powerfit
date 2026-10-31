@@ -1,0 +1,81 @@
+\section{A molecular application}
+\label{sec:molecular-application}
+\label{subsec:numerical-molecular}
+
+Atomic systems are a natural application of space partitions: the nuclei supply fixed sites, and cells assign a region of space to each atom. Voronoi-based constructions have long been used to study atomic volumes and molecular packing \cite{Richards1974}. Ordinary Voronoi cells place each pairwise dividing plane halfway between the nuclei, independently of their species or electronic environment. Radius-dependent radical, or power, diagrams allow unequal atomic sizes \cite{GellatlyFinney1982}; more recent work also optimizes their radii using electron-density integrals and fluctuations of atomic and molecular charges \cite{BrehmThomas2021}. The question for an inverse construction is therefore which physical observations should determine the weights.
+
+The Quantum Theory of Atoms in Molecules (QTAIM) supplies a physically motivated reference partition. It divides the electron density into basins whose gradient-ascent paths lead to the same attractor, usually associated with a nucleus \cite{Bader1980,Bader1990}. Along their boundaries the density gradient has zero normal component. This zero-flux condition has a quantum-mechanical justification in Bader's formulation of atoms as open subsystems \cite{Bader1994}. Basin integrals give atomic electron populations and charges, while the density's gradient-path network describes relations between atomic regions \cite{Bader1990}. Thus this partition provides both integral quantities and local geometric information to approximate.
+
+Here we ask how much of that local information a power diagram can represent while keeping the nuclei fixed. Related inverse problems use cell volumes and centroids as data \cite{BournePearceRoper2025}. Our aim is instead to locate selected interatomic separators and examine which pairs acquire shared faces. Approximating the full curved boundaries would require more extensive boundary information, such as surface samples, and a specified measure of discrepancy. We use a simpler available observation: a \emph{bond critical point} (BCP), a density saddle on an interatomic boundary from which two gradient-ascent branches lead toward the neighboring atomic attractors \cite{Bader1980}.
+
+For the connector-normal plane family fixed by the nuclear positions, a BCP specifies one target offset. Its orthogonal projection onto the connector defines a target plane that also passes through the original point. Fitting these offsets reconciles local boundary landmarks into one set of atomic weights; it need not preserve every target exactly. Nor does a plane through a landmark necessarily give the best approximation to a whole curved interface. Figure~\ref{fig:bcp-projection} illustrates the projection and the curved boundary; \ref{app:molecular-background} gives the physical background and experimental protocols.
+
+The benchmark contains 100 molecules and 3,975 BCP-supported reference pairs (Experiment J1). Of these, 3,703 are bonded and 272 nonbonded, where \emph{bonded} means adjacency in the explicit-hydrogen RDKit molecular graph \cite{RDKit2026}. Both groups contain BCPs; their names refer to this separate connectivity convention. We report them separately because pooled scores are dominated by the bonded pairs. The experiments first examine separator accuracy on the known reference pairs, then replace that input with distance-selected candidates, and finally assess the information supplied by local geometric diagnostics. Their measured outputs are separator locations and pair labels, rather than complete QTAIM basin shapes or volumes.
+
+\subsection{Separator fitting on known atom pairs}
+\label{subsec:molecular-known-pairs}
+
+Experiment J2 assumes that the QTAIM-supported pair graph is known. We compare ordinary midpoints with a local \emph{proatomic} prediction, which locates a minimum of the sum of two radial atomic density profiles along the nuclear connector for unlike atoms and uses the midpoint for homonuclear pairs. A one-pass weight fit reconciles these proatomic observations using a single weight per atom. A separate \emph{QTAIM-target reference fit} instead fits the projected BCP coordinates directly, testing how those landmarks can be represented on the same known pair graph.
+
+Table~\ref{tab:molecular-fits} evaluates all four models on the original reference pairs, without filtering by face realization. Errors are measured in \AA{} and pooled over the individual pairs in each stated subset. The QTAIM-target fit itself minimizes the unweighted squared error in \emph{normalized coordinates}, over the full reference graph of each molecule; the displayed length errors and subset errors are consequently different evaluation quantities. Further predictor and aggregation details are in \ref{app:molecular-protocols}.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{Separator RMSE in \AA{} on fixed QTAIM-supported pair subsets (J2). The two fitted models use the known reference-pair graph. The direct QTAIM-target fit minimizes unweighted squared error in normalized coordinates over each molecule's full reference graph. All displayed length errors are pooled over pairs.}
+\label{tab:molecular-fits}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Subset & Midpoint & Proatomic & Proatomic fit & QTAIM-target fit \\
+\midrule
+All & 0.1332 & 0.0452 & 0.0473 & 0.0169 \\
+Bonded & 0.1317 & 0.0457 & 0.0461 & 0.0062 \\
+Nonbonded & 0.1528 & 0.0372 & 0.0619 & 0.0605 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The local proatomic predictor has substantially smaller RMSE than midpoint prediction. Enforcing a common weight representation nevertheless increases the overall error slightly and the nonbonded error more markedly, from $0.0372$ to $0.0619$~\AA{}. Both fitted models realize every requested reference pair, so the deterioration is not caused by losing difficult pairs from the evaluation. The direct QTAIM-target fit also leaves a larger nonbonded than bonded error. These results distinguish the accuracy of a local predictor from the accuracy retained when its outputs are reconciled into one power diagram. The nonbonded QTAIM-target value is consequently not a lower bound on attainable length error for that subset.
+
+\subsection{Fitting from candidate pairs}
+\label{subsec:molecular-candidates}
+
+Experiment J3 removes the assumption that the reference pairs are known during fitting. Candidate pairs are selected by distance, with cutoffs of $4$, $4.5$ and $5$~\AA{}, and receive proatomic separator predictions. Each cutoff contains all 3,975 reference pairs. Increasing the cutoff therefore adds other observations without increasing reference coverage. The reference-pair RMSE of the resulting one-pass fit rises from $0.0746$ to $0.0786$~\AA{} between the smallest and largest cutoff. All reference pairs are realized and included in these errors. The complete cutoff comparison is given in Table~\ref{tab:molecular-candidates}.
+
+We then examine which realized pairs agree with the QTAIM reference. This evaluation uses the entire realized adjacency graph, including pairs outside the input candidate set. Connector visibility is applied afterwards as a geometric filter, using the tolerance-inclusive membership test on clipped faces specified in \ref{app:molecular-candidates}. At the $5$~\AA{} cutoff, it retains 5,703 pairs, including 3,973 of the 3,975 reference pairs: visible precision is $0.697$ and recall is $0.9995$. The aggregate result conceals a substantial difference between pair classes. Bonded recovery is nearly exact (F1 approximately $0.9997$); among the retained nonbonded pairs, only $13.5\%$ belong to the reference set. Thus almost all reference pairs are retained, but many additional nonbonded pairs remain. These additional pairs are absent from the adopted BCP-supported reference set; that label alone does not determine whether a contact has chemical significance.
+
+J3 uses one-pass fitting followed by geometric filtering. It does not update the fitted observation set through the optional refinement of Section~\ref{subsec:workflow-active-mask}. The next experiment asks whether clearance provides information beyond the binary visibility decision.
+
+\subsection{Geometric diagnostics for nonbonded contacts}
+\label{subsec:molecular-diagnostics}
+
+A visible connector point may lie near the boundary of its clipped face or well inside it. Experiment J4b tests whether the clipped connector-centered clearance $c_{ij}^{\Omega}$ from Eq.~\eqref{eq:clipped-clearance} helps distinguish QTAIM-supported from additional pairs among the \emph{already visible nonbonded faces}. Clearance and face area are measured in the reference box, formed by padding the atomic-coordinate bounding box by $5$~\AA{}. We rank faces by larger clearance, shorter pair distance or larger face area. Average precision (AP) summarizes how well each ranking places reference pairs ahead of additional pairs; its definition and eligible populations are specified in \ref{app:molecular-diagnostics}.
+
+Table~\ref{tab:molecular-clearance-ranking} pools eligible faces across molecules, separately for an ordinary Voronoi diagram and the J3 power fit at $5$~\AA{}. Within each population, clearance has higher AP than distance or area. For the fitted-power population, median clearance is $0.678$~\AA{} on reference pairs and $0.228$~\AA{} on additional pairs. The two models have different eligible populations, so the comparisons among ranking variables are made within each row of the table.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4.5pt}
+\caption{Pooled average precision for ranking QTAIM-supported pairs above additional visible nonbonded pairs (J4b). Larger clipped clearance and face area in the reference box, and shorter pair distance, give higher ranks. Each model has its own eligible population; the AP values compare ranking variables within that population and do not provide a common-population comparison between the two models.}
+\label{tab:molecular-clearance-ranking}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Model & Visible pairs & QTAIM+ & Clearance AP & Short-dist. AP & Area AP \\
+\midrule
+Voronoi & 2,269 & 258 & 0.707 & 0.641 & 0.150 \\
+Power fit & 1,998 & 270 & 0.830 & 0.636 & 0.161 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Checks on the recorded realized faces also confirm agreement between the analytic visibility and clipped-clearance calculations and the tessellation-based diagnostics (J4a; \ref{app:molecular-diagnostics}). The ranking result is a pooled comparison, rather than a statement about every individual molecule. It shows that clearance supplies additional discriminatory information within these visible-face populations, where binary visibility alone retains many nonbonded pairs outside the reference.
+
+% SOURCE J1--J4: frozen results/qtaim_main/{J1_dataset_audit,
+% J2_true_support_ladder,J3_candidate_recovery_refresh,
+% J4_local_diagnostic_validation,J4_mask_transfer_refresh}/.
+% J2/J3 length errors are pooled over edge records. The direct BCP fit
+% minimizes full-graph fraction-space loss separately for each molecule.
+% J3 evaluates the entire realized graph and performs no outer refinement.
+% J4b AP populations differ. J4c/J4d protocol limits are in Appendix E.

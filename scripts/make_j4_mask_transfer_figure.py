@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the manuscript-facing J4b precision--recall transition figure.
+"""Build the historical v1.0.0 J4b precision--recall transition figure.
 
 The archived J4b analysis writes the numeric summaries under
 ``results/qtaim_main/J4_mask_transfer_refresh``.  This script does not rerun the
@@ -27,8 +27,8 @@ from _figure_io import save_figure_pair
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MASK_SUMMARY = REPO_ROOT / 'results' / 'qtaim_main' / 'J4_mask_transfer_refresh' / 'mask_summary.csv'
 DEFAULT_CLEARANCE_SWEEP = REPO_ROOT / 'results' / 'qtaim_main' / 'J4_mask_transfer_refresh' / 'clearance_sweep.csv'
-DEFAULT_OUTPUT_PDF = REPO_ROOT / 'manuscript' / 'figures' / 'figure_J4_mask_transfer.pdf'
-DEFAULT_OUTPUT_PNG = REPO_ROOT / 'manuscript' / 'figures' / 'figure_J4_mask_transfer.png'
+DEFAULT_OUTPUT_PDF = REPO_ROOT / 'build' / 'legacy' / 'figures' / 'figure_J4_mask_transfer.pdf'
+DEFAULT_OUTPUT_PNG = REPO_ROOT / 'build' / 'legacy' / 'figures' / 'figure_J4_mask_transfer.png'
 
 MODEL_LABELS = {
     'voronoi': 'Voronoi',

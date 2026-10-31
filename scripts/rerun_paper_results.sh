@@ -57,9 +57,11 @@ run "$PYTHON_BIN" scripts/qtaim/analyze_qtaim_mask_transfer.py   data/qtaim_main
 
 run "$PYTHON_BIN" scripts/qtaim/analyze_qtaim_box_margin_sensitivity.py   results/qtaim_main/J4_mask_transfer_margin3_refresh   results/qtaim_main/J4_mask_transfer_refresh   results/qtaim_main/J4_mask_transfer_margin7_refresh   results/qtaim_main/J4_mask_transfer_margin10_refresh   --labels 3A 5A 7A 10A   --output-dir results/qtaim_main/J4_box_margin_summary_refresh
 
-# Manuscript-facing assets. The PDF build refreshes the manuscript-side
-# tables and figures before compiling the local and flat verification PDFs.
+# Compile the reviewed manuscript from its tracked sources and figures.
+# Rerun outputs are for comparison with the frozen evidence; they do not
+# silently replace the reviewed figures or inline tables. Run in a disposable
+# checkout: the commands above deliberately write new experimental outputs.
 run bash scripts/build_manuscript_pdfs.sh
-run "$PYTHON_BIN" scripts/check_repo_consistency.py
+run "$PYTHON_BIN" scripts/check_repo_consistency.py --skip-frozen
 
 echo "[rerun] completed paper-side rerun from committed data"
