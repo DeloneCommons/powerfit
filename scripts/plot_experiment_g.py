@@ -195,7 +195,7 @@ def draw_figure(data: FigureData, output_dir: Path) -> tuple[Path, Path]:
     pdf_path = output_dir / "figure_G_mismatch.pdf"
     svg_path = output_dir / "figure_G_mismatch.svg"
     title = "Experiment G: fitting and adjacency changes across perturbation amplitude"
-    provenance = (f"Candidate; powerfit-80933a1; pyvoro2 0.6.3; {RUNS_PATH}; "
+    provenance = (f"Canonical; powerfit-80933a1; pyvoro2 0.6.3; {RUNS_PATH}; "
                   f"source SHA-256 {data.source_sha256}; 2,160 records; 60 per law/dimension/eta. "
                   "Paired fit-minus-baseline comparisons; independent instances across eta. "
                   "Top: mean of per-run percentage RMSE reductions, 100*(midpoint-fit)/midpoint. "
