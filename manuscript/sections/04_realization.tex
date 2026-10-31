@@ -1,7 +1,6 @@
 \section{Geometric realization and local diagnostics}
 \label{sec:geometric-realization}
 
-% Audited foundation; deterministic figure integrated 2026-10-30.
 
 \subsection{Pairwise separators and realized faces}
 \label{subsec:faces}
@@ -156,8 +155,6 @@ The minimum over an empty set is $+\infty$, corresponding to $F_{ij}=H_{ij}$. Un
 
 In Fig.~\ref{fig:three-face-cases}(c), both competitor gaps and both projected distances equal $1$. Hence $c_{12}=1/2$, the marked distance from $q_{12}$ to an endpoint of the shared edge.
 
-% PRO-REVIEW: Is the exterior-distance discussion sufficiently motivated
-% and economical, given the planned implementation-level usage?
 The formula should not be extended to negative gaps by simply allowing a negative clearance. When $\sigma_{ij}<0$, the connector point lies outside $F_{ij}$, so no centered ball, not even one of radius zero, is contained in the common cell intersection. Moreover, a negative value of the expression above describes a violation of an individual competitor inequality, whereas the distance to the actual face depends on satisfying all inequalities simultaneously. The face may even be empty.
 
 For a nonempty face, the appropriate exterior measure is instead the Euclidean distance from $q_{ij}$ to $F_{ij}$, measured within the bisector. In~\ref{app:geometry-exterior}, we derive its computation as a convex projection problem and illustrate why a negative extension of Eq.~\eqref{eq:connector-clearance} does not generally give this distance. The zero-gap clearance formula is treated in~\ref{app:geometry-exterior}; persistent ties are discussed in~\ref{app:geometry-degeneracy}. 
