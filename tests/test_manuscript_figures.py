@@ -45,6 +45,15 @@ class CanonicalFigureBuild(unittest.TestCase):
             self.assertEqual({p.name for p in output.glob("*.pdf")}, FIGURES)
             self.assertEqual(canonical_hashes(), before)
 
+    def test_wrapper_rejects_retired_archive_option(self):
+        with TemporaryDirectory() as tmp:
+            result = subprocess.run([
+                sys.executable, str(ROOT / "scripts/build_manuscript_figures.py"),
+                "--archive", "retired.zip", "--dry-run",
+            ], cwd=tmp, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn("unrecognized arguments: --archive", result.stderr)
+
     def test_dry_run_does_not_create_the_output_directory(self):
         with TemporaryDirectory() as tmp:
             output = Path(tmp) / "uncreated"
@@ -57,7 +66,7 @@ class CanonicalFigureBuild(unittest.TestCase):
 
 
 @unittest.skipUnless(all(shutil.which(tool) for tool in
-                        ("pdftoppm", "pdftotext", "pdffonts", "pdfimages", "pdftohtml")),
+                        ("pdftoppm", "pdftotext", "pdffonts", "pdfimages")),
                      "Poppler is needed for PDF validation")
 class FigureComparison(unittest.TestCase):
     def setUp(self):
@@ -67,9 +76,10 @@ class FigureComparison(unittest.TestCase):
         self.directory = Path(self.temporary.name)
 
     def draw(self, name, *, label="Frozen values", color="#2166AC", offset=0., fonttype=42,
-             raster=False, title="Reference"):
+             raster=False, title="Reference", corefonts=False):
         path = self.directory / name
-        with matplotlib.rc_context({"pdf.fonttype": fonttype, "font.family": "DejaVu Sans"}):
+        with matplotlib.rc_context({"pdf.fonttype": fonttype, "pdf.use14corefonts": corefonts,
+                                    "font.family": "Times" if corefonts else "DejaVu Sans"}):
             figure = plt.figure(figsize=(2., 1.5))
             axes = figure.add_axes([0, 0, 1, 1])
             axes.set(xlim=(0, 1), ylim=(0, 1))
@@ -105,6 +115,22 @@ class FigureComparison(unittest.TestCase):
                 b = self.draw("rebuilt.pdf", **changes)
                 with self.assertRaisesRegex(ValueError, "render"):
                     self.compare(a, b)
+
+    def test_unembedded_times_header_is_rejected_even_for_workflow(self):
+        path = self.draw("figure_05_workflow.pdf", label="Connector diagnostics", corefonts=True)
+        with self.assertRaisesRegex(ValueError, "unembedded font Times-Roman"):
+            self.checker.validate_pdf(path)
+
+    @unittest.skipUnless(shutil.which("pdfinfo"), "Poppler pdfinfo is needed")
+    def test_article_checker_rejects_unembedded_times(self):
+        checker = importlib.import_module("check_manuscript")
+        self.draw("manuscript.pdf", label="Connector diagnostics", corefonts=True)
+        (self.directory / "manuscript.tex").write_text("A minimal article.\n")
+        for suffix in (".log", ".blg", ".bbl"):
+            (self.directory / ("manuscript" + suffix)).write_text("")
+        errors = checker.check_built(self.directory)
+        self.assertTrue(any("unembedded PDF font:" in error and "Times-Roman" in error
+                            for error in errors), errors)
 
     def test_type3_fonts_and_raster_content_are_rejected(self):
         for changes in ({"fonttype": 3}, {"raster": True}):

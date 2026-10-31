@@ -82,8 +82,9 @@ H shows why frequent improvements and a favorable mean need not coincide. Error 
 
 % SOURCE A--D: results/{exact_recovery,noise_robustness,missing_data_manuscript,infeasible}/.
 % SOURCE F/G: results/{periodic,model_mismatch}/ and their experimental generators.
-% SOURCE E/H: results/active_set/analysis/refinement_paired_comparison.csv
-% and results/supergraph_mismatch/runs.csv; H paired table uses eta>0,
-% stopping counts use all 96 refinements. See the frozen evidence map.
+% SOURCE E/H: results/{active_set,supergraph_mismatch}/runs.csv; paired
+% by seed and configuration in scripts/check_manuscript_tables.py. H uses
+% eta>0; stopping counts use all 96 refinements. The absolute tie tolerance
+% is 1e-12 on unrounded score changes. See manuscript/README.md evidence map.
 % Figure C: scripts/plot_editorial_figures.py reads the frozen runs.csv;
 % no simulation, fitting or solver result is recomputed.

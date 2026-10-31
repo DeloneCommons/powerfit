@@ -3,34 +3,34 @@
 Seven vector PDFs are included by the current article. Their locations and
 scientific roles are listed below; run commands from the repository root.
 
-| Figure PDF | Placement | Source or construction |
-|---|---|---|
-| [figure_02_separators.pdf](figure_02_separators.pdf) | Section 2 | Exact two-site example: increasing the second weight moves the equal-power separator toward the first site. |
-| [figure_03_cycle.pdf](figure_03_cycle.pdf) | Section 3.1 | Signed traversal of three observations on an abstract graph; the dashed return reverses an existing observation. |
-| [figure_04_realization.pdf](figure_04_realization.pdf) | Section 4.1 | Exact four-site full-plane examples with an absent face, a face away from the connector point, and a strictly visible connector point. |
-| [figure_05_workflow.pdf](figure_05_workflow.pdf) | Section 5 | One-pass fitting and optional observation-set refinement, with full-candidate matching and separate geometric diagnostics. |
-| [figure_C_identifiability.pdf](figure_C_identifiability.pdf) | Section 6.1 | Frozen Experiment C: global and oracle componentwise weight alignment, and connected-graph frequency, at the largest tested site count. |
-| [figure_G_mismatch.pdf](figure_G_mismatch.pdf) | Section 6.2 | Frozen Experiment G: target-RMSE improvement and whole-graph F1 change under structured separator mismatch. |
-| [figure_E_bcp_projection.pdf](figure_E_bcp_projection.pdf) | Appendix E.2 | An analytic illustrative density with a gradient bond path, zero-flux boundary, and BCP projection onto the nuclear connector. |
+| Printed figure | Figure PDF | Placement | Source or construction |
+|---|---|---|---|
+| 1 | [figure_02_separators.pdf](figure_02_separators.pdf) | Section 2 | Exact two-site example: increasing the second weight moves the equal-power separator toward the first site. |
+| 2 | [figure_03_cycle.pdf](figure_03_cycle.pdf) | Section 3.1 | Signed traversal of three observations on an abstract graph; the dashed return reverses an existing observation. |
+| 3 | [figure_04_realization.pdf](figure_04_realization.pdf) | Section 4.1 | Exact four-site full-plane examples with an absent face, a face away from the connector point, and a strictly visible connector point. |
+| 4 | [figure_05_workflow.pdf](figure_05_workflow.pdf) | Section 5 | One-pass fitting and optional observation-set refinement, with full-candidate matching and separate geometric diagnostics. |
+| 5 | [figure_C_identifiability.pdf](figure_C_identifiability.pdf) | Section 6.1 | Frozen Experiment C: global and oracle componentwise weight alignment, and connected-graph frequency, at the largest tested site count. |
+| 6 | [figure_G_mismatch.pdf](figure_G_mismatch.pdf) | Section 6.2 | Frozen Experiment G: target-RMSE improvement and whole-graph F1 change under structured separator mismatch. |
+| E.1 | [figure_E_bcp_projection.pdf](figure_E_bcp_projection.pdf) | Appendix E.2 | An analytic illustrative density with a gradient bond path, zero-flux boundary, and BCP projection onto the nuclear connector. |
+
+Filenames retain their existing source names; use the first column for the
+numbers printed in the current article.
 
 Experiment H is represented by the E/H table and adverse-case discussion in
 Section 6.3. Its candidate figure is excluded from the article and source bundle.
 
 ## Regenerate the figures
 
-Install Python 3.10 or later with NumPy, Matplotlib, and pandas, then run:
-
-```bash
-python scripts/build_manuscript_figures.py
-```
-
-The wrapper uses the local frozen results. It runs no experiment, fitting
-calculation, or molecular-data pipeline. Its default destination is
-`manuscript/figures/`; to inspect output separately, use:
+Use the [pinned lightweight environment](../../README.md#2-reproduce-the-seven-figures-and-check-the-four-tables), then run:
 
 ```bash
 python scripts/build_manuscript_figures.py --output-dir build/figures
 ```
+
+The wrapper uses the local frozen results. It runs no experiment, fitting
+calculation, or molecular-data pipeline. Omit `--output-dir` to write into
+`manuscript/figures/`. `--results-root` accepts an unpacked copy of the frozen
+results; the same source hashes and population checks apply.
 
 The implementation is split by source family:
 
@@ -93,13 +93,11 @@ versions can change the PDF bytes, so cross-environment byte equality with
 the committed PDFs is not promised. On restricted systems, set `MPLCONFIGDIR`
 to a writable cache directory.
 
-The PDF checks reject Type 3 fonts and require embedded fonts except for one
-approved standard-font use: the workflow figure's heading uses PDF Base14
-`Times-Roman` without embedding. That exception is preserved when the figure is
-included in the article. All other figure and article fonts are checked for
-embedding.
+The PDF checks reject Type 3 fonts and require every font to be embedded. The
+workflow heading uses ordinary embedded STIX text, like the rest of the drawing;
+there is no hidden previous heading or special font allowance.
 
 The article build, `bash scripts/build_manuscript_pdfs.sh`, compiles the
-committed figures without regenerating them. Historical figure helpers write to
-`build/legacy/figures/` and are outside the current article build; their archived
-source and result records remain available.
+committed figures without regenerating them. Previous manuscript-only generators
+are available in the [v1.0.0 tag](https://github.com/DeloneCommons/powerfit/tree/v1.0.0).
+Frozen scientific plot writers and their archived outputs remain in this tree.

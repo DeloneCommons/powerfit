@@ -8,8 +8,7 @@ Usage, from the repository::
 
 Dependencies: Python 3.10+, matplotlib, numpy, pandas. Frozen data default to
 the repository's results/ tree. Use --results-root /path/to/results for a
-copy of that tree, or --archive /path/to/powerfit-80933a1.zip to read the ZIP
-in place. Neither source is extracted, regenerated, or modified.
+copy of that tree. The source data are not regenerated or modified.
 
 Figure C reproduces only panels (a,b) of the frozen missing-data composite.
 Its source is ``results/missing_data_manuscript/runs.csv`` in powerfit-80933a1
@@ -47,7 +46,6 @@ import hashlib
 import io
 import json
 from pathlib import Path
-from zipfile import ZipFile
 
 import matplotlib
 
@@ -81,34 +79,13 @@ CONNECTIVITY_COLOR = "#26734D"
 INK = "#252525"
 
 
-def archive_bytes(archive: ZipFile, path: str) -> bytes:
-    """Accept a bare archive tree or one enclosed by a single root folder."""
-    matches = [name for name in archive.namelist() if name == path or name.endswith("/" + path)]
-    if len(matches) != 1:
-        raise ValueError(f"Expected one archived {path}, found {len(matches)}")
-    return archive.read(matches[0])
-
-
-def load_profiles(
-    archive_path: Path | None = None, *, results_root: Path | None = None
-) -> dict[int, pd.DataFrame]:
+def load_profiles(*, results_root: Path | None = None) -> dict[int, pd.DataFrame]:
     """Reaggregate frozen runs, check the archived summary, select n=128."""
-    if archive_path is not None and results_root is not None:
-        raise ValueError("Choose either an archive or a results root, not both")
-    if archive_path is not None:
-        with ZipFile(archive_path) as archive:
-            runs_bytes = archive_bytes(archive, RUNS_PATH)
-            summary_bytes = archive_bytes(archive, SUMMARY_PATH)
-            metadata = json.loads(archive_bytes(archive, METADATA_PATH))
-            # Preserve the archive's original evidence-completeness check.
-            archive_bytes(archive, PLOT_SOURCE_PATH)
-        source_description = f"Archive: {archive_path}"
-    else:
-        results_root = Path(results_root) if results_root is not None else DEFAULT_RESULTS_ROOT
-        runs_bytes = (results_root / Path(RUNS_PATH).relative_to("results")).read_bytes()
-        summary_bytes = (results_root / Path(SUMMARY_PATH).relative_to("results")).read_bytes()
-        metadata = json.loads((results_root / Path(METADATA_PATH).relative_to("results")).read_bytes())
-        source_description = f"Results root: {results_root}"
+    results_root = Path(results_root) if results_root is not None else DEFAULT_RESULTS_ROOT
+    runs_bytes = (results_root / Path(RUNS_PATH).relative_to("results")).read_bytes()
+    summary_bytes = (results_root / Path(SUMMARY_PATH).relative_to("results")).read_bytes()
+    metadata = json.loads((results_root / Path(METADATA_PATH).relative_to("results")).read_bytes())
+    source_description = f"Results root: {results_root}"
     if hashlib.sha256(runs_bytes).hexdigest() != EXPECTED_RUNS_SHA256:
         raise ValueError("The run-source SHA-256 differs from the frozen Experiment C CSV")
     if hashlib.sha256(summary_bytes).hexdigest() != EXPECTED_SUMMARY_SHA256:
@@ -571,14 +548,12 @@ def draw_bcp_projection(output: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    sources = parser.add_mutually_exclusive_group()
-    sources.add_argument("--archive", type=Path, help="Read frozen data from a powerfit-80933a1 ZIP")
-    sources.add_argument("--results-root", type=Path, help="Frozen results tree (default: repository results/)")
+    parser.add_argument("--results-root", type=Path, help="Frozen results tree (default: repository results/)")
     parser.add_argument("--output-dir", type=Path, default=REPO_ROOT / "manuscript/figures", help="Directory for the two vector PDFs")
     parser.add_argument("--figure", choices=("all", "identifiability", "bcp"), default="all", help="Regenerate both figures (default), only C, or only E")
     args = parser.parse_args()
 
-    profiles = load_profiles(args.archive, results_root=args.results_root) if args.figure != "bcp" else None
+    profiles = load_profiles(results_root=args.results_root) if args.figure != "bcp" else None
     configure_style()
     args.output_dir.mkdir(parents=True, exist_ok=True)
     if args.figure != "bcp":

@@ -64,6 +64,11 @@ jobs:
       - name: Check repository and original frozen scientific artifacts
         run: python scripts/check_repo_consistency.py 2>&1 | tee build/reports/repository-before.txt
 
+      - name: Verify complete frozen results and four inline numerical tables
+        run: |
+          python scripts/check_rerun_results.py 2>&1 | tee build/reports/result-completeness.txt
+          python scripts/check_manuscript_tables.py 2>&1 | tee build/reports/manuscript-tables.txt
+
       - name: Verify canonical vector figures in temporary directories
         run: python scripts/check_manuscript_figures.py 2>&1 | tee build/reports/figures.txt
 
@@ -93,10 +98,7 @@ jobs:
             --no-plots \
             --require-all 2>&1 | tee build/reports/qtaim-smoke.txt
 
-      - name: Build and validate the canonical manuscript PDF
-        run: bash scripts/build_manuscript_pdfs.sh 2>&1 | tee build/reports/manuscript-build.txt
-
-      - name: Package the arXiv source archive
+      - name: Build the canonical PDF and package the arXiv source archive
         run: python scripts/make_arxiv_bundle.py --output build/powerfit-arxiv.zip 2>&1 | tee build/reports/arxiv-package.txt
 
       - name: Compile the arXiv archive in isolation

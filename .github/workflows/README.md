@@ -18,25 +18,29 @@ provenance are recorded in
 
 ## Verification sequence
 
-1. Run the focused unit tests and repository consistency audit.
-2. Check the seven canonical vector figures by generating temporary comparison
-   outputs from their figure scripts.
+1. Run the focused unit tests and repository consistency audit, including all
+   989 protected scientific files.
+2. Check the complete frozen result populations and recompute the four inline
+   tables from CSVs; check the seven vector figures using temporary builds.
 3. Run the tiny A and B smoke subsets and the J1 audit on committed showcase
    data. Every smoke output is directed to `.smoke/`.
-4. Build and validate `manuscript/manuscript.pdf` from its committed sources.
-5. Create `build/powerfit-arxiv.zip` with the nested source layout, fresh
-   bibliography, pinned official class/style, and their upstream source/license
-   support, then extract and compile it in an isolated temporary directory.
+4. Call the arXiv packager once: it builds and validates
+   `manuscript/manuscript.pdf`, then creates `build/powerfit-arxiv.zip` with the
+   nested source layout, fresh bibliography, pinned official class/style and
+   upstream source/license support.
+5. Extract and compile that ZIP in an isolated temporary directory, verifying
+   that the packaged source dependencies are sufficient.
 6. Record font and embedded-image inventories, reject unresolved archive
    references and Type 3 fonts, and verify that protected files and manuscript
    sources stayed unchanged.
 
 The workflow runs no complete scientific experiment or molecular-generation
-pipeline. Historical asset builders are outside the canonical build path.
+pipeline. Its result/table checks read frozen evidence. The full A–H/J rerun is
+a separate command for a disposable checkout, described in
+[scripts/README.md](../../scripts/README.md).
 
-The font check requires embedding for all fonts except the approved PDF Base14
-`Times-Roman` heading in the workflow figure. That standard-font exception is
-retained in the compiled article; Type 3 fonts are rejected throughout.
+Every figure and article font must be embedded. Type 3 fonts are rejected;
+there are no workflow-heading or standard-font exceptions.
 
 ## Frozen artifact verification
 
@@ -53,10 +57,9 @@ works without Git history, including in a downloaded repository source archive.
 No build or check refreshes the manifest. The existing pinned-binary digest,
 runtime-requirement, source-link, and absolute-path checks also remain active.
 
-For an explicitly requested full scientific rerun, the local audit accepts
-`python scripts/check_repo_consistency.py --skip-frozen`. That option leaves the
-baseline manifest untouched and keeps the other checks, including pinned-binary
-verification. CI always performs the full frozen check.
+The integrity check has no bypass mode. A disposable checkout containing new
+scientific results is checked with `check_rerun_results.py` and
+`check_manuscript_tables.py`, rather than being relabeled as the frozen archive.
 
 ## Review artifacts
 

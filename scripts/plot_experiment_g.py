@@ -2,8 +2,7 @@
 """Draw the integrated Experiment G distribution figure from frozen results.
 
 By default read the repository's frozen results/ tree. Use --results-root
-/path/to/results for a copy, or --archive /path/to/powerfit-80933a1.zip to read
-the ZIP in place. No experiment, fitting call or solver is run.
+/path/to/results for a copy. No experiment, fitting call or solver is run.
 Each difference pairs the fit with its midpoint baseline on the same instance.
 Instances at different eta settings are independent, so no trajectories are
 drawn. The extra exact_control population is not pooled with the two laws'
@@ -18,7 +17,6 @@ import hashlib
 import io
 import json
 from pathlib import Path
-from zipfile import ZipFile
 
 import matplotlib
 
@@ -46,26 +44,11 @@ class FigureData:
     source_sha256: str
 
 
-def archive_bytes(archive: ZipFile, suffix: str) -> bytes:
-    members = [n for n in archive.namelist() if n == suffix or n.endswith("/" + suffix)]
-    if len(members) != 1:
-        raise ValueError(f"Expected exactly one archive member ending in {suffix}")
-    return archive.read(members[0])
-
-
-def load_runs(archive_path: Path | None = None, *, results_root: Path | None = None) -> FigureData:
-    if archive_path is not None and results_root is not None:
-        raise ValueError("Choose either an archive or a results root, not both")
-    if archive_path is not None:
-        with ZipFile(archive_path) as archive:
-            source = archive_bytes(archive, RUNS_PATH)
-            metadata = json.loads(archive_bytes(archive, METADATA_PATH))
-        source_description = f"Archive: {archive_path}"
-    else:
-        results_root = Path(results_root) if results_root is not None else DEFAULT_RESULTS_ROOT
-        source = (results_root / Path(RUNS_PATH).relative_to("results")).read_bytes()
-        metadata = json.loads((results_root / Path(METADATA_PATH).relative_to("results")).read_bytes())
-        source_description = f"Results root: {results_root}"
+def load_runs(*, results_root: Path | None = None) -> FigureData:
+    results_root = Path(results_root) if results_root is not None else DEFAULT_RESULTS_ROOT
+    source = (results_root / Path(RUNS_PATH).relative_to("results")).read_bytes()
+    metadata = json.loads((results_root / Path(METADATA_PATH).relative_to("results")).read_bytes())
+    source_description = f"Results root: {results_root}"
     source_sha256 = hashlib.sha256(source).hexdigest()
     if source_sha256 != EXPECTED_RUNS_SHA256:
         raise ValueError("The run-source SHA-256 differs from the frozen Experiment G CSV")
@@ -230,12 +213,10 @@ def draw_figure(data: FigureData, output_dir: Path) -> tuple[Path, Path]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    sources = parser.add_mutually_exclusive_group()
-    sources.add_argument("--archive", type=Path, help="Read frozen data from a powerfit-80933a1 ZIP")
-    sources.add_argument("--results-root", type=Path, help="Frozen results tree (default: repository results/)")
+    parser.add_argument("--results-root", type=Path, help="Frozen results tree (default: repository results/)")
     parser.add_argument("--output-dir", type=Path, default=REPO_ROOT / "manuscript/figures")
     args = parser.parse_args()
-    draw_figure(load_runs(args.archive, results_root=args.results_root), args.output_dir)
+    draw_figure(load_runs(results_root=args.results_root), args.output_dir)
 
 
 if __name__ == "__main__":

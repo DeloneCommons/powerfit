@@ -9,14 +9,10 @@ pixel tolerance is one pixel of edge movement and 8/255 channel levels; no
 region or fraction of the image is excluded. Text must match exactly and its
 bounding boxes must agree within 0.25 pt.
 
-All figures must be vector PDFs without Type 3 fonts. Fonts must be embedded
-except for the approved workflow's one Base14 Times-Roman header. That final
-asset also contains a completely covered old header; its three invisible
-words are omitted from text comparison only for the exact approved file hash.
-The complete visible image is still compared, without a masked region.
+All figures must be vector PDFs without Type 3 fonts, with every font embedded.
 
 Requires the paper's Python plotting dependencies and Poppler utilities
-(pdftoppm, pdftotext, pdffonts, pdfimages and pdftohtml).
+(pdftoppm, pdftotext, pdffonts and pdfimages).
 """
 
 from __future__ import annotations
@@ -37,8 +33,7 @@ from PIL import Image, ImageFilter
 from build_manuscript_figures import FIGURE_DIR, FIGURE_NAMES, REPO_ROOT
 
 
-POPPLER_TOOLS = ("pdftoppm", "pdftotext", "pdffonts", "pdfimages", "pdftohtml")
-APPROVED_WORKFLOW_SHA256 = "3453f2b157053bd583a7972938b84c4dd60a0eb3510e20d58cddc384df3d492b"
+POPPLER_TOOLS = ("pdftoppm", "pdftotext", "pdffonts", "pdfimages")
 RENDER_DPI = 300
 TEXT_TOLERANCE_PT = 0.25
 CHANNEL_TOLERANCE = 8
@@ -68,7 +63,7 @@ def pdf_layout(path: Path) -> tuple[tuple[float, float], list[tuple[str, tuple[f
     return size, words
 
 
-def validate_pdf(path: Path) -> tuple[str, ...]:
+def validate_pdf(path: Path) -> None:
     """Reject unexpected raster content, Type 3 fonts or unembedded fonts."""
     if not path.read_bytes().startswith(b"%PDF-"):
         raise ValueError(f"{path.name}: not a PDF")
@@ -77,46 +72,15 @@ def validate_pdf(path: Path) -> tuple[str, ...]:
     fonts = [line.split() for line in font_lines if line.strip()]
     if not fonts:
         raise ValueError(f"{path.name}: no inspectable text fonts")
-    allowed_base14 = []
     for fields in fonts:
         name = fields[0]
         if "Type 3" in " ".join(fields[1:-5]):
             raise ValueError(f"{path.name}: Type 3 font {name}")
         if fields[-5] != "yes":
-            if path.name == "figure_05_workflow.pdf" and name == "Times-Roman":
-                allowed_base14.append(name)
-            else:
-                raise ValueError(f"{path.name}: unembedded font {name}")
-    if allowed_base14:
-        xml = ET.fromstring(run_tool(["pdftohtml", "-xml", "-hidden", "-i", "-stdout",
-                                      "-zoom", "1", str(path)]))
-        ids = {font.attrib["id"] for font in xml.iter("fontspec")
-               if font.attrib["family"] in ("Times", "Times-Roman")}
-        uses = ["".join(item.itertext()) for item in xml.iter("text")
-                if item.attrib.get("font") in ids]
-        if allowed_base14 != ["Times-Roman"] or uses != ["Connector diagnostics"]:
-            raise ValueError(f"{path.name}: Base14 allowance is only for the approved workflow header")
+            raise ValueError(f"{path.name}: unembedded font {name}")
     image_lines = run_tool(["pdfimages", "-list", str(path)]).splitlines()[2:]
     if any(line.split() and line.split()[0].isdigit() for line in image_lines):
         raise ValueError(f"{path.name}: unexpected raster image in a vector figure")
-    return tuple(allowed_base14)
-
-
-def visible_reference_words(path: Path, words: list) -> list:
-    """Account only for the exact approved workflow's covered pre-repair text."""
-    if sha256(path) != APPROVED_WORKFLOW_SHA256:
-        return words
-    covered = {
-        "Separate": (289.814063, 140.625625, 322.522563, 154.970625),
-        "checks": (324.897563, 140.625625, 350.747063, 154.970625),
-        "(§4)": (353.122063, 140.625625, 368.949063, 154.970625),
-    }
-    visible = [word for word in words if not (
-        word[0] in covered and np.allclose(word[1], covered[word[0]], rtol=0, atol=0.002)
-    )]
-    if len(words) - len(visible) != 3:
-        raise ValueError("The approved workflow's covered header could not be identified exactly")
-    return visible
 
 
 def compare_text_layout(reference: Path, generated: Path) -> None:
@@ -124,7 +88,6 @@ def compare_text_layout(reference: Path, generated: Path) -> None:
     generated_size, remaining = pdf_layout(generated)
     if not np.allclose(reference_size, generated_size, rtol=0, atol=0.001):
         raise ValueError(f"{reference.name}: page layout differs: {reference_size} vs {generated_size}")
-    reference_words = visible_reference_words(reference, reference_words)
     if len(reference_words) != len(remaining):
         raise ValueError(f"{reference.name}: visible text count differs: "
                          f"{len(reference_words)} vs {len(remaining)}")
@@ -188,12 +151,10 @@ def output_hashes(directory: Path) -> dict[str, str]:
 
 def check_figures(
     *, reference_dir: Path = FIGURE_DIR, results_root: Path | None = None,
-    archive: Path | None = None, verbose: bool = False,
+    verbose: bool = False,
 ) -> None:
     if missing := [name for name in POPPLER_TOOLS if not shutil.which(name)]:
         raise ValueError("Install Poppler utilities; missing: " + ", ".join(missing))
-    if results_root is not None and archive is not None:
-        raise ValueError("Choose either an archive or a results root, not both")
     reference_dir = reference_dir.resolve()
     before = {name: sha256(reference_dir / name) for name in FIGURE_NAMES}
     try:
@@ -209,8 +170,6 @@ def check_figures(
                            "--output-dir", str(destination)]
                 if results_root is not None:
                     command += ["--results-root", str(results_root.resolve())]
-                if archive is not None:
-                    command += ["--archive", str(archive.resolve())]
                 print(f"[figures] temporary build {number}/2 with {sys.executable}", flush=True)
                 result = subprocess.run(command, cwd=REPO_ROOT, env=environment,
                                         capture_output=True, text=True)
@@ -227,8 +186,7 @@ def check_figures(
             for name in FIGURE_NAMES:
                 status = compare_pdf(reference_dir / name, work / "run-1" / name, work / "render" / name)
                 print(f"[figures] {name}: {status}")
-            print("[figures] vector-only PDFs; no Type 3 fonts; embedded fonts except the approved "
-                  "workflow's single Base14 Times-Roman header")
+            print("[figures] vector-only PDFs; no Type 3 fonts; all fonts embedded")
     finally:
         after = {name: sha256(reference_dir / name) for name in FIGURE_NAMES}
         if before != after:
@@ -240,15 +198,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference-dir", type=Path, default=FIGURE_DIR,
                         help="Approved PDFs (default: repository manuscript/figures)")
-    sources = parser.add_mutually_exclusive_group()
-    sources.add_argument("--results-root", type=Path,
-                         help="Frozen results tree (default: repository results/)")
-    sources.add_argument("--archive", type=Path, help="Frozen powerfit-80933a1 ZIP")
+    parser.add_argument("--results-root", type=Path,
+                        help="Frozen results tree (default: repository results/)")
     parser.add_argument("--verbose", action="store_true", help="Show all generator output")
     args = parser.parse_args()
     try:
         check_figures(reference_dir=args.reference_dir, results_root=args.results_root,
-                      archive=args.archive, verbose=args.verbose)
+                      verbose=args.verbose)
     except (OSError, ValueError, ET.ParseError) as error:
         print(f"[figures] FAIL: {error}", file=sys.stderr)
         return 1

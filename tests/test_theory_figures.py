@@ -134,7 +134,7 @@ class CycleConstruction(unittest.TestCase):
 
 class WorkflowConstruction(unittest.TestCase):
     @unittest.skipUnless(shutil.which("pdftoppm"), "Poppler pdftoppm is needed for rendered parity")
-    def test_workflow_render_matches_the_approved_header_repair(self):
+    def test_workflow_render_matches_canonical_pdf(self):
         figures.configure_style()
         with TemporaryDirectory() as tmp:
             temporary = Path(tmp)
@@ -147,6 +147,24 @@ class WorkflowConstruction(unittest.TestCase):
                                check=True, capture_output=True)
             with Image.open(temporary / "approved.png") as a, Image.open(temporary / "generated.png") as b:
                 np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
+
+    @unittest.skipUnless(shutil.which("pdffonts"), "Poppler pdffonts is needed")
+    def test_canonical_workflow_embeds_every_font(self):
+        canonical = SOURCE.parents[1] / "manuscript/figures/figure_05_workflow.pdf"
+        result = subprocess.run(["pdffonts", str(canonical)],
+                                check=True, capture_output=True, text=True)
+        rows = [line.split() for line in result.stdout.splitlines()[2:] if line.strip()]
+        self.assertTrue(rows)
+        self.assertEqual([row[0] for row in rows if row[-5] != "yes"], [])
+
+    @unittest.skipUnless(shutil.which("pdftotext"), "Poppler pdftotext is needed")
+    def test_canonical_workflow_has_no_hidden_old_header(self):
+        canonical = SOURCE.parents[1] / "manuscript/figures/figure_05_workflow.pdf"
+        result = subprocess.run(["pdftotext", str(canonical), "-"],
+                                check=True, capture_output=True, text=True)
+        self.assertIn("Connector diagnostics", " ".join(result.stdout.split()))
+        self.assertNotIn("Separate checks", result.stdout)
+        self.assertNotIn("(§4)", result.stdout)
 
     def test_feedback_does_not_touch_separate_diagnostic_boxes(self):
         # Crossing a diagnostic box would visually imply that it drives updates.

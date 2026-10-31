@@ -179,10 +179,8 @@ def check_built(manuscript_dir: Path) -> list[str]:
             errors.append("Type 3 fonts found in manuscript.pdf")
         for line in fonts.splitlines()[2:]:
             flags = re.search(r"\s(yes|no)\s+(?:yes|no)\s+(?:yes|no)\s+\d+\s+\d+\s*$", line)
-            if flags and flags.group(1) == "no" and line.split()[0] != "Times-Roman":
+            if flags and flags.group(1) == "no":
                 errors.append(f"Unexpected unembedded PDF font: {line.strip()}")
-        # The reviewed workflow heading uses standard PDF Base-14 Times-Roman.
-        # This is the only allowed nonembedded font; preserve approved artwork.
     except (OSError, ValueError, subprocess.CalledProcessError) as exc:
         errors.append(f"PDF inspection failed: {exc}")
     return errors

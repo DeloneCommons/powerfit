@@ -448,22 +448,15 @@ def _print_group(title: str, problems: list[Problem]) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--skip-frozen", action="store_true",
-        help="Skip archived scientific-file digests after an explicitly requested full rerun; keep all other checks.",
-    )
-    args = parser.parse_args(argv)
+    parser.parse_args(argv)
     groups = [
         ("markdown-links", _check_markdown_links()),
         ("absolute-paths", _check_absolute_paths()),
         ("manuscript", _check_manuscript_dependencies()),
         ("requirements", _check_requirements()),
         ("bundled-binaries", _check_bundled_binary_hashes()),
+        ("frozen-artifacts", _check_frozen_artifacts()),
     ]
-    if args.skip_frozen:
-        print("[frozen-artifacts] skipped by explicit --skip-frozen; the baseline manifest is unchanged.")
-    else:
-        groups.append(("frozen-artifacts", _check_frozen_artifacts()))
     if any(problems for _, problems in groups):
         print("Repository consistency check failed.")
         for title, problems in groups:
@@ -478,8 +471,7 @@ def main(argv: list[str] | None = None) -> int:
         "requirements documented, bundled binary digests verified, "
         "and canonical manuscript sources validated."
     )
-    if not args.skip_frozen:
-        print("[frozen-artifacts] all archived file digests match; no scientific files added or removed.")
+    print("[frozen-artifacts] all archived file digests match; no scientific files added or removed.")
     return 0
 
 

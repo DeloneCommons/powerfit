@@ -4,8 +4,7 @@
 Use --output-dir to select a separate destination. An explicit build defaults
 to manuscript/figures; validation belongs to check_manuscript_figures.py,
 which always generates in temporary directories and preserves approved PDFs.
-Frozen C/G inputs default to the repository's results/ tree. Historical
-figures are isolated in build/legacy/ by build_legacy_figures.py.
+Frozen C/G inputs default to the repository's results/ tree.
 """
 
 from __future__ import annotations
@@ -32,15 +31,11 @@ FIGURE_NAMES = (
 
 def build_main_text_figures(
     *, output_dir: Path = FIGURE_DIR, results_root: Path | None = None,
-    archive: Path | None = None, dry_run: bool = False,
+    dry_run: bool = False,
 ) -> None:
-    if results_root is not None and archive is not None:
-        raise ValueError("Choose either an archive or a results root, not both")
     output_dir = output_dir.resolve()
     source_args = []
-    if archive is not None:
-        source_args = ["--archive", str(archive.resolve())]
-    elif results_root is not None:
+    if results_root is not None:
         source_args = ["--results-root", str(results_root.resolve())]
     environment = dict(os.environ)
     environment.setdefault("MPLCONFIGDIR", str(REPO_ROOT / "build/.cache/matplotlib"))
@@ -64,16 +59,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=FIGURE_DIR,
                         help="Destination for the seven PDFs and auxiliary SVGs")
-    sources = parser.add_mutually_exclusive_group()
-    sources.add_argument("--results-root", type=Path,
-                         help="Frozen results tree (default: repository results/)")
-    sources.add_argument("--archive", type=Path, help="Frozen powerfit-80933a1 ZIP")
+    parser.add_argument("--results-root", type=Path,
+                        help="Frozen results tree (default: repository results/)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print commands without creating or changing files")
     args = parser.parse_args()
 
     build_main_text_figures(output_dir=args.output_dir, results_root=args.results_root,
-                            archive=args.archive, dry_run=args.dry_run)
+                            dry_run=args.dry_run)
     verb = "would generate" if args.dry_run else "generated"
     print(f"[figures] {verb} all seven PDFs in {args.output_dir.resolve()}", flush=True)
     return 0

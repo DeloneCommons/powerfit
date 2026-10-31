@@ -290,7 +290,9 @@ periodic orbit of the full numerical state.
 %    experiments/{generators/periodic_cases.py,runners/run_periodic_cases.py}.
 % G: results/model_mismatch/{metadata.json,runs.csv,analysis/summary.csv};
 %    experiments/{generators/model_mismatch.py,runners/run_model_mismatch.py}.
-% E/H: results/active_set/{metadata.json,analysis/refinement_paired_comparison.csv}
-%      and results/supergraph_mismatch/{metadata.json,runs.csv};
+% E/H: results/{active_set,supergraph_mismatch}/{metadata.json,runs.csv};
 %      experiments/generators/{active_set,supergraph_mismatch}.py.
+% Current paired table: scripts/check_manuscript_tables.py reads raw runs,
+% pairs by seed/configuration and uses an absolute 1e-12 score tie tolerance.
+% See the evidence map in manuscript/README.md.
 

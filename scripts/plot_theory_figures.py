@@ -16,11 +16,9 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties, findfont
 from matplotlib.lines import Line2D
 from matplotlib.patches import Circle, FancyArrowPatch, Polygon, Rectangle
 from matplotlib.path import Path as MplPath
-from matplotlib.text import Text
 import numpy as np
 
 
@@ -351,31 +349,6 @@ def workflow_box(ax, center, size, lines, optional=False, diagnostic=False):
         ax.text(x, y + offset, label, ha="center", va="center", fontsize=fontsize, zorder=5)
 
 
-class _WorkflowHeaderText(Text):
-    """Keep the approved PDF's one Base14 Times-Roman header exactly.
-
-    The reviewed asset repaired this header after export. Limit core-font
-    output to that text artist; every other PDF font remains embedded. SVG
-    uses an outlined Times-compatible font (Nimbus Roman when available).
-    """
-
-    def draw(self, renderer):
-        original = self.get_fontproperties().copy()
-        try:
-            if getattr(renderer, "_use_afm_rc_name", None) == "pdf.use14corefonts":
-                self.set_fontfamily("Times")
-            else:
-                try:
-                    font = findfont(FontProperties(family="Nimbus Roman"), fallback_to_default=False)
-                except ValueError:
-                    font = findfont(FontProperties(family="STIXGeneral"))
-                self.set_fontproperties(FontProperties(fname=font, size=self.get_fontsize()))
-            with matplotlib.rc_context({"pdf.use14corefonts": True}):
-                super().draw(renderer)
-        finally:
-            self.set_fontproperties(original)
-
-
 def draw_workflow(output: Path) -> None:
     fig = plt.figure(figsize=(5.70, 4.20))
     ax = fig.add_axes([0., 0., 1., 1.])
@@ -420,15 +393,9 @@ def draw_workflow(output: Path) -> None:
         ("visibility and clearance", -0.015, 10.0),
         ("with competitor geometry", -0.19, 8.9),
     ], diagnostic=True)
-    # Exact baseline, size and colour of the approved final PDF header.
-    # Draw it directly instead of retaining the repaired asset's hidden text.
-    ax.add_artist(_WorkflowHeaderText(
-        x=287.515 / 72, y=151.9 / 72, text="Connector diagnostics",
-        transform=ax.transData, ha="left", va="baseline", fontsize=9.4,
-        color=(0.145, 0.145, 0.145),
-        fontfamily="STIXGeneral",
-        zorder=5,
-    ))
+    ax.text(287.515 / 72, 151.9 / 72, "Connector diagnostics",
+            ha="left", va="baseline", fontsize=9.4,
+            color=(0.145, 0.145, 0.145), zorder=5)
     workflow_box(ax, (4.575, 1.12), (1.85, 0.64), [
         ("Add/drop streaks", 0.12, 10.3),
         ("requested-image mask only", -0.12, 9.0),

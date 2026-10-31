@@ -4,6 +4,9 @@ This procedure separates reviewable source changes from an actual project
 release and article submission. Preparing a branch, building a PDF, or creating
 an arXiv source ZIP does not publish a release or submit the article.
 
+The planned release is **v2.0.0**. Its release date and version DOI have not
+been assigned. The revised article uses the unchanged v1.0.0 scientific evidence.
+
 ## Identifier and license policy
 
 | Identifier | Meaning | Release policy |
@@ -48,9 +51,10 @@ From a clean checkout of the proposed release source, run:
 
 ```bash
 python scripts/check_repo_consistency.py
+python scripts/check_rerun_results.py
+python scripts/check_manuscript_tables.py
 python scripts/check_manuscript_figures.py
 python -m unittest discover -s tests -v
-bash scripts/build_manuscript_pdfs.sh
 python scripts/make_arxiv_bundle.py --output build/powerfit-arxiv.zip
 ```
 
@@ -64,8 +68,8 @@ package, are listed in
 Inspect the final PDF for page layout, legible vector figures, unresolved
 references or citations, and font problems. Check that it contains the abstract,
 Sections 1–9, Appendices A–E, seven figures, four inline tables, and the complete
-bibliography. Reject Type 3 fonts and require embedding for all fonts except
-the approved PDF Base14 `Times-Roman` heading in the workflow figure. Confirm
+bibliography. The current article has 64 pages. Reject Type 3 fonts and require
+embedding for every font, including the workflow heading. Confirm
 that the ZIP preserves nested source paths and includes the freshly built
 `manuscript.bbl`, the pinned official class/style, and the allowlisted upstream
 source/license support files. Extract the ZIP into a clean temporary directory
@@ -78,13 +82,17 @@ Do not run the full scientific rerun as a manuscript-release build step. It
 writes new results and belongs in a disposable checkout when separately
 evaluating computational reproduction. Do not replace the archived environment
 snapshot with the machine used only to render the revised manuscript.
+When validating a scientific rerun separately, use the completeness and table
+checkers on its new outputs. The repository-integrity check always requires the
+untouched archive and has no bypass. Follow the scope and comparison guidance
+in [scripts/README.md](../scripts/README.md).
 
 ## 3. Decide the release contents and metadata
 
 Before tagging, make these concrete decisions:
 
-- Choose the new release version and release date; neither is assigned by this
-  revision. Update release metadata consistently once those values are known.
+- Confirm the planned v2.0.0 version and choose its actual release date. Update
+  release metadata consistently when the release is authorized.
 - Decide whether the Zenodo snapshot will contain source only or both the
   complete revised source and a built article PDF. If a PDF is promised, put it
   into the material actually included in the deposit. A GitHub Release

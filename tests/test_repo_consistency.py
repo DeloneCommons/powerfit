@@ -156,24 +156,6 @@ class RepositoryIntegrationChecks(RepositoryFixture):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("missing sections/results.tex", result.stdout)
 
-    def test_skip_frozen_allows_an_explicit_rerun_without_updating_the_manifest(self):
-        self.complete_fixture()
-        manifest = (self.root / "scripts/frozen_artifacts.sha256.json").read_bytes()
-        self.write("results/frozen.txt", "explicit rerun results\n")
-        ordinary = self.run_cli()
-        skipped = self.run_cli("--skip-frozen")
-        self.assertNotEqual(ordinary.returncode, 0)
-        self.assertEqual(skipped.returncode, 0, skipped.stdout + skipped.stderr)
-        self.assertIn("skipped", skipped.stdout.lower())
-        self.assertEqual((self.root / "scripts/frozen_artifacts.sha256.json").read_bytes(), manifest)
-
-    def test_skip_frozen_still_enforces_pinned_binary_digests(self):
-        self.complete_fixture()
-        self.write("external_software/pinned.whl", "changed binary\n")
-        result = self.run_cli("--skip-frozen")
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("bundled pyvoro2 wheel digest mismatch", result.stdout)
-
 
 if __name__ == "__main__":
     unittest.main()
