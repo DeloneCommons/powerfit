@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Read-only completeness checks for A--H and the committed-data J replay.
 
-This checks populations and recorded fit/diagnostic outcomes, not scientific
-recomputation or frozen-file hashes. It writes nothing and uses only the standard
-library. J systems are compared to the committed systems_final.csv manifest.
+This checks archived protocol identities and recorded fit/diagnostic outcomes,
+not scientific recomputation or frozen-file hashes. It writes nothing and uses
+only the standard library. J systems are compared to systems_final.csv.
 """
 
 import argparse
 import csv
+import hashlib
 import json
 import math
+from itertools import product
 from pathlib import Path
 
 
@@ -29,6 +31,13 @@ CUTOFFS = (4.0, 4.5, 5.0)
 MARGIN_LABELS = ("3A", "5A", "7A", "10A")
 # Generous absolute floating-point comparison tolerance in Angstrom.
 CLEARANCE_TOLERANCE = 1e-10
+D_FEASIBILITY = {
+    "exact_equalities": True,
+    "narrow_intervals": True,
+    "contradictory_equalities": False,
+    "contradictory_intervals": False,
+    "between_points_violation": False,
+}
 
 
 def _csv(path):
@@ -71,12 +80,137 @@ def _fit_statuses(rows, fields):
     # termination is a legitimate experimental outcome, particularly in H.
 
 
+def _identity_value(field, value):
+    if field in {"seed", "dimension", "n_sites"}:
+        # The archived seeds exceed 2**53; never round them through float.
+        return str(int(value))
+    if field in {"sigma", "outlier_fraction", "outlier_amplitude",
+                 "keep_fraction_requested", "candidate_parameter",
+                 "corruption_fraction", "measurement_noise_sigma", "eta"}:
+        value = float(value)
+        if not math.isfinite(value):
+            raise ValueError(f"{field}: expected a finite protocol input")
+        return str(value or 0.0)
+    return str(value)
+
+
+def _synthetic_protocol(name):
+    """Enumerate archived input identities, not fitted scientific values.
+
+    These small grids mirror experiments/configs/ and the frozen runners' seed
+    recipes. They are independent of the rerun's mutable metadata and CSVs.
+    Each case contains its CSV inputs and its seed payload before the replicate.
+    """
+    small_sites = ((2, 16), (3, 24))
+    methods = ("one_shot_fit", "self_consistent_refinement")
+    graphs = [(d, n, graph, parameter) for d, n in small_sites
+              for graph, parameter in (("knn_supergraph", 12.0 if d == 2 else 16.0),
+                                       ("radius_supergraph", 4.0))]
+    if name == "exact_recovery":
+        fields = ("dimension", "n_sites", "periodic", "graph_variant")
+        base_seed, replicates = 20260317, 2
+        cases = [((d, n, periodic, graph), (d, periodic, n, graph))
+                 for (d, n), periodic, graph in product(
+                     small_sites, (False, True), ("full_realized", "two_component_subgraph"))]
+    elif name == "noise_robustness":
+        fields = ("dimension", "n_sites", "noise_family", "sigma",
+                  "outlier_fraction", "outlier_amplitude", "method")
+        base_seed, replicates = 20260318, 6
+        noises = [(family, sigma, 0.0, 0.0) for family, sigma in
+                  product(("gaussian", "laplace"), (0.005, 0.02))]
+        noises += [("outlier", 0.005, fraction, 0.05) for fraction in (0.05, 0.1)]
+        cases = []
+        for (d, n), (family, sigma, fraction, amplitude), method in product(
+                small_sites, noises, ("squared", "huber")):
+            # B intentionally shares a seed across loss methods and outlier fractions.
+            label = (f"outlier_amp_{amplitude:g}" if family == "outlier"
+                     else f"{family}_sigma_{sigma:g}")
+            cases.append(((d, n, family, sigma, fraction, amplitude, method),
+                          ("B", d, n, label)))
+    elif name in {"missing_data", "missing_data_manuscript"}:
+        fields = ("dimension", "n_sites", "keep_fraction_requested")
+        if name == "missing_data":
+            base_seed, replicates = 20260319, 3
+            sizes, fractions = small_sites, (1.0, 0.75, 0.5, 0.3, 0.15)
+        else:
+            base_seed, replicates = 20260320, 10
+            sizes = [(2, n) for n in (16, 24, 32, 48, 64, 96, 128)]
+            sizes += [(3, n) for n in (24, 32, 48, 64, 96, 128)]
+            fractions = [percent / 100 for percent in range(100, 9, -5)]
+        cases = [((d, n, fraction), ("C", d, n, fraction))
+                 for (d, n), fraction in product(sizes, fractions)]
+    elif name == "infeasible":
+        fields = ("dimension", "n_sites", "scenario")
+        base_seed, replicates = 20260320, 3
+        cases = [((d, n, scenario), ("D", d, n, scenario))
+                 for (d, n), scenario in product(small_sites, D_FEASIBILITY)]
+    elif name == "active_set":
+        fields = ("dimension", "n_sites", "candidate_graph", "candidate_parameter", "method")
+        base_seed, replicates = 20260318, 5
+        cases = [((d, n, graph, parameter, method), ("E", d, n, graph, parameter))
+                 for (d, n, graph, parameter), method in product(graphs, methods)]
+    elif name == "periodic":
+        fields = ("dimension", "n_sites", "scenario", "corruption_fraction", "measurement_noise_sigma")
+        base_seed, replicates = 20260317, 6
+        conditions = [("correct_images", 0.0, 0.0), ("noisy_correct_images", 0.0, 0.01)]
+        conditions += [(scenario, fraction, 0.0) for scenario, fraction in product(
+            ("wrong_images_authoritative", "nearest_image_inference", "realized_shift_refinement"),
+            (0.1, 0.25, 0.5))]
+        # F records the base-instance seed, shared by all conditions of a replicate.
+        cases = [((d, n, scenario, fraction, sigma), ("F", d, n))
+                 for (d, n), (scenario, fraction, sigma) in product(small_sites, conditions)]
+    elif name == "model_mismatch":
+        fields = ("geometry_family", "dimension", "n_sites", "law_family", "eta")
+        base_seed, replicates = 20260321, 10
+        sizes = [(2, n) for n in (32, 64, 128)] + [(3, n) for n in (24, 48, 96)]
+        laws = [("exact_control", 0.0)] + list(product(
+            ("type_cycle", "local_context"), (0.0, 0.03, 0.06, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5)))
+        cases = [((geometry, d, n, law, eta), ("G", geometry, d, n, law, eta))
+                 for geometry, (d, n), (law, eta) in product(
+                     ("hard_core_random", "perturbed_lattice"), sizes, laws)]
+    elif name == "supergraph_mismatch":
+        fields = ("dimension", "n_sites", "candidate_graph", "candidate_parameter", "law_family", "eta", "method")
+        base_seed, replicates = 20260322, 6
+        cases = [((d, n, graph, parameter, "type_cycle", eta, method),
+                  ("H", d, n, graph, parameter, "type_cycle", eta))
+                 for (d, n, graph, parameter), eta, method in product(
+                     graphs, (0.0, 0.1, 0.2, 0.4), methods)]
+    else:
+        raise ValueError(f"unknown archived synthetic protocol: {name}")
+
+    fields = ("seed", *fields)
+    expected = set()
+    for (inputs, seed_parts), rep in product(cases, range(replicates)):
+        # Same standard-library seed recipe as the archived experiment runners.
+        payload = "|".join(str(part) for part in (*seed_parts, rep)).encode("utf-8")
+        seed = int.from_bytes(hashlib.blake2b(payload, digest_size=8).digest(), "little") ^ base_seed
+        expected.add(tuple(_identity_value(field, value) for field, value in zip(fields, (seed, *inputs))))
+    return fields, expected
+
+
+def _infeasible_outcomes(rows):
+    for index, row in enumerate(rows, 2):
+        expected = D_FEASIBILITY[row["scenario"]]
+        for field, wanted in (("feasible_expected", expected), ("feasible_detected", expected),
+                              ("detection_correct", True)):
+            value = row[field]
+            if value not in ("True", "False"):
+                raise ValueError(f"row {index} {field}: invalid boolean {value!r}")
+            if (value == "True") != wanted:
+                raise ValueError(f"row {index} {field}: expected {wanted} for {row['scenario']}, got {value}")
+
+
 def _synthetic(directory, expected):
     metadata = _json(directory / "metadata.json")
     _count(metadata.get("n_runs"), expected, "metadata n_runs")
     rows = _csv(directory / "runs.csv")
     _count(len(rows), expected, "runs.csv row count")
-    if directory.name != "infeasible":
+    fields, identities = _synthetic_protocol(directory.name)
+    normalized = [{field: _identity_value(field, row[field]) for field in fields} for row in rows]
+    _identities(normalized, fields, identities)
+    if directory.name == "infeasible":
+        _infeasible_outcomes(rows)
+    else:
         _fit_statuses(rows, ("status",))
 
 

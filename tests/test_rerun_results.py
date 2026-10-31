@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
@@ -67,11 +68,13 @@ class RerunCompletenessTests(unittest.TestCase):
         self.json(path, value)
 
     def complete_fixture(self):
-        for name, count in SYNTHETIC.items():
-            self.json(self.results / name / "metadata.json", {"n_runs": count})
-            self.csv(self.results / name / "runs.csv", [
-                {"seed": i, "status": "optimal", "converged": False,
-                 "termination": "cycle_detected"} for i in range(count)])
+        # Independent archived inputs include legitimate shared seeds in B/E/F/H
+        # and D's actual boolean schema. Do not generate fixtures with the checker.
+        for name in SYNTHETIC:
+            directory = self.results / name
+            directory.mkdir(parents=True)
+            for filename in ("metadata.json", "runs.csv"):
+                shutil.copyfile(ROOT / "results" / name / filename, directory / filename)
         for name in ["J1_dataset_audit", "J2_true_support_ladder",
                      "J3_candidate_recovery_refresh", *MARGINS]:
             directory = self.results / "qtaim_main" / name
@@ -116,6 +119,89 @@ class RerunCompletenessTests(unittest.TestCase):
         self.assertTrue(any("exact_recovery" in e and "16" in e for e in self.errors()))
         self.update_json("noise_robustness/metadata.json", n_runs=143)
         self.assertTrue(any("noise_robustness" in e and "n_runs" in e for e in self.errors()))
+
+    def test_same_length_duplicate_cannot_replace_a_missing_synthetic_case(self):
+        for name in SYNTHETIC:
+            with self.subTest(study=name):
+                path = self.results / name / "runs.csv"
+                original = path.read_bytes()
+                rows = self.read_csv(path)
+                rows[-1] = rows[0].copy()
+                self.csv(path, rows)
+                self.assertTrue(any(name in e and "identit" in e for e in self.errors()))
+                path.write_bytes(original)
+
+    def test_unexpected_synthetic_configuration_is_rejected_at_the_same_row_count(self):
+        for name in SYNTHETIC:
+            with self.subTest(study=name):
+                path = self.results / name / "runs.csv"
+                original = path.read_bytes()
+                rows = self.read_csv(path)
+                rows[0]["n_sites"] = "999"
+                self.csv(path, rows)
+                self.assertTrue(any(name in e and "identit" in e for e in self.errors()))
+                path.write_bytes(original)
+
+    def test_unexpected_replicate_seed_is_rejected(self):
+        path = self.results / "exact_recovery/runs.csv"
+        rows = self.read_csv(path)
+        rows[0]["seed"] = str(int(rows[0]["seed"]) + 1)
+        self.csv(path, rows)
+        self.assertTrue(any("exact_recovery" in e and "identit" in e for e in self.errors()))
+
+    def test_empty_and_nonfinite_synthetic_inputs_are_rejected(self):
+        path = self.results / "model_mismatch/runs.csv"
+        original = self.read_csv(path)
+        for field, value in [("geometry_family", ""), ("eta", "nan"), ("eta", "inf")]:
+            with self.subTest(field=field, value=value):
+                rows = [row.copy() for row in original]
+                rows[0][field] = value
+                self.csv(path, rows)
+                self.assertTrue(any("model_mismatch" in e for e in self.errors()))
+
+    def test_synthetic_row_order_and_equivalent_numeric_spelling_are_accepted(self):
+        path = self.results / "active_set/runs.csv"
+        rows = self.read_csv(path)
+        rows[0]["candidate_parameter"] = "12e0"
+        self.csv(path, list(reversed(rows)))
+        self.assertEqual(self.errors(), [])
+
+    def test_incorrect_d_feasibility_detection_is_rejected(self):
+        path = self.results / "infeasible/runs.csv"
+        original = self.read_csv(path)
+        for expected in ["True", "False"]:
+            with self.subTest(feasible_expected=expected):
+                rows = [row.copy() for row in original]
+                row = next(row for row in rows if row["feasible_expected"] == expected)
+                row["feasible_detected"] = "False" if expected == "True" else "True"
+                row["detection_correct"] = "False"
+                self.csv(path, rows)
+                self.assertTrue(any("infeasible" in e and "feasible_detected" in e for e in self.errors()))
+
+    def test_d_correctness_flag_cannot_disagree_with_a_correct_detection(self):
+        path = self.results / "infeasible/runs.csv"
+        rows = self.read_csv(path)
+        rows[0]["detection_correct"] = "False"
+        self.csv(path, rows)
+        self.assertTrue(any("infeasible" in e and "detection_correct" in e for e in self.errors()))
+
+    def test_d_expected_feasibility_is_checked_against_the_scenario(self):
+        path = self.results / "infeasible/runs.csv"
+        rows = self.read_csv(path)
+        rows[0].update(feasible_expected="False", feasible_detected="False", detection_correct="True")
+        self.csv(path, rows)
+        self.assertTrue(any("infeasible" in e and "feasible_expected" in e for e in self.errors()))
+
+    def test_d_boolean_fields_reject_invalid_values(self):
+        path = self.results / "infeasible/runs.csv"
+        original = self.read_csv(path)
+        for field in ["feasible_expected", "feasible_detected", "detection_correct"]:
+            for value in ["", "yes", "0"]:
+                with self.subTest(field=field, value=value):
+                    rows = [row.copy() for row in original]
+                    rows[0][field] = value
+                    self.csv(path, rows)
+                    self.assertTrue(any("infeasible" in e and field in e for e in self.errors()))
 
     def test_skipped_molecular_summary_and_nonempty_skip_file_are_rejected(self):
         self.update_json("qtaim_main/J2_true_support_ladder/summary.json", n_skipped_rows=1)

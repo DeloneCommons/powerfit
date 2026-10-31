@@ -80,7 +80,12 @@ specific interpreter. TeX is not required.
 
 There are **5,334 synthetic rows** across the nine sweeps. Each molecular
 analysis must process all 100 systems in `data/qtaim_main/systems_final.csv`
-without skips; J3 has 300 system/cutoff fits. The completeness checker closes a
+without skips; J3 has 300 system/cutoff fits. Synthetic checks match the complete
+archived configuration/seed/method identities, preserving legitimate seed reuse
+across methods and conditions. D must correctly identify both feasible and
+infeasible scenarios, with consistent boolean outcome flags.
+
+The completeness checker closes a
 gap in the frozen molecular CLIs: `--require-all` rejects missing JSON files,
 but other per-system errors can still be recorded as skips. J4a must have zero
 visibility mismatches and finite clearance differences at most `1e-10` Å.
