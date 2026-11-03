@@ -21,7 +21,7 @@ With TeX, Poppler and Python 3.10+ installed:
 bash scripts/build_manuscript_pdfs.sh
 ```
 
-This produces **`manuscript/manuscript.pdf`**, a 64-page article, from the
+This produces **`manuscript/manuscript.pdf`**, a 65-page article, from the
 committed source and figures. It rebuilds the bibliography and checks the PDF.
 It requires no scientific Python packages and performs no experiments.
 See [TeX installation and source structure](manuscript/README.md) for the
