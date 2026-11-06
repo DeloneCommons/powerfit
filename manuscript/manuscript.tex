@@ -28,7 +28,7 @@
 \address{Independent researcher}
 
 \begin{abstract}
-We study how to construct a power diagram from observed or predicted positions of selected pairwise separators, inferring scalar site weights while keeping the sites fixed. The diagram compares squared distances minus site weights, giving an affine relation between separator positions and weight differences. Exact compatibility and identifiability then reduce to graph conditions, and unconstrained quadratic fitting to a weighted graph-Laplacian problem. Fitting a pairwise plane does not guarantee an actual shared face. We therefore check which pairs share faces and whether each face contains the fitted separator's intersection with the line through its sites. For a point inside the face, centered clearance measures the distance to its boundary within the separating plane. A one-pass computational workflow implements this separation, including checks of selected periodic images. Synthetic experiments recover identifiable weight differences and show that improved agreement with imposed separator targets can accompany poorer recovery of reference adjacencies. An application to 100 molecules uses local electron-density landmarks and separator predictions to evaluate interatomic separator positions and pair relations. These results also show that reconciling local predictions into common weights does not necessarily improve their accuracy, while clearance adds ranking information among nonbonded faces passing the local membership test. The resulting workflow connects local separator data to a global partition while making missing information and geometric limitations explicit.
+Local estimates of where regions should divide do not necessarily specify a consistent partition of space. We study how to combine such estimates into a power diagram, which assigns space to fixed points by comparing squared distances adjusted by one scalar weight per point. The estimates specify dividing positions along lines joining selected pairs and need not come from an existing partition. Each position gives a desired weight difference. A graph formulation describes what incomplete data determine, when all estimates can be matched, and how to reconcile conflicting observations by linear least squares. Fitting the dividing positions does not ensure that the corresponding regions share a boundary, so we separately assess the realized boundaries and their local extent at the fitted dividing points. Synthetic tests and an application to 100 molecules show that closer agreement with local targets need not improve agreement with reference geometry. For nonbonded atoms, the extent of boundaries containing the fitted dividing point helps distinguish contacts supported by electron-density analysis. The resulting method provides a reproducible route from local information to a global spatial model, with separate assessments of fitting and geometry.
 \end{abstract}
 
 \begin{keyword}
@@ -38,6 +38,7 @@ Power diagrams \sep inverse problems \sep pairwise separators
 
 \end{frontmatter}
 
+\Needspace{8\baselineskip}
 \input{sections/01_introduction}
 \input{sections/02_separators}
 \input{sections/03_graph_fitting}
