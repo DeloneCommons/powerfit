@@ -24,14 +24,7 @@ An observed coordinate $t_{ij}^{\mathrm{obs}}$ therefore specifies a target diff
  z_{ij}=(2t_{ij}^{\mathrm{obs}}-1)d_{ij}^2.
  \label{eq:target-difference}
 \end{equation}
-It determines $w_i-w_j$, not the individual weights. Figure~\ref{fig:two-site-separators} illustrates this relation with two fixed sites.
-
-\begin{figure}[tbp]
-\centering
-\includegraphics[width=\linewidth]{figures/figure_02_separators.pdf}
-\caption{Two-site geometry for $p_i=(0,0)$ and $p_j=(2,0)$. The regions labeled $C_i$ and $C_j$ are the power cells, where the corresponding site minimizes the power distance. Blue lines are equal-power separators and, with only these two sites, are genuine shared boundaries. (a) Equal weights give the midpoint separator $x_1=1$. (b) Increasing $w_j$ from $0$ to $2$ moves the separator toward $p_i$ (arrow), to $x_1=1/2$. The observed coordinate $t_{ij}^{\mathrm{obs}}=1/4$ therefore specifies $z_{ij}=w_i-w_j=-2$. The diamond marks the connector intersection; both panels have the same scale.}
-\label{fig:two-site-separators}
-\end{figure}
+It determines $w_i-w_j$, not the individual weights. In the example of Figure~\ref{fig:two-site-separators}, take $p_i=(0,0)$ and $p_j=(2,0)$. Equal weights give the midpoint separator $x_1=1$. Increasing $w_j$ from $0$ to $2$, with $w_i=0$, moves it to $x_1=1/2$. The corresponding coordinate $t_{ij}^{\mathrm{obs}}=1/4$ specifies $z_{ij}=w_i-w_j=-2$.
 
 The data may specify a normalized coordinate $t_{ij}^{\mathrm{obs}}$, a signed distance $\ell_{ij}^{\mathrm{obs}}=d_{ij}t_{ij}^{\mathrm{obs}}$ measured from $p_i$ toward $p_j$, or a point $x_{ij}^{\mathrm{obs}}\in\mathbb R^d$ on or near the intended bisector. In the last case, projection onto the connector gives
 \begin{equation}

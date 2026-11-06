@@ -133,6 +133,11 @@ one pair can be grouped into their mean target with the corresponding
 total fitting weight, plus an additive constant independent of $w$.
 This reduction assumes fixed generator positions; the published method
 also optimizes those positions.
+The additive constant records the spread of the projected sample positions.
+Replacing the samples by their mean preserves the optimal weights, but
+agreement with that mean need not imply a small error over the sampled
+interface. Thus, data sufficient to determine the weights need not suffice
+to assess the approximation of an entire boundary.
 
 The quadratic loss is not essential to the observation model. When large residuals should have less influence, the squared penalties can be replaced by convex losses such as the Huber loss, which is quadratic near zero and linear beyond a residual threshold \cite{Huber1964}. The resulting fixed-observation problem remains convex, although its minimizer is generally no longer obtained from a linear Laplacian system.
 

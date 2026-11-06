@@ -5,7 +5,7 @@ scientific roles are listed below; run commands from the repository root.
 
 | Printed figure | Figure PDF | Placement | Source or construction |
 |---|---|---|---|
-| 1 | [figure_02_separators.pdf](figure_02_separators.pdf) | Section 2 | Exact two-site example: increasing the second weight moves the equal-power separator toward the first site. |
+| 1 | [figure_02_separators.pdf](figure_02_separators.pdf) | Introduction | Exact two-site example: equal weights give the midpoint separator; increasing the second weight moves it toward the first site and enlarges the second cell. |
 | 2 | [figure_03_cycle.pdf](figure_03_cycle.pdf) | Section 3.1 | Signed traversal of three observations on an abstract graph; the dashed return reverses an existing observation. |
 | 3 | [figure_04_realization.pdf](figure_04_realization.pdf) | Section 4.1 | Exact four-site full-plane examples with an absent face, a face away from the connector point, and a strictly visible connector point. |
 | 4 | [figure_05_workflow.pdf](figure_05_workflow.pdf) | Section 5 | One-pass fitting and optional observation-set refinement, with full-candidate matching and separate geometric diagnostics. |

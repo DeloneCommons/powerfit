@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reproduce deterministic teaching figures for powerfit Sections 2--5.
+"""Reproduce deterministic teaching figures for the powerfit manuscript.
 
 No experiment, optimization benchmark, or molecular calculation is run.
 PDFs are the LaTeX assets; matching SVGs are editable vector sources.
@@ -243,15 +243,13 @@ def draw_separators(output: Path) -> None:
         ax.plot([0., 2.], [0., 0.], color="#6C6C6C", lw=0.75, zorder=4)
         ax.scatter(points[:, 0], points[:, 1], s=22, facecolor=INK,
                    edgecolor="white", linewidth=0.35, zorder=5)
-        ax.scatter(*q, marker="D", s=28, facecolor="white", edgecolor=INK,
-                   linewidth=0.95, zorder=6)
         label_site(ax, points[0], r"$p_i$", (-4, -11))
         label_site(ax, points[1], r"$p_j$", (4, -11))
-        ax.text(0.02, -0.55, r"$C_i$", color=BLUE, fontsize=11.0)
-        ax.text(1.83, -0.55, r"$C_j$", color=ORANGE, fontsize=11.0)
-        ax.text(q[0] + 0.10, 0.69, r"$H_{ij}$", color=BLUE, fontsize=11.2)
-        fraction = r"\frac{1}{2}" if panel == 0 else r"\frac{1}{4}"
-        ax.text(q[0] + 0.12, 0.12, rf"$t_{{ij}}={fraction}$", fontsize=11.2)
+        ax.text((window[0] + q[0]) / 2, -0.55, r"Cell $i$",
+                ha="center", color=BLUE, fontsize=11.0)
+        ax.text((q[0] + window[1]) / 2, -0.55, r"Cell $j$",
+                ha="center", color=ORANGE, fontsize=11.0)
+        ax.text(q[0] + 0.10, 0.69, "Separator", color=BLUE, fontsize=10.5)
         if panel == 1:
             ax.plot([1., 1.], [0.34, 0.52], color=GREY, lw=0.75)
             ax.annotate("", xy=(0.5, 0.43), xytext=(1., 0.43),
@@ -263,7 +261,7 @@ def draw_separators(output: Path) -> None:
         value = 0 if panel == 0 else 2
         fig.text(center, 0.105, rf"$(w_i,w_j)=(0,{value})$", ha="center", fontsize=11.)
     save_vector(fig, output, "figure_02_separators", "Weight difference moves a two-site separator")
-    print("Section 2: separator x = 1, 1/2; t = 1/2, 1/4; shifted difference = -2")
+    print("Introduction: two-site separators at x = 1 and 1/2 for weights (0,0) and (0,2)")
 
 
 def cycle_data():
