@@ -28,7 +28,11 @@
 \address{Independent researcher}
 
 \begin{abstract}
-Local estimates of where regions should divide do not necessarily specify a consistent partition of space. We study how to combine such estimates into a power diagram, which assigns space to fixed points by comparing squared distances adjusted by one scalar weight per point. The estimates specify dividing positions along lines joining selected pairs and need not come from an existing partition. Each position gives a desired weight difference. A graph formulation describes what incomplete data determine, when all estimates can be matched, and how to reconcile conflicting observations by linear least squares. Fitting the dividing positions does not ensure that the corresponding regions share a boundary, so we separately assess the realized boundaries and their local extent at the fitted dividing points. Synthetic tests and an application to 100 molecules show that closer agreement with local targets need not improve agreement with reference geometry. For nonbonded atoms, the extent of boundaries containing the fitted dividing point helps distinguish contacts supported by electron-density analysis. The resulting method provides a reproducible route from local information to a global spatial model, with separate assessments of fitting and geometry.
+Spatial partitions describe regions associated with objects and their neighbors, yet the available information may consist only of local estimates of where selected pairs should be separated. We develop a mathematical and computational framework for fitting a power (Laguerre) diagram—a spatial partition controlled by fixed generating points and adjustable weights—to such estimates.
+
+We establish how the observations constrain the weights, how inconsistent estimates can be reconciled, and which boundaries are realized in the fitted diagram. Synthetic experiments test the approach with exact, incomplete, and noisy observations, as well as conflicting geometric requirements.
+
+We then apply it to 100 molecules, fitting interatomic separator predictions from atomic density profiles and comparing the results with a reference partition based on the Quantum Theory of Atoms in Molecules (QTAIM). The resulting diagrams show good agreement with the reference separator positions and recover nearly all QTAIM-supported neighboring pairs, with most adjacency discrepancies arising from additional boundaries beyond the reference pair set.
 \end{abstract}
 
 \begin{keyword}
