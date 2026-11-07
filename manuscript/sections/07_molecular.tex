@@ -13,7 +13,7 @@ For the connector-normal plane family fixed by the nuclear positions, a BCP spec
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/figure_E_bcp_projection.pdf}
-\caption{A conceptual density model in a two-dimensional section. The bond path consists of gradient-ascent branches from the BCP $b$ toward the two atomic attractors. The curved zero-flux boundary passes through $b$ and bends around the right-hand basin. The connector-normal target plane contains both $b$ and its projection $q$; the inset resolves their small separation. Passing through $b$ does not require agreement with the boundary's tangent or curvature. The geometry is illustrative, not taken from a benchmark molecule, and the plane trace does not assert a finite realized power face.}
+\caption{A conceptual density model in a two-dimensional section. The bond path consists of gradient-ascent branches from the BCP $b$ toward the two atomic attractors. The curved zero-flux boundary passes through $b$ and bends around the right-hand basin. The connector-normal target plane contains both $b$ and its projection $q$; the inset resolves their small separation. Passing through $b$ does not require agreement with the boundary's tangent or curvature. The geometry is illustrative, not taken from a benchmark molecule. The drawing does not imply that the target plane contributes a shared power-cell face.}
 \label{fig:bcp-projection}
 \end{figure}
 
@@ -44,7 +44,7 @@ Nonbonded & 0.1528 & 0.0372 & 0.0619 & 0.0605 \\
 \end{tabular}
 \end{table}
 
-The local proatomic predictor has substantially smaller RMSE than midpoint prediction. The fitted proatomic model has a slightly larger overall RMSE than the local predictor, with a more marked difference on nonbonded pairs ($0.0619$ versus $0.0372$~\AA{}). Both fitted models realize every requested reference pair, so the deterioration is not caused by losing difficult pairs from the evaluation. The direct QTAIM-target fit also leaves a larger nonbonded than bonded error. These results distinguish the accuracy of a local predictor from the accuracy retained when its outputs are reconciled into one power diagram. The nonbonded QTAIM-target value is consequently not a lower bound on attainable length error for that subset.
+The local proatomic predictor has substantially smaller RMSE than midpoint prediction. The fitted proatomic model has a slightly larger overall RMSE than the local predictor, with a more marked difference on nonbonded pairs ($0.0619$ versus $0.0372$~\AA{}). Both fitted models realize every requested reference pair, so the deterioration is not caused by losing difficult pairs from the evaluation. The direct QTAIM-target fit also leaves a larger nonbonded than bonded error. These results distinguish the accuracy of a local predictor from the accuracy retained when its outputs are reconciled into one power diagram. Because the QTAIM-target fit minimizes normalized-coordinate error over each molecule's full reference graph, its nonbonded RMSE should not be interpreted as a lower bound on attainable length error for that subset.
 
 \subsection{Fitting from candidate pairs}
 \label{subsec:molecular-candidates}

@@ -64,7 +64,7 @@ For mismatch-only fitting, the effective graph contains the positive-confidence 
 Positive weight regularization removes the need for the internal anchors, and the standalone solver does not subsequently center its result. The outer procedure nevertheless aligns every current effective component to the preceding evaluated weights whenever such a vector exists, including during final refitting. For an unregularized objective this changes only its component representatives. With positive regularization, it can change the regularization term after the inner solve; the stored inner fitting status is retained after alignment. For example, an empty active set has a regularization-only solution equal to the reference, but alignment of its singleton components restores the previous evaluated weights. Component offsets must therefore be interpreted as a continuation convention, not as new information recovered from absent pair data.
 
 \paragraph{Stopping and finalization}
-The self-consistency test requires equality of the current, proposed, and requested-image realization masks, together with an evaluated-weight step at most the tolerance. The first step is defined as zero. An inner iterative fit that reaches its iteration limit can still supply weights to this test, so outer self-consistency does not certify inner convergence. After the self-consistency test, a changed proposed mask is checked against previous recorded mask entries. The initial mask is recorded at iteration zero, and timestamps are updated only on mask changes. The cycle window measures outer iterations since a recorded entry; unchanged persistence does not refresh it. No full-state periodic orbit is certified, and an outer-iteration limit has no implied self-consistency.
+The self-consistency test requires equality of the current, proposed, and requested-image realization masks, together with an evaluated-weight step at most the tolerance. The first step is defined as zero. An inner iterative fit that reaches its iteration limit can still supply weights to this test, so outer self-consistency does not certify inner convergence. After the self-consistency test, a changed proposed mask is checked against previous recorded mask entries. The initial mask is recorded at iteration zero, and timestamps are updated only on mask changes. The cycle window measures outer iterations since a recorded entry; iterations without a mask change do not refresh its timestamp. No full-state periodic orbit is certified, and an outer-iteration limit has no implied self-consistency.
 
 An inner failure that returns no weights exits the loop immediately, with all-false realization flags and unavailable predictions rather than diagnostics from a constructed tessellation. After a normal loop stop, the updated active mask is used for a final unrelaxed fitting attempt. Returned weights are aligned and rematched, so the final diagram can differ from the last relaxed intermediate diagram. Final numerical failure replaces the outer label by \texttt{numerical\_failure} and clears the outer convergence flag. Final hard infeasibility is recorded as \texttt{infeasible\_hard\_constraints} in the nested fit and need not replace the preceding outer label. If the final fit returns no weights, the realization diagnostics are retained from the preceding evaluation and all-candidate predictions are unavailable (stored as NaN). The nested fit status and weight availability must therefore be checked before treating those diagnostics as a newly fitted diagram.
 
@@ -152,8 +152,8 @@ to nominal fractions $f=0.05$ or $0.10$ of the observations. For $m$
 observations, $\operatorname{round}(fm)$ distinct rows are sampled without
 replacement, so the realized contamination fraction need not equal $f$.
 
-The quadratic fit uses the analytic solver. The Huber fit uses threshold
-$0.03$ in those same fraction units and ADMM \cite{Boyd2011},
+The quadratic fit uses the analytic solver. The Huber fit uses a threshold of
+$0.03$ in normalized-coordinate units and is solved by ADMM \cite{Boyd2011},
 with the archived limit of
 5,000 iterations and ADMM penalty parameter $\rho=1$. Clean-reference separator RMSE is
 evaluated on the original generating pair observations against their
@@ -170,8 +170,8 @@ uniform Huber superiority.
 Experiment F contains 132 archived result records based on six generating
 instances per dimension, with 16 sites in two dimensions and 24 in three.
 The scenarios include correct supplied images, a correct-image control with
-Gaussian fraction noise of standard deviation $0.01$, deliberately incorrect
-supplied images, nearest-image inference after removing the labels, and a
+Gaussian noise of standard deviation $0.01$ in normalized separator coordinates,
+deliberately incorrect supplied images, nearest-image inference after removing the labels, and a
 separate realized-shift refinement of the inferred images. Nominal image
 corruption fractions are $0.10$, $0.25$ and $0.50$.
 
@@ -246,9 +246,10 @@ unite all generating true pairs with either a symmetric nearest-neighbor
 graph ($k=12$ in two dimensions and $k=16$ in three) or pairs within four
 times the median nearest-neighbor distance. Candidate recall is therefore
 one by construction. E applies independent Gaussian noise of standard
-deviation $0.005$ to true-pair fractions and assigns midpoint-centered
-Gaussian surrogate targets of standard deviation $0.03$ to additional pairs.
-H applies the type-cycle law to all candidate fractions at
+deviation $0.005$ to the normalized separator coordinates of true pairs and
+assigns midpoint-centered Gaussian surrogate targets of standard deviation
+$0.03$ to additional pairs. H applies the type-cycle law to the normalized
+separator coordinates of all candidate pairs at
 $\eta\in\{0,0.1,0.2,0.4\}$.
 
 Both studies use analytic inner fits. The outer settings are addition
@@ -273,8 +274,8 @@ change counts, not pooled-row errors.
 All 20 E refinements stop as \texttt{self\_consistent}. Across all 96 H
 refinements, the outer labels are 85 \texttt{self\_consistent} and
 11 \texttt{cycle\_detected}, while the recorded \emph{final} inner fits have
-optimal status. The latter does not certify every preceding inner iteration
-or convergence of the outer updates. A repeated active mask is distinct
+optimal status. The final optimal status does not establish optimality of earlier
+inner fits or convergence of the outer updates. A repeated active mask is distinct
 from an infeasible difference-constraint cycle and does not establish a
 periodic orbit of the full numerical state.
 
