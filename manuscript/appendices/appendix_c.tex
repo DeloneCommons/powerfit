@@ -37,7 +37,7 @@ For a reference target $z^\star$ (possibly incompatible) and perturbed target $\
 \label{eq:appendix-reference-fit-response}
 \end{equation}
 
-This statement does \emph{not} identify $w^\star$ with an arbitrary independently chosen vector of true physical weights. It relates two minimizers of the \emph{same} fixed quadratic fitting problem evaluated at different target vectors, with the same component-offset convention. Other fixed linear gauges admit analogous expressions. A constant nonzero offset convention adds an affine constant to $w(z)$ but does not alter the response to $\eta$.
+This statement does \emph{not} identify $w^\star$ with an arbitrary independently chosen vector of true physical weights. It relates two minimizers of the \emph{same} fixed quadratic fitting problem evaluated at different target vectors, with the same component-offset convention. Other fixed linear gauges admit analogous expressions. A convention with fixed nonzero component offsets adds a constant vector to $w(z)$ but does not alter the response to $\eta$.
 
 Write $\|v\|_L=(v^TLv)^{1/2}$ for the Laplacian seminorm. The fitted difference perturbation is a weighted orthogonal projection of $\eta$ onto the column space of $B^T$, giving
 \begin{equation}
@@ -89,9 +89,9 @@ K_{ij}\Bigl(\|G\eta\|_\infty+
 <|\sigma_{ij}(w^{\mathrm{phys}})|,
 \label{eq:reference-sign-condition}
 \end{equation}
-provided the reference score is nonzero. The exact sign criterion in Section~4.4 is the special case in which the comparison is made to $w^\star=Gz^\star$ itself, so the deterministic bias term is absent. The latter remains valid even for incompatible $z^\star$.
+provided the reference score is nonzero. The sufficient sign-preservation condition in Section~4.4 is the special case in which the comparison is made to $w^\star=Gz^\star$ itself, so the deterministic bias term is absent. This condition remains valid even for incompatible $z^\star$.
 
-These implications concern strict or negative \emph{connector visibility}, not the identification of all actual power faces. In particular, they do not imply one-step recovery of a prescribed topology, nor convergence of an outer iteration in which the observation mask, fitting weights, or realization diagnostic are updated. With hard constraints, the fitted response need not be globally linear, so a single fixed operator $G$ cannot be used without further analysis.
+These implications concern preservation of the sign of a nonzero \emph{connector score}, not the identification of all actual power faces. In particular, they do not imply one-step recovery of a prescribed topology, nor convergence of an outer iteration in which the observation mask, fitting weights, or realization diagnostic are updated. With hard constraints, the fitted response need not be globally linear, so a single fixed operator $G$ cannot be used without further analysis.
 
 \subsection{Scope of periodic perturbation bounds}
 \label{app:stability-periodic}
