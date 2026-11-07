@@ -40,13 +40,6 @@ The connector-normal target plane through $q$ is
 \]
 Since $(b-q)\cdot\delta_{ij}=0$, this plane also passes through $b$. Projection therefore preserves all offset information that the BCP can provide for this fixed-normal family. In particular, the transverse displacement $\|b-q\|$ is neither a longitudinal separator error nor, by itself, evidence that the observation is incompatible with a power diagram.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{figures/figure_E_bcp_projection.pdf}
-\caption{A conceptual density model in a two-dimensional section. The bond path consists of gradient-ascent branches from the BCP $b$ toward the two atomic attractors. The curved zero-flux boundary passes through $b$ and bends around the right-hand basin. The connector-normal target plane contains both $b$ and its projection $q$; the inset resolves their small separation. Passing through $b$ does not require agreement with the boundary's tangent or curvature. The geometry is illustrative, not taken from a benchmark molecule, and the plane trace does not assert a finite realized power face.}
-\label{fig:bcp-projection}
-\end{figure}
-
 For fitted weights $\widehat w$, the pairwise plane $H_{ij}(\widehat w)$ has the same normal but may have a different offset. Its distance from the original BCP is exactly
 \begin{equation}
  \operatorname{dist}\bigl(b,H_{ij}(\widehat w)\bigr)
@@ -57,7 +50,6 @@ Equation~\eqref{eq:bcp-plane-distance} explains the length error used for the fi
 
 Nor does a plane through one boundary point necessarily approximate the whole boundary well. Its normal is constrained by the nuclear connector, while the physical boundary can have a different tangent plane and nonzero curvature (Figure~\ref{fig:bcp-projection}). The boundary's intersection with the connector need not be $q$. A best plane approximation to a surface patch would require a choice of patch and error criterion, which is not part of these experiments. In addition, offsets from different BCPs can violate the cycle compatibility condition of Section~3. These are separate limitations of the chosen geometric family and the available observations.
 
-\FloatBarrier
 \subsection{Dataset, predictors and error aggregation}
 \label{app:molecular-protocols}
 
@@ -77,22 +69,20 @@ The proatomic inputs are spherically averaged radial electron-density profiles o
 \]
 The radial profiles use piecewise cubic Hermite interpolation. Homonuclear pairs are assigned $x=d/2$. The lookup covers separations from $0.5$ to $5$~\AA{} at $0.01$~\AA{} spacing. At application time, it linearly interpolates the position $x$ and the normalized fraction $t$ separately as functions of $d$. Consequently $x_{\mathrm{lookup}}(d)$ need not equal $d\,t_{\mathrm{lookup}}(d)$ between tabulated distances. The raw proatomic length error uses the former; the fitted model takes the latter as its observations.
 
+All J2 and J3 fits minimize squared mismatch to their normalized separator targets, separately for each molecule. They use unit observation weights, zero weight-regularization strength and no hard measurement restrictions. J2 uses the full reference graph, whereas J3 uses the distance-selected candidate graph.
+
 For an evaluated subset $S$ of pairs pooled across molecules, the reported length error is
 \begin{equation}
  \operatorname{RMSE}_{\!\text{\AA}}(S)
  =\left(\frac{1}{|S|}\sum_{e\in S}\varepsilon_e^2\right)^{1/2},
  \label{eq:molecular-pooled-rmse}
 \end{equation}
-where $\varepsilon_e=d_e(t_e^{\mathrm{fit}}-t_e^{\mathrm{BCP}})$ for a fitted model and $\varepsilon_e=x_e^{\mathrm{lookup}}-d_e t_e^{\mathrm{BCP}}$ for the raw proatomic prediction. The midpoint error is $\varepsilon_e=d_e(1/2-t_e^{\mathrm{BCP}})$. These are not means of per-molecule RMSE; molecules with more evaluated pairs contribute more terms. J2's direct BCP-target reference fit minimizes the unweighted squared fraction errors separately on each molecule's full reference graph. In length-error notation this objective weights $\varepsilon_e^2$ by $1/d_e^2$, and it does not separately minimize the nonbonded subset error.
+where $\varepsilon_e=d_e(t_e^{\mathrm{fit}}-t_e^{\mathrm{BCP}})$ for a fitted model and $\varepsilon_e=x_e^{\mathrm{lookup}}-d_e t_e^{\mathrm{BCP}}$ for the raw proatomic prediction. The midpoint error is $\varepsilon_e=d_e(1/2-t_e^{\mathrm{BCP}})$. These are not means of per-molecule RMSE; molecules with more evaluated pairs contribute more terms. For J2's direct BCP-target reference fit, the normalized-coordinate objective weights $\varepsilon_e^2$ by $1/d_e^2$ in length-error notation and does not separately minimize the nonbonded subset error.
 
 \subsection{Candidate graphs and realized pairs}
 \label{app:molecular-candidates}
 
 The nonperiodic molecular diagrams use atom-coordinate bounding boxes padded by $5$~\AA{} in the reference calculations. The distance cutoffs selecting J3's input pairs are a separate choice.
-
-A realized pair is counted as \emph{visible} when the connector-line intersection belongs to its clipped face under the archived polygon-membership test \cite{Pyvoro2_063}. This numerical convention includes boundary points rather than requiring a strictly positive analytic gap. In orthonormal face coordinates measured in \AA{}, the test treats oriented edge cross products of magnitude at most $10^{-10}$~\AA$^2$ as zero. The resulting \texttt{intersection\_inside} flag supplies the visibility filter in J3 and the eligible-face selection in J4b.
-
-Table~\ref{tab:molecular-candidates} collects the three cutoff settings. Every setting contains and realizes all 3,975 reference pairs, which are evaluated before visibility filtering. The visible subset retains 3,973 reference pairs in each setting.
 
 \begin{table}[htbp]
 \centering
@@ -111,8 +101,13 @@ Table~\ref{tab:molecular-candidates} collects the three cutoff settings. Every s
 \end{tabular}
 \end{table}
 
+A realized pair is counted as \emph{visible} when the connector-line intersection belongs to its clipped face under the archived polygon-membership test \cite{Pyvoro2_063}. This numerical convention includes boundary points rather than requiring a strictly positive analytic gap. In orthonormal face coordinates measured in \AA{}, the test treats oriented edge cross products of magnitude at most $10^{-10}$~\AA$^2$ as zero. The resulting \texttt{intersection\_inside} flag supplies the visibility filter in J3 and the eligible-face selection in J4b.
+
+Table~\ref{tab:molecular-candidates} collects the three cutoff settings. Every setting contains and realizes all 3,975 reference pairs, which are evaluated before visibility filtering. The visible subset retains 3,973 reference pairs in each setting.
+
 Pairs outside the candidate set account for 2,360, 1,660 and 1,059 of the realized pairs at cutoffs $4$, $4.5$ and $5$~\AA{}, respectively; after visibility filtering, the corresponding counts are 21, 3 and 0. These counts illustrate why a score restricted to input pairs can differ from J3's whole-diagram pair evaluation. Visibility is a post hoc filter here and does not trigger a new fit.
 
+\FloatBarrier
 \subsection{Local diagnostics and limits of the auxiliary checks}
 \label{app:molecular-diagnostics}
 
@@ -126,6 +121,7 @@ For J4b, eligible faces are realized, connector-visible under the convention of 
 \]
 It is the mean precision at the ranks occupied by positive reference pairs. The archived stable sort preserves record order for equal scores. This calculation is performed once on each pooled population, rather than averaging molecule-level AP values. The exploratory clearance cutoff of $0.50$~\AA{} in the source archive is not a calibrated classification rule.
 
+\Needspace{9\baselineskip}
 The additional J4c molecular illustrations use fits to projected BCP targets, not J3's proatomic candidate observations. They are therefore not used here as evidence for that prediction pipeline. J4d varies box margins over $3$, $5$, $7$ and $10$~\AA{}. Voronoi geometries are recomputed, giving 18,798, 19,278, 19,605 and 19,830 realized-pair records. In contrast, all 19,468 recovered-powerfit records are reused unchanged at each margin. These repetitions do not independently establish robustness of the recovered-powerfit geometry to a changed clipping box.
 
 % Sources: frozen powerfit-80933a1 archive, data/qtaim_main and results/qtaim_main.
@@ -137,4 +133,4 @@ The additional J4c molecular illustrations use fits to projected BCP targets, no
 % AP source: v1.0.0 (80933a1), scripts/build_manuscript_tables.py,
 % _average_precision and table_j4_clearance_ranking. The current checker
 % preserves that source's pooled AP definition and stable tie convention.
-% Figure E is a deliberately chosen geometric schematic, not molecular data.
+% The BCP schematic is a deliberately chosen geometric construction, not molecular data.

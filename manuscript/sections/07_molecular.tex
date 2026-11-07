@@ -10,20 +10,28 @@ Here we ask how much of that local information a power diagram can represent whi
 
 For the connector-normal plane family fixed by the nuclear positions, a BCP specifies one target offset. Its orthogonal projection onto the connector defines a target plane that also passes through the original point. Fitting these offsets reconciles local boundary landmarks into one set of atomic weights; it need not preserve every target exactly. Nor does a plane through a landmark necessarily give the best approximation to a whole curved interface. Figure~\ref{fig:bcp-projection} illustrates the projection and the curved boundary; \ref{app:molecular-background} gives the physical background and experimental protocols.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/figure_E_bcp_projection.pdf}
+\caption{A conceptual density model in a two-dimensional section. The bond path consists of gradient-ascent branches from the BCP $b$ toward the two atomic attractors. The curved zero-flux boundary passes through $b$ and bends around the right-hand basin. The connector-normal target plane contains both $b$ and its projection $q$; the inset resolves their small separation. Passing through $b$ does not require agreement with the boundary's tangent or curvature. The geometry is illustrative, not taken from a benchmark molecule, and the plane trace does not assert a finite realized power face.}
+\label{fig:bcp-projection}
+\end{figure}
+
 The benchmark contains 100 molecules and 3,975 BCP-supported reference pairs (Experiment J1). Of these, 3,703 are bonded and 272 nonbonded, where \emph{bonded} means adjacency in the explicit-hydrogen RDKit molecular graph \cite{RDKit2026}. Both groups contain BCPs; their names refer to this separate connectivity convention. We report them separately because pooled scores are dominated by the bonded pairs. The experiments first examine separator accuracy on the known reference pairs, then replace that input with distance-selected candidates, and finally assess the information supplied by local geometric diagnostics. Their measured outputs are separator locations and pair labels, rather than complete QTAIM basin shapes or volumes.
 
+\FloatBarrier
 \subsection{Separator fitting on known atom pairs}
 \label{subsec:molecular-known-pairs}
 
 Experiment J2 assumes that the QTAIM-supported pair graph is known. We compare ordinary midpoints with a local \emph{proatomic} prediction, which locates a minimum of the sum of two radial atomic density profiles along the nuclear connector for unlike atoms and uses the midpoint for homonuclear pairs. A one-pass weight fit reconciles these proatomic observations using a single weight per atom. A separate \emph{QTAIM-target reference fit} instead fits the projected BCP coordinates directly, testing how those landmarks can be represented on the same known pair graph.
 
-Table~\ref{tab:molecular-fits} evaluates all four models on the original reference pairs, without filtering by face realization. Errors are measured in \AA{} and pooled over the individual pairs in each stated subset. The QTAIM-target fit itself minimizes the unweighted squared error in \emph{normalized coordinates}, over the full reference graph of each molecule; the displayed length errors and subset errors are consequently different evaluation quantities. Further predictor and aggregation details are in \ref{app:molecular-protocols}.
+Both fits minimize squared error in \emph{normalized separator coordinates}, using unit observation weights, no weight regularization and no hard measurement restrictions. They are performed separately on each molecule's full reference graph. Table~\ref{tab:molecular-fits} evaluates all four models on the original reference pairs, without filtering by face realization. Errors are measured in \AA{} and pooled over the individual pairs in each stated subset. The displayed length errors and subset errors therefore differ from the quantities minimized in fitting. Further predictor and aggregation details are in \ref{app:molecular-protocols}.
 
 \begin{table}[htbp]
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\caption{Separator RMSE in \AA{} on fixed QTAIM-supported pair subsets (J2). The two fitted models use the known reference-pair graph. The direct QTAIM-target fit minimizes unweighted squared error in normalized coordinates over each molecule's full reference graph. All displayed length errors are pooled over pairs.}
+\caption{Separator RMSE in \AA{} on fixed QTAIM-supported pair subsets (J2). Both fitted models minimize unweighted squared error in normalized coordinates over each molecule's known reference-pair graph. All displayed length errors are pooled over pairs.}
 \label{tab:molecular-fits}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
@@ -36,12 +44,12 @@ Nonbonded & 0.1528 & 0.0372 & 0.0619 & 0.0605 \\
 \end{tabular}
 \end{table}
 
-The local proatomic predictor has substantially smaller RMSE than midpoint prediction. Enforcing a common weight representation nevertheless increases the overall error slightly and the nonbonded error more markedly, from $0.0372$ to $0.0619$~\AA{}. Both fitted models realize every requested reference pair, so the deterioration is not caused by losing difficult pairs from the evaluation. The direct QTAIM-target fit also leaves a larger nonbonded than bonded error. These results distinguish the accuracy of a local predictor from the accuracy retained when its outputs are reconciled into one power diagram. The nonbonded QTAIM-target value is consequently not a lower bound on attainable length error for that subset.
+The local proatomic predictor has substantially smaller RMSE than midpoint prediction. The fitted proatomic model has a slightly larger overall RMSE than the local predictor, with a more marked difference on nonbonded pairs ($0.0619$ versus $0.0372$~\AA{}). Both fitted models realize every requested reference pair, so the deterioration is not caused by losing difficult pairs from the evaluation. The direct QTAIM-target fit also leaves a larger nonbonded than bonded error. These results distinguish the accuracy of a local predictor from the accuracy retained when its outputs are reconciled into one power diagram. The nonbonded QTAIM-target value is consequently not a lower bound on attainable length error for that subset.
 
 \subsection{Fitting from candidate pairs}
 \label{subsec:molecular-candidates}
 
-Experiment J3 removes the assumption that the reference pairs are known during fitting. Candidate pairs are selected by distance, with cutoffs of $4$, $4.5$ and $5$~\AA{}, and receive proatomic separator predictions. Each cutoff contains all 3,975 reference pairs. Increasing the cutoff therefore adds other observations without increasing reference coverage. The reference-pair RMSE of the resulting one-pass fit rises from $0.0746$ to $0.0786$~\AA{} between the smallest and largest cutoff. All reference pairs are realized and included in these errors. The complete cutoff comparison is given in Table~\ref{tab:molecular-candidates}.
+Experiment J3 removes the assumption that the reference pairs are known during fitting. Candidate pairs are selected by distance, with cutoffs of $4$, $4.5$ and $5$~\AA{}, and receive proatomic separator predictions. The one-pass weight fit uses the same squared loss and fitting settings as in J2, now on each molecule's full candidate graph. Each cutoff contains all 3,975 reference pairs. Increasing the cutoff therefore adds other observations without increasing reference coverage. The reference-pair RMSE of the resulting fit rises from $0.0746$ to $0.0786$~\AA{} between the smallest and largest cutoff. All reference pairs are realized and included in these errors. The complete cutoff comparison is given in Table~\ref{tab:molecular-candidates}.
 
 We then examine which realized pairs agree with the QTAIM reference. This evaluation uses the entire realized adjacency graph, including pairs outside the input candidate set. Connector visibility is applied afterwards as a geometric filter, using the tolerance-inclusive membership test on clipped faces specified in \ref{app:molecular-candidates}. At the $5$~\AA{} cutoff, it retains 5,703 pairs, including 3,973 of the 3,975 reference pairs: visible precision is $0.697$ and recall is $0.9995$. The aggregate result conceals a substantial difference between pair classes. Bonded recovery is nearly exact (F1 approximately $0.9997$); among the retained nonbonded pairs, only $13.5\%$ belong to the reference set. Thus almost all reference pairs are retained, but many additional nonbonded pairs remain. These additional pairs are absent from the adopted BCP-supported reference set; that label alone does not determine whether a contact has chemical significance.
 
