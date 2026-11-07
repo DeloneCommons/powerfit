@@ -1,53 +1,35 @@
-# Preparing and publishing a release
+# Preparing and publishing v2.0.0
 
-This procedure separates reviewable source changes from an actual project
-release and article submission. Preparing a branch, building a PDF, or creating
-an arXiv source ZIP does not publish a release or submit the article.
+The revised article and software/reproducibility sources are released together, but
+**the experiments remain the frozen v1.0.0 evidence**. Preparing a ZIP is not an
+arXiv submission, GitHub Release, or Zenodo publication. The v2.0.0 release uses
+**manual Zenodo versioning**, not GitHub-to-Zenodo automatic ingestion.
 
-The planned release is **v2.0.0**. Its release date and version DOI have not
-been assigned. The revised article uses the unchanged v1.0.0 scientific evidence.
+## Persistent identifiers and licenses
 
-## Identifier and license policy
+| Identifier | Purpose |
+|---|---|
+| [10.5281/zenodo.19673557](https://doi.org/10.5281/zenodo.19673557) | All-versions concept DOI of the evolving powerfit project. |
+| [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558) | Immutable version DOI of the v1.0.0 scientific evidence used in the article. |
+| [10.5281/zenodo.19143984](https://doi.org/10.5281/zenodo.19143984) | Version-specific pyvoro2 0.6.3 software DOI for the reported calculations. |
+| New version DOI | Assigned by Zenodo only when the v2.0.0 version is created/published. Do not invent it or substitute the concept DOI. |
+| Article identifier | An arXiv ID or journal DOI may be linked after it exists, not beforehand. |
 
-| Identifier | Meaning | Release policy |
-|---|---|---|
-| [10.5281/zenodo.19673557](https://doi.org/10.5281/zenodo.19673557) | `powerfit` concept DOI for all versions. | Keep this project identity; it follows the latest published version. |
-| [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558) | Frozen `powerfit` v1.0.0 evidence. | Preserve this exact citation for the experiments and leave its archive unchanged. |
-| [10.5281/zenodo.19143984](https://doi.org/10.5281/zenodo.19143984) | `pyvoro2` 0.6.3 computation baseline. | Keep this version-specific software citation for the reported calculations. |
-| Future article identifier | The eventual arXiv record and any later journal publication. | Add only after assignment and verification; it identifies the article separately from the project. |
+The root [MIT license](../LICENSE) covers first-party content, including the
+manuscript source. Bundled pyvoro2, Multiwfn, and LaTeX support materials retain
+their [upstream terms](../THIRD_PARTY_LICENSES.md). For the mixed-license ZIP,
+retain the Zenodo record's **Other (Open)** designation and its explanation.
+The metadata in [.zenodo.json](../.zenodo.json) and
+[CITATION.cff](../CITATION.cff) is a reference for the *manual* form; Zenodo
+does not automatically import these files from a manually uploaded ZIP.
+The release date and new version DOI are unknown until publication and must not
+be prefilled with guesses.
 
-Until another Zenodo version is actually published, the concept DOI continues
-to resolve to v1.0.0. It must not be presented as the version DOI of the revised
-manuscript or inserted into a new deposit's version-DOI field.
+## 1. Check the intended source
 
-[CITATION.cff](../CITATION.cff) currently cites the evolving project by its
-concept DOI and lists the frozen evidence and software references. It omits a
-release version and date while those decisions are pending. Likewise,
-[.zenodo.json](../.zenodo.json) prepares descriptive metadata without inventing
-a new version or DOI. The author affiliation is `Independent researcher`.
-
-The root [LICENSE](../LICENSE) covers first-party materials. Bundled software
-retains the terms listed in
-[THIRD_PARTY_LICENSES.md](../THIRD_PARTY_LICENSES.md). Keep the Zenodo archive's
-mixed-license `Other (Open)` designation; a new release does not relicense
-third-party binaries under MIT.
-
-## 1. Complete review before merging
-
-Keep the revision open for author review and the outstanding external review
-response. Inspect the complete manuscript and PDF, all scientific qualifications,
-figures, bibliography, build changes, and public metadata before merging.
-
-Verify that the scientific evidence remains the frozen v1.0.0 evidence. Changes
-to manuscript organization, exposition, figures, and build helpers must not
-silently overwrite experimental protocols, numerical outputs, molecular inputs,
-the archived environment, or bundled software. Historical documentation in
-those trees remains an archive record; the top-level guides provide the current
-manuscript crosswalk.
-
-## 2. Validate the exact source to be released
-
-From a clean checkout of the proposed release source, run:
+Before tagging, merge the release-preparation changes to `main`, review the
+exact commit, and verify the CI run for that commit passed. In a clean checkout,
+run the regular checks if needed:
 
 ```bash
 python scripts/check_repo_consistency.py
@@ -58,79 +40,93 @@ python -m unittest discover -s tests -v
 python scripts/make_arxiv_bundle.py --output build/powerfit-arxiv.zip
 ```
 
-Use the included, unmodified official `elsarticle` 3.5 class and `elsarticle-num`
-bibliography style. Verify their pinned provenance and retain their upstream
-source and license material under `manuscript/tex-support/`. The required TeX
-packages, including the Debian/Ubuntu `texlive-publishers`
-package, are listed in
-[manuscript/README.md](../manuscript/README.md#compile-the-article).
+This checks the 989 protected files, the four printed tables, the seven figures,
+the PDF build and the separately compilable arXiv source archive. Examine the
+65-page PDF, its front matter, figures, references, and Appendices A--E.
+The official bundled `elsarticle` 3.5 class and BibTeX style, their upstream
+license source, and the Unicode mapping are part of the manuscript sources.
+Do not rerun the full experiments or upstream quantum chemistry as a release
+build step: these would write new result files. For experimental reproduction,
+use a disposable checkout as described in [scripts/README.md](../scripts/README.md).
 
-Inspect the final PDF for page layout, legible vector figures, unresolved
-references or citations, and font problems. Check that it contains the abstract,
-Sections 1–9, Appendices A–E, seven figures, four inline tables, and the complete
-bibliography. The current article has 65 pages. Reject Type 3 fonts and require
-embedding for every font, including the workflow heading. Confirm
-that the ZIP preserves nested source paths and includes the freshly built
-`manuscript.bbl`, the pinned official class/style, and the allowlisted upstream
-source/license support files. Extract the ZIP into a clean temporary directory
-and verify it compiles there with the bundled pair and remaining TeX dependencies.
-Retain the unmodified `tex-support/glyphtounicode-cmr.tex` mapping file and
-check that mathematical symbols remain correct when text is extracted from
-the PDF, as well as when the pages are rendered.
+## 2. Create an immutable source tag and one Zenodo ZIP
 
-Do not run the full scientific rerun as a manuscript-release build step. It
-writes new results and belongs in a disposable checkout when separately
-evaluating computational reproduction. Do not replace the archived environment
-snapshot with the machine used only to render the revised manuscript.
-When validating a scientific rerun separately, use the completeness and table
-checkers on its new outputs. The repository-integrity check always requires the
-untouched archive and has no bypass. Follow the scope and comparison guidance
-in [scripts/README.md](../scripts/README.md).
+After author approval and successful checks, create a `v2.0.0` tag pointing to
+the reviewed `main` commit and push it to GitHub. The tag alone is sufficient
+to identify the exact release source; a GitHub Release page is optional.
 
-## 3. Decide the release contents and metadata
+From a **clean checkout at that exact tagged commit**, run:
 
-Before tagging, make these concrete decisions:
+```bash
+python scripts/build_zenodo_archive.py --tag v2.0.0 --output build/powerfit-v2.0.0.zip
+```
 
-- Confirm the planned v2.0.0 version and choose its actual release date. Update
-  release metadata consistently when the release is authorized.
-- Decide whether the Zenodo snapshot will contain source only or both the
-  complete revised source and a built article PDF. If a PDF is promised, put it
-  into the material actually included in the deposit. A GitHub Release
-  attachment must not be assumed to appear in the Zenodo GitHub snapshot.
-- Inspect the exact source snapshot and any intended PDF for completeness.
-  The ignored local PDF and source ZIP are not automatically tracked release
-  contents.
-- Check that `.zenodo.json`, `CITATION.cff`, the README, and the manuscript's
-  availability statement describe the material that will actually be public.
-- Keep the project concept DOI separate from the frozen v1.0.0 citation and
-  from any new version DOI. Do not put an unassigned DOI into its own PDF.
+This command rebuilds and verifies the canonical manuscript PDF, checks frozen
+repository integrity, exports the tracked tree using `git archive v2.0.0`, and
+adds **only** the compiled PDF at `manuscript/manuscript.pdf`. It refuses a
+mismatched HEAD or modified tracked files and checks the completed ZIP.
+Its output is a **single file** named `powerfit-v2.0.0.zip` with this layout:
 
-## 4. Publish only after the release decision
+```text
+powerfit-v2.0.0/
+  README.md
+  CITATION.cff
+  .zenodo.json
+  manuscript/
+    manuscript.tex
+    manuscript.pdf
+    sections/
+    appendices/
+    figures/
+  experiments/
+  results/
+  data/
+  ... all other tracked release files ...
+```
 
-After review and the explicit release decision, publish a new GitHub Release
-through the project's Zenodo integration. Preserve v1.0.0 as the immutable
-evidence record. Verify the resulting deposit itself:
+The Git tree excludes ignored build outputs. The only intentionally included
+untracked build product is the finished PDF. The ZIP includes the frozen
+scientific data and bundled third-party artifacts with their license notices.
+Retain the printed tag commit SHA and ZIP SHA256 in the release notes.
+Do not substitute a ZIP from moving `main`, repackage it by hand, or assume
+that a GitHub-generated source ZIP contains the ignored PDF.
 
-- A new version DOI was assigned to the new snapshot.
-- The concept DOI remains `10.5281/zenodo.19673557` and now links to the intended
-  latest published version.
-- The deposited files contain the complete revised manuscript source, its seven
-  figure PDFs, and any PDF promised in the release description.
-- The creator, affiliation, version, date, related software reference, and
-  mixed-license metadata are correct.
+## 3. Publish a *new version* on Zenodo manually
 
-Only after these checks should documentation describe the revised manuscript
-as available through the latest published project record. Record the actual new
-version DOI where a version-specific citation is needed; retain the concept DOI
-as the evolving project's citation. Publication of a GitHub branch or merge
-alone does not satisfy these checks.
+Open the **existing v1.0.0 record** at
+[10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558) while
+signed in as an owner and select **New version**. Do *not* create an unrelated
+new upload. For the v2.0.0 version:
 
-## 5. Connect the eventual article
+1. Upload the single `powerfit-v2.0.0.zip` from the exact tag; there is no need
+   to import the old v1.0.0 files, because the ZIP includes the frozen evidence.
+2. Keep resource type **Software**; use the v2.0.0 version number, actual
+   publication date, creator/ORCID and Independent researcher affiliation.
+   Include the scope and frozen-baseline explanation from `.zenodo.json`.
+3. Keep the mixed-license **Other (Open)** value and upstream license notices;
+   link to the separately published pyvoro2 0.6.3 record.
+4. Check that this draft is in the *existing version family* and that its
+   all-versions concept DOI remains `10.5281/zenodo.19673557`. Do not type
+   that concept DOI into the new record's **version DOI** field.
+5. Check the archive checksum and ZIP layout; then publish the new version.
+   Record the newly assigned **version DOI** and verify both version and
+   concept DOI links afterward.
 
-Submit the reviewed source bundle only when article submission is authorized.
-After the arXiv record is assigned and publicly available, add its actual
-identifier to the project documentation and Zenodo related-identifier metadata,
-using a relation that accurately describes the connection. Do the same for an
-eventual journal publication when its identifier exists. Keep article
-identifiers distinct from the reproducibility project's concept and version
-DOIs.
+A single ZIP also follows Zenodo's manual software-upload guidance for optional
+Software Heritage archival. It trades a directly previewable PDF on the Zenodo
+record page for a single self-contained, source-plus-PDF release file.
+
+## 4. Optional GitHub Release page, and later article publication
+
+A GitHub Release is **not necessary** for versioning once `v2.0.0` is tagged
+and deposited on Zenodo. It can be useful for discoverable release notes and a
+link to the new Zenodo version DOI. If created, use the existing `v2.0.0` tag,
+explain the frozen v1.0.0 evidence, and link to the manual Zenodo record.
+**Verify the repository is not enabled for automatic Zenodo GitHub ingestion**
+before publishing a GitHub Release; otherwise an unwanted second deposit may
+be created. GitHub's auto-generated source ZIP does not contain the PDF.
+
+After the arXiv manuscript receives its identifier, link to it in the project
+README and Zenodo related identifiers using the correct relation. A future
+journal DOI is similarly separate from the project concept and version DOIs.
+No arXiv submission or scientific rerun is part of this release procedure.
