@@ -28,7 +28,11 @@
 \address{Independent researcher}
 
 \begin{abstract}
-We study how to construct a power diagram from observed or predicted positions of selected pairwise separators, inferring scalar site weights while keeping the sites fixed. The diagram compares squared distances minus site weights, giving an affine relation between separator positions and weight differences. Exact compatibility and identifiability then reduce to graph conditions, and unconstrained quadratic fitting to a weighted graph-Laplacian problem. Fitting a pairwise plane does not guarantee an actual shared face. We therefore check which pairs share faces and whether each face contains the fitted separator's intersection with the line through its sites. For a point inside the face, centered clearance measures the distance to its boundary within the separating plane. A one-pass computational workflow implements this separation, including checks of selected periodic images. Synthetic experiments recover identifiable weight differences and show that improved agreement with imposed separator targets can accompany poorer recovery of reference adjacencies. An application to 100 molecules uses local electron-density landmarks and separator predictions to evaluate interatomic separator positions and pair relations. These results also show that reconciling local predictions into common weights does not necessarily improve their accuracy, while clearance adds ranking information among nonbonded faces passing the local membership test. The resulting workflow connects local separator data to a global partition while making missing information and geometric limitations explicit.
+Spatial partitions describe regions associated with objects and their neighbors, yet the available information may consist only of local estimates of where selected pairs should be separated. We develop a mathematical and computational framework for fitting a power (Laguerre) diagram—a spatial partition controlled by fixed generating points and adjustable weights—to such estimates.
+
+We establish how the observations constrain the weights, how inconsistent estimates can be reconciled, and which boundaries are realized in the fitted diagram. Synthetic experiments test the approach with exact, incomplete, and noisy observations, as well as conflicting geometric requirements.
+
+We then apply it to 100 molecules, fitting interatomic separator predictions from atomic density profiles and comparing the results with a reference partition based on the Quantum Theory of Atoms in Molecules (QTAIM). The resulting diagrams show good agreement with the reference separator positions and recover nearly all QTAIM-supported neighboring pairs, with most adjacency discrepancies arising from additional boundaries beyond the reference pair set.
 \end{abstract}
 
 \begin{keyword}
@@ -38,6 +42,7 @@ Power diagrams \sep inverse problems \sep pairwise separators
 
 \end{frontmatter}
 
+\Needspace{8\baselineskip}
 \input{sections/01_introduction}
 \input{sections/02_separators}
 \input{sections/03_graph_fitting}
