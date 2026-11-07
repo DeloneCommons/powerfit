@@ -3,9 +3,9 @@
 Source and reproducibility materials for **“Fixed-site inverse fitting of
 power-diagram weights from pairwise separator data.”**
 
-**Version 2.0.0 is in preparation.** The revised mathematical article replaces
-the original manuscript; its experimental protocols and numerical evidence are
-the unchanged [v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558).
+**Version 2.0.0** contains the revised mathematical article and its
+reproducibility infrastructure. The article replaces the original manuscript;
+its experimental protocols and numerical evidence are the unchanged [v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558).
 The fitting software is maintained separately in
 [pyvoro2](https://github.com/DeloneCommons/pyvoro2).
 
@@ -163,9 +163,10 @@ the canonical PDF and extracted arXiv archive. See
 | Frozen `powerfit` v1.0.0 evidence | [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558). |
 | Fitting software `pyvoro2` 0.6.3 | [10.5281/zenodo.19143984](https://doi.org/10.5281/zenodo.19143984). |
 
-[CITATION.cff](CITATION.cff) distinguishes these references. Until a new release
-is published, the concept DOI still resolves to v1.0.0; this branch does not
-assign a v2.0.0 DOI or release date.
+[CITATION.cff](CITATION.cff) distinguishes these references. The concept DOI resolves to the latest **published** Zenodo version. Version
+2.0.0 is prepared for manual deposit as a new version of the existing record;
+see the [release procedure](docs/releasing.md). Its version DOI and date are
+recorded after Zenodo publication.
 
 The root [LICENSE](LICENSE) covers first-party materials. Bundled third-party
 software retains its upstream terms in

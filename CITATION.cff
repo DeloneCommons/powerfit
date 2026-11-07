@@ -8,6 +8,7 @@ title: >-
   powerfit: reproducibility materials for inverse fitting of
   power-diagram weights from pairwise separator data
 type: software
+version: 2.0.0
 authors:
   - family-names: Chernyshov
     given-names: Ivan Yu.
@@ -18,7 +19,7 @@ doi: 10.5281/zenodo.19673557
 url: https://doi.org/10.5281/zenodo.19673557
 license: MIT
 abstract: >-
-  Revised manuscript source, figure and build helpers, and frozen experimental
+  Version 2.0.0 revised manuscript source, figure and build helpers, and frozen experimental
   protocols, inputs, and results for inverse fitting of power-diagram weights
   from pairwise separator data. The experimental evidence is preserved in
   powerfit v1.0.0, while this concept DOI identifies the evolving project. The

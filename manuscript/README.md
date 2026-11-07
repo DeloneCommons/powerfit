@@ -159,6 +159,6 @@ concept DOI still points to v1.0.0.
 
 The frozen experiment registry retains its historical numbering and asset
 references. Use the [current experiment crosswalk](../README.md#frozen-records-and-the-current-manuscript)
-and the article itself for present placement and evaluation conventions. Version
-2.0.0 is being prepared; its release date, PDF inclusion and future publication
-identifiers are still subject to [docs/releasing.md](../docs/releasing.md).
+and the article itself for present placement and evaluation conventions. For v2.0.0, the manual Zenodo ZIP includes the exact tagged source tree and a
+built `manuscript/manuscript.pdf`; see [the release procedure](../docs/releasing.md).
+A new version DOI and article identifiers are recorded only after publication.
