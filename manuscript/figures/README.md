@@ -11,7 +11,7 @@ scientific roles are listed below; run commands from the repository root.
 | 4 | [figure_05_workflow.pdf](figure_05_workflow.pdf) | Section 5 | One-pass fitting and optional observation-set refinement, with full-candidate matching and separate geometric diagnostics. |
 | 5 | [figure_C_identifiability.pdf](figure_C_identifiability.pdf) | Section 6.1 | Frozen Experiment C: global and oracle componentwise weight alignment, and connected-graph frequency, at the largest tested site count. |
 | 6 | [figure_G_mismatch.pdf](figure_G_mismatch.pdf) | Section 6.2 | Frozen Experiment G: target-RMSE improvement and whole-graph F1 change under structured separator mismatch. |
-| E.1 | [figure_E_bcp_projection.pdf](figure_E_bcp_projection.pdf) | Appendix E.2 | An analytic illustrative density with a gradient bond path, zero-flux boundary, and BCP projection onto the nuclear connector. |
+| 7 | [figure_E_bcp_projection.pdf](figure_E_bcp_projection.pdf) | Section 7 introduction | An analytic illustrative density with a gradient bond path, zero-flux boundary, and BCP projection onto the nuclear connector. |
 
 Filenames retain their existing source names; use the first column for the
 numbers printed in the current article.

@@ -13,7 +13,7 @@ w_1-w_2=0,\qquad w_2-w_3=0,\qquad w_1-w_3=1.
 The first two equations imply $w_1=w_3$, contradicting the third. Thus, no weight vector can satisfy all three observations simultaneously.
 \end{samepage}
 
-We represent the observations by a graph whose vertices are the sites and whose oriented edges $r:i_r\to j_r$ carry the target differences $z_r$. Repeated observations of the same pair correspond to parallel edges. In periodic systems, the vertices remain the base sites: observations with different image shifts are distinct edges even when their incidence columns coincide. Let $B\in\mathbb R^{n\times m}$ be the incidence matrix of this graph, where $m$ is the number of observations and column $r$ is $e_{i_r}-e_{j_r}$, with $e_i$ the $i$th standard basis vector. The exact fitting conditions become
+We represent the observations by a graph whose vertices are the sites and whose oriented edges $r:i_r\to j_r$ carry the target differences $z_r$. Repeated observations of the same pair correspond to parallel edges. In periodic systems, the vertices remain the base sites: observations with different image shifts are distinct edges even when they involve the same two weight variables. Let $B\in\mathbb R^{n\times m}$ be the incidence matrix of this graph, where $m$ is the number of observations and column $r$ is $e_{i_r}-e_{j_r}$, with $e_i$ the $i$th standard basis vector. The exact fitting conditions become
 \begin{equation}
 B^Tw=z.
 \label{eq:exact-incidence}

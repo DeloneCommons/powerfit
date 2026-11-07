@@ -17,7 +17,7 @@ run from the repository root.
 | [tex-support/README.md](tex-support/README.md) | Publisher-file provenance, source files, and retained upstream license information. |
 
 The article uses 15 authored TeX files, seven figure PDFs, and 35 cited
-references. The current build is 64 pages. The four tables are literal TeX; there
+references. The current build is 65 pages. The four tables are literal TeX; there
 is no generated table-fragment dependency. The Experiment H candidate graphic
 is not part of the article; the E/H table and accompanying discussion present
 that comparison.

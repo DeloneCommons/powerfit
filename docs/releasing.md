@@ -68,7 +68,7 @@ package, are listed in
 Inspect the final PDF for page layout, legible vector figures, unresolved
 references or citations, and font problems. Check that it contains the abstract,
 Sections 1–9, Appendices A–E, seven figures, four inline tables, and the complete
-bibliography. The current article has 64 pages. Reject Type 3 fonts and require
+bibliography. The current article has 65 pages. Reject Type 3 fonts and require
 embedding for every font, including the workflow heading. Confirm
 that the ZIP preserves nested source paths and includes the freshly built
 `manuscript.bbl`, the pinned official class/style, and the allowlisted upstream
