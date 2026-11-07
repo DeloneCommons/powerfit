@@ -90,8 +90,11 @@ def write_archive(root: Path, tag: str, pdf: Path, output: Path) -> tuple[str, s
             if archive.testzip() is not None:
                 raise ValueError("ZIP integrity test failed")
         os.replace(staged, output)
+    hasher = hashlib.sha256()
     with output.open("rb") as file_handle:
-        digest = hashlib.file_digest(file_handle, "sha256").hexdigest()
+        for block in iter(lambda: file_handle.read(1024 * 1024), b""):
+            hasher.update(block)
+    digest = hasher.hexdigest()
     return commit, digest
 
 
