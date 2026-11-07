@@ -1,97 +1,74 @@
 #!/usr/bin/env python3
-"""Regenerate manuscript-facing figure files from source scripts and archived outputs.
+"""Reproduce all seven canonical manuscript PDFs without rerunning experiments.
 
-This is the figure-side companion to ``build_manuscript_tables.py``.  It keeps
-binary figure files out of small review patches: after applying source/script
-edits, run this script to refresh the PDF/PNG files under ``manuscript/figures``.
-
-The expensive molecular and experiment runs are not repeated here.  The
-lightweight manuscript-facing schematics and summary plots are redrawn from
-frozen source scripts or archived CSV outputs.
+Use --output-dir to select a separate destination. An explicit build defaults
+to manuscript/figures; validation belongs to check_manuscript_figures.py,
+which always generates in temporary directories and preserves approved PDFs.
+Frozen C/G inputs default to the repository's results/ tree.
 """
 
 from __future__ import annotations
 
 import argparse
+import os
+from pathlib import Path
+import shlex
 import subprocess
 import sys
-from pathlib import Path
-from typing import Sequence
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIGURE_DIR = REPO_ROOT / "manuscript" / "figures"
+FIGURE_NAMES = (
+    "figure_02_separators.pdf",
+    "figure_03_cycle.pdf",
+    "figure_04_realization.pdf",
+    "figure_05_workflow.pdf",
+    "figure_C_identifiability.pdf",
+    "figure_E_bcp_projection.pdf",
+    "figure_G_mismatch.pdf",
+)
 
 
-def _run(cmd: Sequence[str], *, dry_run: bool = False) -> None:
-    display = " ".join(str(part) for part in cmd)
-    print(f"[figures] {display}", flush=True)
-    if dry_run:
-        return
-    subprocess.run(cmd, cwd=REPO_ROOT, check=True)
-
-
-def build_main_text_figures(*, dry_run: bool = False) -> None:
-    FIGURE_DIR.mkdir(parents=True, exist_ok=True)
-
-    _run(
-        [
-            sys.executable,
-            "scripts/make_workflow_schematic.py",
-            "--figure-path",
-            "manuscript/figures/figure_powerfit_workflow_overview.png",
-        ],
-        dry_run=dry_run,
-    )
-    _run(
-        [
-            sys.executable,
-            "experiments/analysis/plot_missing_data_manuscript.py",
-            "--figure-path",
-            "manuscript/figures/figure_C_missing_data_composite.png",
-        ],
-        dry_run=dry_run,
-    )
-
-    # J2 is summarized in Table J23 rather than as a main-text figure.  J4 is
-    # redrawn from archived summaries so that the manuscript figure shows the
-    # current geometry-first and precision--recall views without rerunning
-    # molecular pipelines.
-
-    _run(
-        [
-            sys.executable,
-            "scripts/make_j4_geometry_cases.py",
-            "--output-pdf",
-            "manuscript/figures/figure_J4_geometry_cases.pdf",
-            "--output-png",
-            "manuscript/figures/figure_J4_geometry_cases.png",
-        ],
-        dry_run=dry_run,
-    )
-    _run(
-        [
-            sys.executable,
-            "scripts/make_j4_mask_transfer_figure.py",
-            "--output-pdf",
-            "manuscript/figures/figure_J4_mask_transfer.pdf",
-            "--output-png",
-            "manuscript/figures/figure_J4_mask_transfer.png",
-        ],
-        dry_run=dry_run,
-    )
+def build_main_text_figures(
+    *, output_dir: Path = FIGURE_DIR, results_root: Path | None = None,
+    dry_run: bool = False,
+) -> None:
+    output_dir = output_dir.resolve()
+    source_args = []
+    if results_root is not None:
+        source_args = ["--results-root", str(results_root.resolve())]
+    environment = dict(os.environ)
+    environment.setdefault("MPLCONFIGDIR", str(REPO_ROOT / "build/.cache/matplotlib"))
+    for name, extra in (
+        ("plot_theory_figures.py", []),
+        ("plot_editorial_figures.py", source_args),
+        ("plot_experiment_g.py", source_args),
+    ):
+        command = [sys.executable, str(REPO_ROOT / "scripts" / name),
+                   "--output-dir", str(output_dir), *extra]
+        print(f"[figures] {shlex.join(command)}", flush=True)
+        if not dry_run:
+            subprocess.run(command, cwd=REPO_ROOT, env=environment, check=True)
+    if not dry_run:
+        for name in FIGURE_NAMES:
+            if not (output_dir / name).is_file():
+                raise FileNotFoundError(f"The figure generator did not create {name}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the commands/copies without modifying files.",
-    )
+    parser.add_argument("--output-dir", type=Path, default=FIGURE_DIR,
+                        help="Destination for the seven PDFs and auxiliary SVGs")
+    parser.add_argument("--results-root", type=Path,
+                        help="Frozen results tree (default: repository results/)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Print commands without creating or changing files")
     args = parser.parse_args()
 
-    build_main_text_figures(dry_run=args.dry_run)
-    print(f"[figures] refreshed manuscript-facing figures in {FIGURE_DIR.relative_to(REPO_ROOT)}", flush=True)
+    build_main_text_figures(output_dir=args.output_dir, results_root=args.results_root,
+                            dry_run=args.dry_run)
+    verb = "would generate" if args.dry_run else "generated"
+    print(f"[figures] {verb} all seven PDFs in {args.output_dir.resolve()}", flush=True)
     return 0
 
 

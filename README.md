@@ -1,204 +1,173 @@
 # powerfit
 
-Frozen reproducibility repository for the manuscript **“Fixed-site inverse fitting of power-diagram weights from pairwise separator data.”**
+Source and reproducibility materials for **“Fixed-site inverse fitting of
+power-diagram weights from pairwise separator data.”**
 
-This repository is the paper artifact. It contains the manuscript source, frozen
-experiment protocols, archived results, molecular benchmark data, and the pinned
-external binaries used by the paper-side reruns. The citable reproducibility
-archive DOI is `10.5281/zenodo.19673558`
-(<https://doi.org/10.5281/zenodo.19673558>). The canonical `pyvoro2` software
-repository lives outside this archive.
+**Version 2.0.0 is in preparation.** The revised mathematical article replaces
+the original manuscript; its experimental protocols and numerical evidence are
+the unchanged [v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558).
+The fitting software is maintained separately in
+[pyvoro2](https://github.com/DeloneCommons/pyvoro2).
 
-## License scope for this archive
+Run the commands below from the repository root.
 
-The repository contains both first-party materials and bundled third-party
-software artifacts. The root [LICENSE](LICENSE) file covers the original
-repository content; the bundled files under
-[external_software/](external_software/README.md) retain their own upstream
-licenses and notices. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
-for the precise scope split used by this archive. The Zenodo record is marked
-as a mixed-license open archive; this does not relicense bundled third-party
-artifacts under MIT.
+## 1. Read or build the article
 
-## Read the repository in this order
-
-1. [manuscript/README.md](manuscript/README.md) — manuscript entry point, main
-   figures/tables, and PDF build notes.
-2. [experiments/registry/README.md](experiments/registry/README.md) — stable
-   crosswalk from manuscript labels A--H and J to configs, runners, analyses, and
-   result roots.
-3. [results/README.md](results/README.md) — archived outputs used by the
-   manuscript.
-4. [data/README.md](data/README.md) — frozen manifests and QTAIM/proatomic data
-   behind Experiment J.
-5. [scripts/README.md](scripts/README.md) — table, figure, PDF, and submission
-   helpers.
-6. [environments/README.md](environments/README.md),
-   [external_software/README.md](external_software/README.md), and
-   [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) — pinned runtime
-   environment, bundled third-party artifacts, and archive license scope.
-7. [submission/README.md](submission/README.md) — generated flat submission bundle.
-
-For a reviewer or reader who only wants to understand the released artifact,
-steps 1–3 are usually enough.
-
-## Top-level layout
-
-- [manuscript/](manuscript/README.md) — LaTeX source plus the final figure/table
-  assets wired into the submission.
-- [experiments/](experiments/README.md) — frozen synthetic protocols and the
-  manuscript-to-code registry.
-- [results/](results/README.md) — archived benchmark outputs used by the paper.
-- [data/](data/README.md) — frozen molecular and proatomic inputs for Experiment
-  J.
-- [scripts/](scripts/README.md) — manuscript and submission build helpers.
-- [environments/](environments/README.md) — Python dependency sets and the
-  reference system note.
-- [external_software/](external_software/README.md) — pinned `pyvoro2` wheel and
-  the bundled Multiwfn binary.
-- [submission/](submission/README.md) — generated flat upload bundle.
-- [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) — scope note for bundled
-  third-party software versus first-party repository content.
-
-## Paper scope inside this repository
-
-- **Experiments A–H**: compact synthetic validation and stress tests.
-- **Experiment J**: the molecular QTAIM benchmark. This is the main empirical
-  branch in the current manuscript, organized as J1 (dataset audit), J2
-  (true-support ladder), J3 (candidate-graph recovery), and J4a--J4d
-  (local validation, representative geometry, mask transfer, and box-margin
-  robustness).
-
-## Experiment map
-
-| Label | Topic | Crosswalk | Results |
-|---|---|---|---|
-| A | Exact recovery | [A_exact_recovery.md](experiments/registry/A_exact_recovery.md) | `results/exact_recovery/` |
-| B | Noise robustness | [B_noise_robustness.md](experiments/registry/B_noise_robustness.md) | `results/noise_robustness/` |
-| C | Missing data / sparsity | [C_missing_data.md](experiments/registry/C_missing_data.md) | `results/missing_data/` and `results/missing_data_manuscript/` |
-| D | Infeasible hard constraints | [D_infeasible_constraints.md](experiments/registry/D_infeasible_constraints.md) | `results/infeasible/` |
-| E | Supergraph inputs and active-set refinement | [E_active_set.md](experiments/registry/E_active_set.md) | `results/active_set/` |
-| F | Periodic wrong-image stress tests | [F_periodic_cases.md](experiments/registry/F_periodic_cases.md) | `results/periodic/` |
-| G | Structured model mismatch | [G_model_mismatch.md](experiments/registry/G_model_mismatch.md) | `results/model_mismatch/` |
-| H | Structured misspecification under supergraph uncertainty | [H_supergraph_mismatch.md](experiments/registry/H_supergraph_mismatch.md) | `results/supergraph_mismatch/` |
-| J | Molecular QTAIM benchmark | [J_qtaim_molecular.md](experiments/registry/J_qtaim_molecular.md) | `results/qtaim_main/` |
-
-## Relationship to `pyvoro2`
-
-- Canonical package repository:
-  `https://github.com/DeloneCommons/pyvoro2`
-- Version-specific Zenodo archive for the exact `pyvoro2 0.6.3` snapshot used
-  in this paper:
-  `https://zenodo.org/records/19143984`
-  (DOI `10.5281/zenodo.19143984`)
-- This repository: manuscript, experiment definitions, archived results, and
-  paper-side repro helpers.
-- The pinned wheel provenance is recorded in
-  `external_software/pyvoro2-version.txt`.
-
-The repository logic is platform-agnostic, but the bundled wheel is a Linux
-manylinux artifact. On non-Linux systems, install `pyvoro2==0.6.3` from PyPI or
-build the same version from source instead of using the bundled wheel.
-
-## Quick start
-
-### Minimal paper-side environment
-
-```bash
-python3.13 -m venv .venv
-source .venv/bin/activate
-pip install -r environments/requirements-py313.txt
-pip install external_software/pyvoro2-0.6.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
-```
-
-
-### Capture the exact release-time environment snapshot
-
-When you are ready to freeze the final public artifact, capture the exact
-Python environment and the concise system note with:
-
-```bash
-python scripts/capture_environment_snapshot.py
-```
-
-This rewrites `environments/system.txt` and
-`environments/requirements-lock-py313.txt`. Run it only from the clean final
-paper-side environment you want archived.
-
-### Run the repository consistency audit
-
-```bash
-python scripts/check_repo_consistency.py
-```
-
-This fast audit checks markdown links, leaked absolute paths, documented runtime
-requirements, flat-bundle consistency, and the recorded SHA256 digests of the
-bundled `pyvoro2` wheel and `Multiwfn_noGUI` executable.
-
-### Rerun the paper artifact from committed data
-
-```bash
-bash scripts/rerun_paper_results.sh
-```
-
-This reruns Experiments A--H, reruns the committed-data Experiment J analyses
-(J1--J4d), then calls the canonical manuscript build to refresh manuscript-side
-tables and figures, regenerate the flat submission bundle, build the local PDF
-outputs, and finish with the repository consistency audit. It does not rerun
-the upstream PySCF/Multiwfn molecular-generation pipeline.
-
-### Refresh manuscript-side tables and figures
-
-```bash
-python scripts/build_manuscript_tables.py
-python scripts/build_manuscript_figures.py
-```
-
-Use these targeted refreshers when you are editing only one asset family. For a
-canonical end-to-end manuscript rebuild, prefer `bash scripts/build_manuscript_pdfs.sh`.
-The figure script refreshes the manuscript-facing PDF/PNG files from the
-lightweight figure generators and archived result figures. In the same locked
-Python environment recorded under `environments/`, these manuscript-facing
-figure assets are expected to be byte-identical across rebuilds; across other
-environments, visual equivalence is the relevant check. The final LaTeX-built
-`manuscript/manuscript.pdf` and `submission/flat/manuscript.pdf` remain separate
-build products and are not part of that byte-stability guarantee. For a direct
-spot check of the figure-side guarantee, run `python
-scripts/check_figure_binary_constancy.py`; this reruns a representative subset
-of the generators twice in a throwaway directory and compares hashes. For
-targeted edits, use the source maps in
-[manuscript/tables/README.md](manuscript/tables/README.md),
-[manuscript/figures/README.md](manuscript/figures/README.md), and
-[scripts/README.md](scripts/README.md); they list which script or archived
-output regenerates each table and image.
-
-### Build the local manuscript PDF and the flat submission bundle
+The current source is [manuscript/manuscript.tex](manuscript/manuscript.tex).
+The seven figure PDFs and four inline numerical tables are already included.
+With TeX, Poppler and Python 3.10+ installed:
 
 ```bash
 bash scripts/build_manuscript_pdfs.sh
 ```
 
-`manuscript/manuscript.pdf` and `submission/flat/manuscript.pdf` are local build
-products created by that script and are not committed to the archive. The same
-script first refreshes manuscript-side tables and figures, then rebuilds the
-tracked submission artifact under `submission/flat/`. The canonical PDF build
-requires both `latexmk` and `bibtex` on `PATH` and fails immediately if either
-one is unavailable.
+This produces **`manuscript/manuscript.pdf`**, a 65-page article, from the
+committed source and figures. It rebuilds the bibliography and checks the PDF.
+It requires no scientific Python packages and performs no experiments.
+See [TeX installation and source structure](manuscript/README.md) for the
+dependency command and the bundled official `elsarticle` class/style.
 
-### Tiny smoke subset for CI or local checks
+To build the PDF and package the arXiv sources in one command:
 
 ```bash
-python experiments/runners/run_exact_recovery.py --smoke --output-dir .smoke/exact_recovery
-python experiments/runners/run_noise_robustness.py --smoke --output-dir .smoke/noise_robustness
+python scripts/make_arxiv_bundle.py --output build/powerfit-arxiv.zip
 ```
 
-### Optional molecular-data regeneration helpers
+The ZIP includes a fresh bibliography and the required source/figure files.
+PDFs, ZIPs and other build outputs are ignored local files. Packaging does not
+submit or publish the article.
 
-The frozen paper artifact already contains the committed Experiment J data and
-results. Only use the optional QTAIM/PySCF helpers if you want to regenerate the
-molecular branch itself:
+## 2. Reproduce the seven figures and check the four tables
 
-- [data/qtaim_main/README.md](data/qtaim_main/README.md)
-- [data/proatomic/README.md](data/proatomic/README.md)
-- [scripts/qtaim/README.md](scripts/qtaim/README.md)
-- `pip install -r environments/requirements-qtaim.txt`
+For figures, create a small environment using the archived package constraints:
+
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate
+python -m pip install -c environments/requirements-lock-py313.txt numpy pandas matplotlib
+python scripts/build_manuscript_figures.py --output-dir build/figures
+python scripts/check_manuscript_figures.py
+```
+
+The builder reads frozen results and exact schematic constructions, and writes
+seven PDFs plus supplementary SVGs to `build/figures/`. The checker regenerates
+them in temporary directories, checks repeatability and compares their rendered
+content with the committed figures. It also needs Poppler. See the
+[figure source map](manuscript/figures/README.md) for inputs and interpretation.
+
+The numerical tables are literal TeX, verified directly against the result CSVs:
+
+```bash
+python scripts/check_manuscript_tables.py
+```
+
+This standard-library check recomputes the E/H paired comparisons, J2 pooled
+errors, J4b rankings and J3 candidate statistics. It reports mismatched cells
+without rewriting the article. The
+[table evidence map](manuscript/README.md#numerical-table-evidence) explains the
+populations and aggregation rules. These figure/table commands reuse frozen
+evidence; they do not repeat scientific calculations.
+
+## 3. Find the code, configurations, inputs and results
+
+| Location | Contents |
+|---|---|
+| [manuscript/](manuscript/README.md) | Current article, bibliography and seven figure PDFs. |
+| [experiments/runners/](experiments/runners/) | Synthetic experiment runners A–H. |
+| [experiments/configs/](experiments/configs/) | Frozen YAML protocols; the J YAML is a reference record, not a configuration loaded by the molecular CLIs. |
+| [experiments/analysis/](experiments/analysis/) | Scientific postprocessing, including historical derived outputs. |
+| [scripts/qtaim/](scripts/qtaim/) | Molecular analyses J and the separate PySCF/Multiwfn input-generation pipeline. |
+| [data/](data/README.md) | Molecular manifests, geometries, wavefunctions, topology JSON and proatomic lookup data. |
+| [results/](results/README.md) | Frozen run-level CSVs, summaries, metadata and historical derived assets. |
+| [scripts/](scripts/README.md) | Current build/check commands and the scientific rerun entry point. |
+| [environments/](environments/README.md) | Original requirements, package pins and recorded system information. |
+| [external_software/](external_software/README.md) | Pinned `pyvoro2 0.6.3` wheel, Multiwfn executable and provenance. |
+
+## 4. Repeat the scientific calculations
+
+Use a **separate disposable checkout**: this command writes new results into
+`results/`. In that checkout, install the full pinned scientific environment:
+
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r environments/requirements-py313.txt -c environments/requirements-lock-py313.txt
+python -m pip install external_software/pyvoro2-0.6.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+bash scripts/rerun_paper_results.sh
+```
+
+The bundled wheel is for CPython 3.13 on Linux x86-64. Other platforms require
+a compatible installation of **`pyvoro2==0.6.3`**; the rerun checks the active
+version before writing results. The archived environment files stay unchanged.
+
+The command performs all synthetic A–H runs, including the dense C sweep, and
+J1/J2/J3/J4a/J4b/J4d analyses of the **committed molecular inputs**. It then
+checks result completeness and agreement with the four printed tables. It does
+not build the article or replace its figures/tables. Runtime and provenance
+fields can differ, so new result files need not have the archive's byte hashes.
+
+Repeating the upstream quantum chemistry is a separate, more expensive task:
+RDKit/PySCF/geomeTRIC generate molecular geometries and wavefunctions; Multiwfn
+generates topology and atomic radial data. The
+[scientific workflow guide](scripts/README.md#upstream-molecular-input-regeneration)
+gives the fixed-manifest commands, additional environment and overwrite rules.
+It also states which historical secondary outputs the default rerun excludes.
+
+## 5. Understand the frozen v1.0.0 material
+
+The new article changes the mathematics and interpretation, while retaining
+the original experimental evidence. **989 files** under `experiments/`,
+`results/`, `data/`, `environments/`, `external_software/`, `scripts/qtaim/`,
+and the shared `scripts/_figure_io.py` remain byte-identical to
+`80933a14c57d4766bd2c03b2990d949a452031fc` (`v1.0.0`).
+
+Their historical READMEs, registry entries and source comments are frozen too:
+old manuscript numbers, paths and commands describe v1.0.0. Use the current
+guides for v2.0.0 commands. Retired manuscript-only generators are available in
+the [v1.0.0 source](https://github.com/DeloneCommons/powerfit/tree/v1.0.0);
+the experimental algorithms, postprocessing and shared scientific helpers remain
+here because they are needed to understand or repeat the original calculations.
+
+### Frozen records and the current manuscript
+
+| Experiments | Current placement | Archived protocol |
+|---|---|---|
+| A / C / D: recovery, missing data, feasibility | Section 6.1; Appendix D.3.1 | [A](experiments/registry/A_exact_recovery.md), [C](experiments/registry/C_missing_data.md), [D](experiments/registry/D_infeasible_constraints.md) |
+| B: noise and outliers | Section 6.1; Appendix D.3.2 | [B](experiments/registry/B_noise_robustness.md) |
+| F: periodic images | Section 6.2; Appendix D.3.3 | [F](experiments/registry/F_periodic_cases.md) |
+| G: structured mismatch | Section 6.2; Appendix D.3.4 | [G](experiments/registry/G_model_mismatch.md) |
+| E / H: refinement | Section 6.3; Appendix D.3.4 | [E](experiments/registry/E_active_set.md), [H](experiments/registry/H_supergraph_mismatch.md) |
+| J: molecular fitting and diagnostics | Section 7; Appendix E | [J](experiments/registry/J_qtaim_molecular.md) |
+
+To audit an untouched checkout and run the focused tests:
+
+```bash
+python scripts/check_repo_consistency.py
+python scripts/check_rerun_results.py
+python -m unittest discover -s tests -v
+```
+
+The integrity audit always verifies the frozen-file manifest. It should fail
+on results deliberately overwritten by a scientific rerun; use the result and
+table checkers to evaluate that separate checkout. CI checks frozen integrity,
+figures, tables, result completeness, tests, A/B and J1 smoke subsets, and both
+the canonical PDF and extracted arXiv archive. See
+[the CI guide](.github/workflows/README.md) and
+[release procedure](docs/releasing.md).
+
+## Citation and licenses
+
+| Resource | Persistent identifier |
+|---|---|
+| Evolving `powerfit` project | [10.5281/zenodo.19673557](https://doi.org/10.5281/zenodo.19673557), the all-versions concept DOI. |
+| Frozen `powerfit` v1.0.0 evidence | [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558). |
+| Fitting software `pyvoro2` 0.6.3 | [10.5281/zenodo.19143984](https://doi.org/10.5281/zenodo.19143984). |
+
+[CITATION.cff](CITATION.cff) distinguishes these references. Until a new release
+is published, the concept DOI still resolves to v1.0.0; this branch does not
+assign a v2.0.0 DOI or release date.
+
+The root [LICENSE](LICENSE) covers first-party materials. Bundled third-party
+software retains its upstream terms in
+[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md). The Zenodo archive uses
+`Other (Open)` for the mixed-license collection.

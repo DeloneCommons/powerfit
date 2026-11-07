@@ -1,0 +1,101 @@
+\section{Perturbation estimates for fitted weights and geometric diagnostics}
+\label{app:stability-details}
+
+We begin with the response of signed competitor gaps to weight perturbations, then propagate observation errors through a fixed least-squares fit. The remaining subsections account for discrepancies between the reference fit and independently specified weights, and state the competitor assumptions needed in periodic domains.
+
+
+\subsection{Fixed-site signed-gap stability}
+\label{app:stability-slack}
+
+For a fixed finite competitor set, Eq.~\eqref{eq:gap-weight-perturbation} gives an exact affine change in each gap with coefficient sum zero, so a common global shift of the weights leaves all gaps invariant. The minimum-gap bound~\eqref{eq:gap-lipschitz-bound} follows from the elementary inequality $|\min_k a_k-\min_k b_k|\le\max_k|a_k-b_k|$.
+
+Invariance under a common weight shift sharpens the bound to
+\begin{equation}
+|\sigma_{ij}(w+\Delta w)-\sigma_{ij}(w)|
+\le K_{ij}\inf_{\gamma\in\mathbb R}
+\|\Delta w-\gamma\mathbf1\|_\infty.
+\label{eq:gap-gauge-invariant-lipschitz}
+\end{equation}
+Only the \emph{global} constant may be removed here: shifting disconnected components of the fitting graph separately need not preserve the full power diagram or its gaps. If the competitor set is empty, $\sigma_{ij}=+\infty$ by convention and the ordinary finite Lipschitz inequality is not applied.
+
+For a finite competitor set, any nonzero reference gap with perturbation bound smaller than its absolute value retains its sign. This is a certificate for the chosen \emph{connector-visibility} diagnostic, not a statement that all faces or all combinatorial adjacencies of the power diagram persist.
+
+\subsection{Sensitivity of a fixed weighted least-squares fit}
+\label{app:stability-estimator}
+
+Let $B\in\mathbb R^{n\times m}$ be the incidence matrix of a \emph{fixed} observation graph, let $R=\operatorname{diag}(\rho_r)$ have strictly positive entries, and put $L=BRB^T$. Suppose $\operatorname{rank}(B)=n-c>0$, where $c$ is the number of observation-graph connected components. Let $Q\in\mathbb R^{n\times(n-c)}$ have orthonormal columns spanning $(\ker B^T)^\perp$. Choosing this subspace is equivalent to a zero-mean convention within each observation component.
+
+On this identifiable subspace, the reduced matrix $Q^TLQ$ is positive definite. For a target vector $z$, the unique least-squares solution with zero mean in each observation component is
+\begin{equation}
+w(z)=Gz,\qquad
+G=Q(Q^TLQ)^{-1}Q^TBR.
+\label{eq:fixed-fit-response-operator}
+\end{equation}
+For a reference target $z^\star$ (possibly incompatible) and perturbed target $\widehat z=z^\star+\eta$, define $w^\star=Gz^\star$ and $\widehat w=G\widehat z$. The exact response identity is
+\begin{equation}
+\widehat w-w^\star=G\eta.
+\label{eq:appendix-reference-fit-response}
+\end{equation}
+
+This statement does \emph{not} identify $w^\star$ with an arbitrary independently chosen vector of true physical weights. It relates two minimizers of the \emph{same} fixed quadratic fitting problem evaluated at different target vectors, with the same component-offset convention. Other fixed linear gauges admit analogous expressions. A constant nonzero offset convention adds an affine constant to $w(z)$ but does not alter the response to $\eta$.
+
+Write $\|v\|_L=(v^TLv)^{1/2}$ for the Laplacian seminorm. The fitted difference perturbation is a weighted orthogonal projection of $\eta$ onto the column space of $B^T$, giving
+\begin{equation}
+\|\widehat w-w^\star\|_L
+\le\|R^{1/2}\eta\|_2.
+\label{eq:energy-error-bound}
+\end{equation}
+To see this, put $A=R^{1/2}B^TQ$. The vector
+$R^{1/2}B^T(\widehat w-w^\star)$ is the orthogonal projection of
+$R^{1/2}\eta$ onto $\operatorname{range}(A)$, and therefore cannot have
+larger Euclidean norm.
+
+If the observations are perturbed by $\Delta y_r$ in their original measurement units, then $\eta_r=\Delta y_r/\alpha_r$ and $\rho_r=\lambda_r\alpha_r^2$ imply
+\begin{equation}
+\|R^{1/2}\eta\|_2^2=\sum_{r=1}^m\lambda_r(\Delta y_r)^2.
+\label{eq:measurement-error-energy}
+\end{equation}
+This identity is deterministic and requires no statistical error assumptions.
+
+With $\lambda_{\min}=\lambda_{\min}(Q^TLQ)>0$, the spectral inequality on the chosen subspace yields
+\begin{equation}
+\|\widehat w-w^\star\|_2
+\le\frac{\|R^{1/2}\eta\|_2}{\sqrt{\lambda_{\min}}},
+\qquad
+\|\widehat w-w^\star\|_\infty
+\le\frac{\|R^{1/2}\eta\|_2}{\sqrt{\lambda_{\min}}}.
+\label{eq:reduced-spectral-bound}
+\end{equation}
+For the orthogonal component-centered convention, this minimum eigenvalue is the smallest positive eigenvalue of $L$. For a different chosen gauge, a reduced operator must be specified; the full Laplacian's smallest positive eigenvalue must not be used indiscriminately for every pinned representation.
+
+If $B$ has rank zero, there are no identifiable differences from the fitting objective. The response vanishes under the zero-component-mean convention, but the geometry still depends on whatever intercomponent offsets are supplied by other modeling choices.
+
+\subsection{Reference-fit qualification and conditional sign identification}
+\label{app:stability-reference}
+
+Let $w^{\mathrm{phys}}$ be any independently specified reference weight vector, with its global additive constant aligned for comparison. The reference fitted solution $w^\star=Gz^\star$ need not equal $w^{\mathrm{phys}}$, even in the absence of measurement noise. By the triangle inequality,
+\begin{equation}
+\|\widehat w-w^{\mathrm{phys}}\|_\infty
+\le \|G\eta\|_\infty
++\|Gz^\star-w^{\mathrm{phys}}\|_\infty.
+\label{eq:reference-fit-bias-bound}
+\end{equation}
+The second term is a deterministic model/reference-fit bias, which may include unconstrained component-offset choices. A common global shift in either weight vector is immaterial to the power diagram, whereas independently shifting components is generally not.
+
+For a fixed finite competitor set, a sufficient condition for the perturbed fit to have the same \emph{sign} of connector score as the physical reference is
+\begin{equation}
+K_{ij}\Bigl(\|G\eta\|_\infty+
+\|Gz^\star-w^{\mathrm{phys}}\|_\infty\Bigr)
+<|\sigma_{ij}(w^{\mathrm{phys}})|,
+\label{eq:reference-sign-condition}
+\end{equation}
+provided the reference score is nonzero. The exact sign criterion in Section~4.4 is the special case in which the comparison is made to $w^\star=Gz^\star$ itself, so the deterministic bias term is absent. The latter remains valid even for incompatible $z^\star$.
+
+These implications concern strict or negative \emph{connector visibility}, not the identification of all actual power faces. In particular, they do not imply one-step recovery of a prescribed topology, nor convergence of an outer iteration in which the observation mask, fitting weights, or realization diagnostic are updated. With hard constraints, the fitted response need not be globally linear, so a single fixed operator $G$ cannot be used without further analysis.
+
+\subsection{Scope of periodic perturbation bounds}
+\label{app:stability-periodic}
+
+For a \emph{fixed finite} set of selected periodic image instances, the same affine competitor-gap calculation applies, with base-site weight variables repeated across image copies and the geometry held fixed. The resulting coefficients must be assembled for the actual image-labelled selected pair and competitor list.
+
+For the complete infinite periodic configuration, no universal finite constant of the form~\eqref{eq:gap-lipschitz-constant} is asserted without a justified finite relevant-image reduction or other uniform control on the competitors over the weight neighborhood of interest. Likewise, clipping introduces the additional domain-wall margin described in~\ref{app:geometry-clipping}; weight-gap stability alone does not imply a positive clipped clearance. Neither caveat alters the exact finite, nonperiodic argument.

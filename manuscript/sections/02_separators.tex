@@ -1,0 +1,51 @@
+\Needspace{10\baselineskip}
+\section{Pairwise separator observations}
+
+We now express each observed or predicted dividing position as a target difference of site weights. For distinct fixed sites $p_1,\ldots,p_n\in\mathbb R^d$, let $w_1,\ldots,w_n$ be real weights with squared-length units. We use the power-distance convention introduced above \cite{Aurenhammer1987}:
+\begin{equation}
+\pi_i(x)=\|x-p_i\|^2-w_i.
+\end{equation}
+For an ordered pair $i\ne j$, let $H_{ij}$ be the pairwise separator defined by $\pi_i(x)=\pi_j(x)$.
+
+\begin{samepage}
+Set $\delta_{ij}=p_j-p_i$ and $d_{ij}=\|\delta_{ij}\|>0$. The full affine line through the two sites is their \emph{connector line}. Its intersection with $H_{ij}$ is $x=p_i+t_{ij}(w)\delta_{ij}$, where coordinates $0$ and $1$ correspond to $p_i$ and $p_j$. Equating the two power distances gives
+\begin{equation*}
+ t_{ij}(w)^2d_{ij}^2-w_i=[1-t_{ij}(w)]^2d_{ij}^2-w_j,
+\end{equation*}
+and hence
+\begin{equation}
+\boxed{t_{ij}(w)=\frac12+\frac{w_i-w_j}{2d_{ij}^2}.}
+\label{eq:pair-coordinate}
+\end{equation}
+\end{samepage}
+The coordinate is defined on the full connector line and need not lie in $[0,1]$.
+
+An observed or predicted coordinate $t_{ij}^{\mathrm{obs}}$ gives the target difference
+\begin{equation}
+ z_{ij}=(2t_{ij}^{\mathrm{obs}}-1)d_{ij}^2.
+ \label{eq:target-difference}
+\end{equation}
+Matching this position requires $w_i-w_j=z_{ij}$; the individual weights remain undetermined. For the displaced separator in Figure~\ref{fig:two-site-separators}, take $p_i=(0,0)$ and $p_j=(2,0)$. Its location $x_1=1/2$ gives $t_{ij}^{\mathrm{obs}}=1/4$ and $z_{ij}=-2$, consistent with the displayed weights $(w_i,w_j)=(0,2)$.
+
+Other forms of data lead to the same target difference. A signed distance $\ell_{ij}^{\mathrm{obs}}$ measured from $p_i$ toward $p_j$ gives $t_{ij}^{\mathrm{obs}}=\ell_{ij}^{\mathrm{obs}}/d_{ij}$. A supplied point $x_{ij}^{\mathrm{obs}}\in\mathbb R^d$ gives the coordinate by orthogonal projection onto the connector:
+\begin{equation}
+ t_{ij}^{\mathrm{obs}}=\frac{(x_{ij}^{\mathrm{obs}}-p_i)\cdot\delta_{ij}}{d_{ij}^2}.
+\end{equation}
+The associated target plane is perpendicular to the connector and passes through $x_{ij}^{\mathrm{obs}}$. Only the longitudinal component enters Eq.~\eqref{eq:target-difference}; the point's transverse displacement has no effect on the target.
+
+Several measurements or predictions may refer to the same pair and yield different targets. We therefore index \emph{observations}, rather than just pairs, by $r$. Let $(i_r,j_r)$ denote the ordered site pair and $y_r$ the supplied normalized coordinate or signed distance. Let $\varepsilon_r$ denote the discrepancy between $y_r$ and the prediction for a candidate weight vector, in the units of $y_r$. Both conventions have the affine form
+\begin{align}
+ y_r&=\beta_r+\alpha_r(w_{i_r}-w_{j_r})+\varepsilon_r,\label{eq:observation-model}\\
+ (\beta_r,\alpha_r)&=
+ \begin{cases}
+ (\frac12,\frac{1}{2d_r^2}), &\text{normalized coordinate},\\[4pt]
+ (\frac{d_r}{2},\frac{1}{2d_r}), &\text{signed distance},
+ \end{cases}
+\end{align}
+where $d_r=\|p_{j_r}-p_{i_r}\|>0$ in the nonperiodic case. Each observation supplies the target difference $z_r=(y_r-\beta_r)/\alpha_r$.
+
+The same model applies to periodic systems once the selected images are specified. Let $1\le\nu\le d$ and let the columns of $\Lambda\in\mathbb R^{d\times\nu}$ form a linearly independent basis of a fixed translation lattice. Observation $r$ specifies a shift $s_r\in\mathbb Z^\nu$, selecting $p_{j_r}^{(s_r)}=p_{j_r}+\Lambda s_r$ relative to $p_{i_r}$. It replaces $p_{j_r}$ in the connector, so $d_r=\|p_{j_r}^{(s_r)}-p_{i_r}\|$, while retaining the base-site weight $w_{j_r}$.
+
+We require $i_r\ne j_r$ and $d_r>0$, excluding observations between images of the same base site and coincident selected endpoints. Different shifts label distinct geometric observations even when they constrain the same two weight variables. Coincident unselected images are discussed in~\ref{app:geometry-periodic}.
+
+The next section determines when these target differences can be satisfied simultaneously and how to reconcile them otherwise. Whether the fitted pairwise planes contribute actual shared cell faces is a separate geometric question, treated in Section~4.

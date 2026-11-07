@@ -12,6 +12,22 @@ run() {
 
 cd "$REPO_ROOT"
 
+# Fail before any output is overwritten if the active backend is incompatible.
+run "$PYTHON_BIN" - <<'PYVORO_PREFLIGHT'
+import importlib.metadata
+import sys
+
+import pyvoro2
+
+required = "0.6.3"
+imported = getattr(pyvoro2, "__version__", None)
+distributed = importlib.metadata.version("pyvoro2")
+print(f"[rerun] interpreter: {sys.executable}")
+print(f"[rerun] pyvoro2 imported={imported}, distribution={distributed}")
+if imported != required or distributed != required:
+    raise SystemExit(f"Rerun requires imported and installed pyvoro2 {required}; no scientific outputs were overwritten.")
+PYVORO_PREFLIGHT
+
 # Synthetic Experiments A--H.
 run "$PYTHON_BIN" experiments/runners/run_exact_recovery.py
 run "$PYTHON_BIN" experiments/analysis/analyze_exact_recovery.py
@@ -57,9 +73,9 @@ run "$PYTHON_BIN" scripts/qtaim/analyze_qtaim_mask_transfer.py   data/qtaim_main
 
 run "$PYTHON_BIN" scripts/qtaim/analyze_qtaim_box_margin_sensitivity.py   results/qtaim_main/J4_mask_transfer_margin3_refresh   results/qtaim_main/J4_mask_transfer_refresh   results/qtaim_main/J4_mask_transfer_margin7_refresh   results/qtaim_main/J4_mask_transfer_margin10_refresh   --labels 3A 5A 7A 10A   --output-dir results/qtaim_main/J4_box_margin_summary_refresh
 
-# Manuscript-facing assets. The PDF build refreshes the manuscript-side
-# tables and figures before compiling the local and flat verification PDFs.
-run bash scripts/build_manuscript_pdfs.sh
-run "$PYTHON_BIN" scripts/check_repo_consistency.py
+# Rerun outputs are checked against the current inline tables. These commands
+# deliberately overwrite experimental outputs; run in a disposable checkout.
+run "$PYTHON_BIN" scripts/check_rerun_results.py
+run "$PYTHON_BIN" scripts/check_manuscript_tables.py
 
-echo "[rerun] completed paper-side rerun from committed data"
+echo "[rerun] completed A--H plus committed-data J replay and checked current inline tables"

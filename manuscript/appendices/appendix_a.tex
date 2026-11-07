@@ -1,0 +1,35 @@
+\section{Supplementary graph and optimization arguments}
+\label{app:graph-optimization}
+
+Here we prove that the constrained quadratic fit in Eq.~\eqref{eq:hard-constrained-fit} attains its minimum and describe all its minimizers.
+
+
+\subsection{Attainment of the constrained quadratic fit}
+\label{app:constrained-attainment}
+
+\begin{proof}
+Assume $R$ is positive diagonal and the hard-feasible set $\mathcal H$
+in Eq.~\eqref{eq:hard-feasible-set} is nonempty. Put
+$T=R^{1/2}B^T$ and $a=R^{1/2}z$. Then the objective is
+$\frac12\|Tw-a\|_2^2$. Since $\mathcal H$ is a polyhedron,
+its linear image $T(\mathcal H)$ is also a polyhedron
+\cite[Theorem~19.3]{Rockafellar1970} and hence
+a nonempty closed convex subset of $\mathbb R^m$.
+The Euclidean projection of $a$ onto $T(\mathcal H)$ exists.
+Every point of $T(\mathcal H)$ has a feasible preimage by its
+definition, so choosing one preimage of this projection gives
+a minimizer of Eq.~\eqref{eq:hard-constrained-fit}.
+To characterize all minimizers, let $w^\star\in\mathcal H$ be one
+of them. The Euclidean projection onto $T(\mathcal H)$ is unique,
+so another feasible weight vector $w$ minimizes the same objective
+if and only if $Tw=Tw^\star$. Since $R$ is positive diagonal,
+$\ker T=\ker B^T$. Consequently,
+\begin{equation}
+\operatorname*{argmin}_{w\in\mathcal H}\mathcal E(w)
+=\mathcal H\cap\bigl(w^\star+\ker B^T\bigr).
+\label{eq:constrained-minimizer-set}
+\end{equation}
+Thus, hard restrictions can limit the componentwise offsets
+between fitting minimizers, while a common additive shift of all
+site weights always remains possible.
+\end{proof}

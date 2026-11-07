@@ -1,8 +1,9 @@
 # Third-party licenses and notices
 
 This repository contains first-party material created for the powerfit
-reproducibility artifact together with a small number of bundled third-party
-runtime artifacts under `external_software/`.
+reproducibility artifact together with bundled third-party runtime artifacts
+under `external_software/` and official LaTeX support files under
+`manuscript/`.
 
 ## Scope of the root license
 
@@ -30,6 +31,43 @@ marked as Other (Open), while this file records the concrete license split.
 - Upstream notice and usage conditions: `external_software/Multiwfn_LICENSE.txt`
 - Provenance manifest: `external_software/multiwfn-version.txt`
 - Citation note: `external_software/How_to_cite_Multiwfn.pdf`
+
+### Official elsarticle publication support
+
+- Bundled class: [manuscript/elsarticle.cls](manuscript/elsarticle.cls), official
+  `elsarticle` 3.5 (2026-01-09).
+- Bundled numerical bibliography style:
+  [manuscript/elsarticle-num.bst](manuscript/elsarticle-num.bst), version 2.1 from
+  the same official upstream package.
+- Upstream license: LaTeX Project Public License 1.3 or later, as stated in the
+  retained upstream file headers and documentation. These files are not covered
+  by the repository's MIT license.
+- Provenance, checksums, and source/license documentation:
+  [manuscript/tex-support/README.md](manuscript/tex-support/README.md).
+- Retained upstream support: `manuscript/tex-support/README.upstream`,
+  `elsarticle.dtx`, and `elsarticle.ins`.
+
+The class and bibliography style are distributed unchanged, including their
+upstream headers. They are pinned to make the canonical article and arXiv source
+archive use the same official publisher version across TeX installations. The
+arXiv bundle carries the class/style and the listed source/license support
+files. Preserve those notices and consult the upstream terms when
+redistributing or modifying them.
+
+### Computer Modern Unicode mappings
+
+- File: [manuscript/tex-support/glyphtounicode-cmr.tex](manuscript/tex-support/glyphtounicode-cmr.tex),
+  copied unchanged from the TeX Live `pdfx` package.
+- Upstream license: LaTeX Project Public License 1.2 or later.
+- Copyright: 2008 Han The Thanh, 2014 Peter Selinger, and 2018 Ross Moore,
+  as recorded in the retained file header.
+- Provenance and checksum:
+  [manuscript/tex-support/README.md](manuscript/tex-support/README.md#computer-modern-unicode-mappings).
+
+The article loads this mapping data directly to preserve mathematical text
+extraction across TeX versions; it does not load the `pdfx` package itself.
+The file is included in the arXiv source bundle and retains its upstream
+license independently of the repository's MIT license.
 
 ## User responsibility
 

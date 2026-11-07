@@ -1,0 +1,136 @@
+\section{Geometric support, degeneracies, and domains}
+\label{app:geometric-details}
+
+We first examine how ties affect connector visibility and face dimension, then distinguish clearance at a connector point inside the face from distance to the face when that point lies outside it. The last two subsections explain how clipping and selected periodic images affect these checks.
+
+
+\subsection{Weak visibility, persistent ties, and face dimension}
+\label{app:geometry-degeneracy}
+
+Consider a finite set of distinct sites in $\mathbb R^d$ with finite real weights. Fix $i\ne j$, and let $q=q_{ij}$ and $H=H_{ij}$ be the pairwise connector point and bisector defined in Section~4. Every point $x\in H$ can be written $x=q+u$ with $u\cdot\delta_{ij}=0$. As in Eq.~\eqref{eq:power-gap-displacement}, the competing-site inequalities restricted to $H$ are
+\begin{equation}
+2e_{ijk}\cdot u\le g_{ijk},
+\qquad k\notin\{i,j\}.
+\label{eq:appendix-face-halfspaces}
+\end{equation}
+Thus the common cell intersection is a (possibly empty or unbounded) closed convex polyhedron within $H$.
+
+Weak connector visibility, $g_{ijk}\ge0$ for all $k$, is exactly the condition $q\in F_{ij}$; it need not imply that $q$ lies in the interior within the \emph{full} $(d-1)$-dimensional hyperplane $H$. Conversely, strict positivity of every competitor gap suffices for such interior membership, but is not necessary in the presence of persistent ties.
+
+In particular, when $e_{ijk}=0$, inequality~\eqref{eq:appendix-face-halfspaces} is constant throughout $H$. If $g_{ijk}<0$, it excludes the entire bisector; if $g_{ijk}>0$, it imposes no restriction on the face; if $g_{ijk}=0$, it is an equality throughout $H$ and does not reduce the extent of $F_{ij}$ \emph{within} the bisector. In contrast, when $g_{ijk}=0$ and $e_{ijk}\ne0$, the corresponding halfspace boundary within $H$ passes through $q$. No ball of positive radius centered at $q$ within $H$ can then be contained in $F_{ij}$.
+
+For an explicit persistent tie, take $p_i=(0,0)$, $p_j=(2,0)$, $p_k=(1,0)$ and $(w_i,w_j,w_k)=(0,0,-1)$. At every point of $H_{ij}=\{(1,y):y\in\mathbb R\}$, all three power distances agree. Consequently $F_{ij}=H_{ij}$ and $q_{ij}\in\operatorname{int}_{H_{ij}}F_{ij}$, yet $g_{ijk}=0$ identically. Here $C_i=\{(x,y):x\le1\}$ and $C_j=\{(x,y):x\ge1\}$ are full-dimensional cells sharing a facet, but the degenerate cell $C_k=H_{ij}$ also minimizes power there. Thus interior membership does not exclude a third minimizing site or imply strict visibility. If instead the selected pair is $i,k$, then $F_{ik}=H_{ik}=H_{ij}$ while $C_k$ has empty ambient interior; full-dimensionality of the intersection within its bisector does not by itself certify that both selected cells are full-dimensional.
+
+We always use $\operatorname{int}_{H_{ij}}$, the interior relative to the \emph{entire pairwise bisector}, not the ordinary relative interior within $\operatorname{aff}(F_{ij})$. The latter is nonempty for every nonempty convex face, including a singleton, and would fail to distinguish full-dimensional interfaces.
+
+\subsection{Centered clearance and exterior distance to a face}
+\label{app:geometry-exterior}
+
+The gap inequalities~\eqref{eq:appendix-face-halfspaces} also describe the distance to a realized face when the connector point itself is not feasible. Define
+\begin{equation}
+V_{ij}=\left\{u\in\delta_{ij}^{\perp}:
+2e_{ijk}\cdot u\le g_{ijk}
+\text{ for all }k\notin\{i,j\}\right\}.
+\label{eq:face-displacement-feasible-set}
+\end{equation}
+Then
+\begin{equation}
+F_{ij}=q_{ij}+V_{ij}.
+\label{eq:face-displacement}
+\end{equation}
+The set $V_{ij}$ is a closed convex polyhedron, possibly empty.
+
+\paragraph{Interior clearance}
+If $q_{ij}\in F_{ij}$, the largest radius of a closed Euclidean ball \emph{within} $H_{ij}$ centered at $q_{ij}$ and contained in $F_{ij}$ satisfies
+\begin{equation}
+c_{ij}=
+\min_{\substack{k\notin\{i,j\}\\\|e_{ijk}\|>0}}
+\frac{g_{ijk}}{2\|e_{ijk}\|},
+\label{eq:weak-centered-clearance}
+\end{equation}
+with the minimum of an empty set interpreted as $+\infty$. Indeed, the minimum of each affine gap over the centered ball of radius $r$ is $g_{ijk}-2r\|e_{ijk}\|$; all these values must be nonnegative. The same argument works when $\sigma_{ij}=0$, not only when it is positive. A zero gap with nonzero $e_{ijk}$ forces $c_{ij}=0$; a zero gap with $e_{ijk}=0$ imposes no in-bisector restriction. When no constraint has a nonzero projected normal and $q_{ij}\in F_{ij}$, the whole bisector is contained in the face and $c_{ij}=+\infty$. Redundant halfspaces do not affect this derivation.
+
+\paragraph{Exterior distance}
+If $q_{ij}\notin F_{ij}$ but $F_{ij}\ne\varnothing$, define its \emph{exterior face distance} as the inherited Euclidean distance within the bisector,
+\begin{equation}
+d_{ij}^{\mathrm{out}}
+=\operatorname{dist}_{H_{ij}}(q_{ij},F_{ij}).
+\label{eq:exterior-face-distance}
+\end{equation}
+Using~\eqref{eq:face-displacement}, this distance is computed by the convex quadratic program
+\begin{equation}
+\boxed{
+\begin{aligned}
+(d_{ij}^{\mathrm{out}})^2
+&=\min_{u\in\delta_{ij}^{\perp}}\|u\|^2,\\
+\text{subject to}\quad
+&2e_{ijk}\cdot u\le g_{ijk}
+\qquad\text{for all }k\notin\{i,j\}.
+\end{aligned}}
+\label{eq:exterior-distance-qp}
+\end{equation}
+For a nonempty face the minimum is attained at a unique point: this is Euclidean projection onto a nonempty closed convex set. If the inequalities are infeasible, $F_{ij}=\varnothing$ and the standard distance-to-set convention gives $d_{ij}^{\mathrm{out}}=+\infty$; there is then no nearest point. The quantity measures distance to the \emph{specified pair's face}, not to the closest face of any site pair in the full diagram.
+
+\paragraph{Why negative clearance ratios are not exterior distances}
+Consider the formal algebraic extension
+\begin{equation}
+\widetilde c_{ij}=
+\min_{\|e_{ijk}\|>0}\frac{g_{ijk}}{2\|e_{ijk}\|}.
+\label{eq:formal-negative-clearance}
+\end{equation}
+For a violated inequality with nonzero projected normal, the positive quantity $-g_{ijk}/(2\|e_{ijk}\|)$ is the distance from $q_{ij}$ to the feasible \emph{halfspace for that single inequality}. The full face is the intersection of all halfspaces, so its distance from $q_{ij}$ can exceed each individual halfspace distance, and the intersection itself may be empty. Constant violated inequalities ($e_{ijk}=0,\ g_{ijk}<0$) are another obstruction: they make the whole face empty without appearing in~\eqref{eq:formal-negative-clearance}.
+
+An explicit example with a nonempty face occurs in $\mathbb R^3$. Take
+\begin{equation}
+\begin{aligned}
+p_1&=(0,0,0), & p_2&=(2,0,0),\\
+p_3&=(1,-1,0), & p_4&=(1,0,-1),
+\end{aligned}
+\qquad
+(w_1,w_2,w_3,w_4)=(0,0,2,2).
+\label{eq:exterior-counterexample}
+\end{equation}
+Here $H_{12}=\{(1,y,z)\}$, $q_{12}=(1,0,0)$, and the two competitor inequalities require $y\ge1$ and $z\ge1$. The face is the nonempty quadrant $\{(1,y,z):y\ge1,\ z\ge1\}$, so
+\begin{equation}
+\widetilde c_{12}=-1,
+\qquad d_{12}^{\mathrm{out}}=\sqrt2.
+\label{eq:exterior-example-values}
+\end{equation}
+In the four-site configuration of Eq.~\eqref{eq:four-sites} with $(w_3,w_4)=(1,1)$, the face is instead empty despite a finite negative formal ratio. Hence a negative continuation of the centered-clearance formula cannot be identified with a signed distance to the true face. The centered interior radius and the distance to a realized face are therefore distinct geometric quantities.
+
+\subsection{Clipping to a convex box}
+\label{app:geometry-clipping}
+
+For a convex box or, more generally, a fixed convex polytope
+\begin{equation}
+\Omega=\{x\in\mathbb R^d:a_\ell\cdot x\le b_\ell
+\text{ for all }\ell\},
+\label{eq:domain-halfspaces}
+\end{equation}
+the clipped intersection is $F_{ij}^{\Omega}=F_{ij}\cap\Omega$. Each domain inequality restricted to $x=q_{ij}+u\in H_{ij}$ takes the form
+\begin{equation}
+a_\ell\cdot u\le b_\ell-a_\ell\cdot q_{ij}.
+\end{equation}
+Let $P_{ij}$ be orthogonal projection onto $\delta_{ij}^{\perp}$. When $q_{ij}\in\Omega$, the largest radius of a centered in-bisector ball contained in $\Omega$ is
+\begin{equation}
+b_{ij}^{\Omega}=
+\min_{\ell:\|P_{ij}a_\ell\|>0}
+\frac{b_\ell-a_\ell\cdot q_{ij}}{\|P_{ij}a_\ell\|},
+\label{eq:box-inplane-radius}
+\end{equation}
+with empty minimum $+\infty$; a constraint with zero projected normal has no effect on motion within $H_{ij}$ when already satisfied at $q_{ij}$.
+
+If $q_{ij}\in F_{ij}\cap\Omega$, the centered radius of the clipped intersection is exactly $\min\{c_{ij},b_{ij}^{\Omega}\}$ by the two families of halfspace inequalities. The strict-visibility and interior-domain hypotheses in Section~4.4 guarantee that this value is positive; at the boundary, ties and domain-wall coincidences require explicit attention.
+
+When a domain wall coincides with $H_{ij}$, a clipped intersection may have nonempty $(d-1)$-dimensional interior within $H_{ij}$ without forming an interface between two full-dimensional cells \emph{inside} $\Omega$. An interior-domain strict witness is a sufficient way to exclude this boundary-only behavior, but not a necessary condition for every useful clipped geometric intersection. No analogous finite halfspace formula is claimed here for arbitrary nonconvex clipping domains.
+
+\subsection{Selected periodic images and competitor scope}
+\label{app:geometry-periodic}
+
+For a fixed lattice with translations $\Lambda t$, a geometric site instance has position $p_{k,t}=p_k+\Lambda t$ and retains base weight $w_k$. A periodic pair observation specifies two \emph{selected instances}, such as $(i,0)$ and $(j,s)$. The bisector and its connector point are computed for those instances; their competitors are \emph{all other instances}. In particular, other copies of base sites $i$ or $j$ must not be discarded merely because their base indices match one of the endpoints. Distinct base sites may be equivalent modulo the lattice: a coincident \emph{unselected} image produces a constant competitor power-gap inequality, which is redundant, excludes the selected cell, or creates a persistent tie depending on its sign. The observed selected endpoints must still be distinct as required in Section~2.
+
+The same affine pointwise power inequalities and in-bisector projection arguments apply to each selected instance and competitor. However, an infinite collection of image inequalities is not automatically a finite polyhedron, and an arbitrary neighbor-image stencil does not establish a complete exact realization test or a uniform finite stability constant. An exact finite reduction requires a justified region of interest and relevant-image bound.
+
+Let $V=\operatorname{span}\Lambda$ and let $P_V$ denote orthogonal projection onto $V$. Competition with a selected site's own images confines $P_V(x-p_i)$, for every $x$ in that image's power cell, to the compact lattice Voronoi region in $V$. For images of any competing base site, the $V^\perp$ component of squared distance is independent of the shift, and all images share the same weight. Thus, for each competing base site, its nearest image depends only on $P_Vx$, and finitely many shifts suffice over the compact projected region even when the nonperiodic directions are unbounded. This supplies a route to a finite relevant-image reduction for selected cells and their faces under fixed partial periodicity.
+
+It does not justify an arbitrary fixed image stencil or a uniform competitor set for connector points that move without restriction as weights change. Changing lattice geometry also requires separate control. Section~4 therefore does not extend its finite-competitor stability estimate to an unrestricted periodic theorem.
