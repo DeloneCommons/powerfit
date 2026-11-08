@@ -1,0 +1,68 @@
+name: temporary-pr6-zenodo-export
+
+on:
+  push:
+    branches:
+      - release/prepare-v2.0.0-manual-zenodo
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify exactly the PR source revision
+        run: |
+          test "$(git rev-parse HEAD^)" = "82e9eb78c9a0067a62f31547e5daecb5d0f9cc72"
+          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/temporary-pr6-zenodo-export.yml"
+      - name: Install PDF build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cm-super latexmk poppler-utils texlive-fonts-recommended \
+            texlive-latex-base texlive-latex-extra texlive-latex-recommended \
+            texlive-pictures texlive-publishers texlive-science
+      - name: Check the frozen source and build the manuscript
+        run: |
+          python scripts/check_repo_consistency.py
+          bash scripts/build_manuscript_pdfs.sh
+      - name: Package the exact parent source tree with its built PDF
+        run: |
+          mkdir -p build
+          git archive --format=zip --prefix=powerfit-v2.0.0/ --output=build/powerfit-v2.0.0.zip 82e9eb78c9a0067a62f31547e5daecb5d0f9cc72
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
+          import hashlib
+          path = Path("build/powerfit-v2.0.0.zip")
+          pdf = Path("manuscript/manuscript.pdf")
+          name = "powerfit-v2.0.0/manuscript/manuscript.pdf"
+          info = ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+          info.compress_type = ZIP_DEFLATED
+          info.external_attr = 0o100644 << 16
+          with ZipFile(path, "a") as z:
+              assert name not in z.namelist()
+              z.writestr(info, pdf.read_bytes())
+          with ZipFile(path) as z:
+              names = z.namelist()
+              assert len(names) == len(set(names))
+              assert z.testzip() is None
+              assert z.read(name) == pdf.read_bytes()
+              assert sum(p.startswith("powerfit-v2.0.0/manuscript/figures/") and p.endswith(".pdf") for p in names) == 7
+              assert "powerfit-v2.0.0/CITATION.cff" in names
+              assert "powerfit-v2.0.0/manuscript/refs.bib" in names
+          print("PACKAGE:", path, path.stat().st_size)
+          print("SHA256:", hashlib.sha256(path.read_bytes()).hexdigest())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: powerfit-zenodo-pr6-candidate
+          path: build/powerfit-v2.0.0.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 3
