@@ -11,7 +11,7 @@ run from the repository root.
 | [manuscript.tex](manuscript.tex) | Article entry point, abstract, front matter, availability and acknowledgments, bibliography, and includes. |
 | [sections/](sections/) | Sections 1–9: introduction; observations; graph fitting; geometric realization; computational workflow; synthetic experiments; molecular application; discussion; conclusions. |
 | [appendices/](appendices/) | Appendices A–E: graph and optimization arguments; geometry; perturbation estimates; algorithm and synthetic protocols; molecular background and protocols. |
-| [refs.bib](refs.bib) | Bibliography source, including separate project and frozen-evidence DOI entries. |
+| [refs.bib](refs.bib) | Bibliography source, including the powerfit v2.0.0 archive and pyvoro2 0.6.3 citations. |
 | [figures/README.md](figures/README.md) | Source and interpretation map for the seven vector figure PDFs. |
 | [elsarticle.cls](elsarticle.cls), [elsarticle-num.bst](elsarticle-num.bst) | Pinned, unmodified official `elsarticle` 3.5 class and numerical bibliography style. |
 | [tex-support/README.md](tex-support/README.md) | Publisher-file provenance, source files, and retained upstream license information. |
