@@ -159,14 +159,16 @@ the canonical PDF and extracted arXiv archive. See
 
 | Resource | Persistent identifier |
 |---|---|
+| `powerfit` v2.0.0 release | [10.5281/zenodo.24047266](https://doi.org/10.5281/zenodo.24047266), the reserved version DOI. |
 | Evolving `powerfit` project | [10.5281/zenodo.19673557](https://doi.org/10.5281/zenodo.19673557), the all-versions concept DOI. |
 | Frozen `powerfit` v1.0.0 evidence | [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558). |
 | Fitting software `pyvoro2` 0.6.3 | [10.5281/zenodo.19143984](https://doi.org/10.5281/zenodo.19143984). |
 
-[CITATION.cff](CITATION.cff) distinguishes these references. The concept DOI resolves to the latest **published** Zenodo version. Version
-2.0.0 is prepared for manual deposit as a new version of the existing record;
-see the [release procedure](docs/releasing.md). Its version DOI and date are
-recorded after Zenodo publication.
+[CITATION.cff](CITATION.cff) gives the v2.0.0 version DOI for citations and
+also identifies the all-versions concept DOI. The v2.0.0 DOI was reserved in
+a draft of a new version of the existing Zenodo record; it becomes resolvable
+when that version is published. Until then, the concept DOI continues to point
+to v1.0.0. See the [manual release procedure](docs/releasing.md).
 
 The root [LICENSE](LICENSE) covers first-party materials. Bundled third-party
 software retains its upstream terms in

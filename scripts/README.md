@@ -16,11 +16,6 @@ reproduction steps.
 | Check scientific result completeness | `python scripts/check_rerun_results.py` | Checks expected run/system populations, fit outcomes and local diagnostic agreement; writes nothing. |
 | Run focused tests | `python -m unittest discover -s tests -v` | Tests scientific aggregations, figure constructions and build/check helpers; no full scientific rerun. |
 | Build PDF and arXiv ZIP | `python scripts/make_arxiv_bundle.py --output build/powerfit-arxiv.zip` | Builds once, then packages the source dependencies and fresh bibliography. |
-| Package manual Zenodo release | `python scripts/build_zenodo_archive.py --tag v2.0.0 --output build/powerfit-v2.0.0.zip` | Requires an exact clean tagged checkout; rebuilds PDF, exports tracked Git source, adds the PDF inside a single ZIP. |
-
-Run the manual Zenodo release command **only after** creating the release tag;
-it does not create the tag, a GitHub Release or a Zenodo deposit. See
-[docs/releasing.md](../docs/releasing.md).
 
 The PDF build uses reviewed figures and literal TeX tables. It does not call
 their generators or recompute experiments. The packager already builds the PDF;
