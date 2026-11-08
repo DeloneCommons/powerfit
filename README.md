@@ -153,22 +153,21 @@ table checkers to evaluate that separate checkout. CI checks frozen integrity,
 figures, tables, result completeness, tests, A/B and J1 smoke subsets, and both
 the canonical PDF and extracted arXiv archive. See
 [the CI guide](.github/workflows/README.md) and
-[release procedure](docs/releasing.md).
+[v2.0.0 release notes](docs/release-v2.0.0.md).
 
 ## Citation and licenses
 
 | Resource | Persistent identifier |
 |---|---|
-| `powerfit` v2.0.0 release | [10.5281/zenodo.24047266](https://doi.org/10.5281/zenodo.24047266), the reserved version DOI. |
+| `powerfit` v2.0.0 release | [10.5281/zenodo.24047266](https://doi.org/10.5281/zenodo.24047266), the version DOI. |
 | Evolving `powerfit` project | [10.5281/zenodo.19673557](https://doi.org/10.5281/zenodo.19673557), the all-versions concept DOI. |
 | Frozen `powerfit` v1.0.0 evidence | [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558). |
 | Fitting software `pyvoro2` 0.6.3 | [10.5281/zenodo.19143984](https://doi.org/10.5281/zenodo.19143984). |
 
-[CITATION.cff](CITATION.cff) gives the v2.0.0 version DOI for citations and
-also identifies the all-versions concept DOI. The v2.0.0 DOI was reserved in
-a draft of a new version of the existing Zenodo record; it becomes resolvable
-when that version is published. Until then, the concept DOI continues to point
-to v1.0.0. See the [manual release procedure](docs/releasing.md).
+[CITATION.cff](CITATION.cff) identifies the v2.0.0 version DOI for citations
+and the all-versions concept DOI for the evolving project. See the
+[v2.0.0 release notes](docs/release-v2.0.0.md) for the archive contents and
+provenance.
 
 The root [LICENSE](LICENSE) covers first-party materials. Bundled third-party
 software retains its upstream terms in

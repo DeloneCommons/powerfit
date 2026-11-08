@@ -1,9 +1,8 @@
 cff-version: 1.2.0
 message: >-
-  Cite this version of powerfit using the v2.0.0 DOI below. For the numerical
-  evidence used by the manuscript, cite the v1.0.0 frozen archive and
-  pyvoro2 0.6.3 separately. Cite the associated article when its own
-  publication identifier is available.
+  Cite this v2.0.0 DOI for the reproducibility archive. Cite the associated
+  article separately when its publication identifier is available. The
+  reported calculations used pyvoro2 0.6.3.
 title: >-
   powerfit: reproducibility materials for inverse fitting of
   power-diagram weights from pairwise separator data
@@ -21,9 +20,6 @@ identifiers:
   - type: doi
     value: 10.5281/zenodo.19673557
     description: Concept DOI for all versions of the powerfit project.
-  - type: doi
-    value: 10.5281/zenodo.24047266
-    description: Reserved version DOI for the powerfit v2.0.0 release.
 license: MIT
 abstract: >-
   Version 2.0.0 provides the revised manuscript source, figure and build

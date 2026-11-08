@@ -212,4 +212,3 @@ The seven retired manuscript/environment utilities have no role in the current
 workflow and were removed. In particular, normal builds never recapture or
 overwrite the archived environment snapshot. The current guides supply the
 correct commands without cosmetically editing protected historical files.
-See [docs/releasing.md](../docs/releasing.md) for later release/deposit decisions.

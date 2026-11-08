@@ -147,21 +147,18 @@ dependencies. The ZIP is an ignored output under `build/`; it is not a
 tracked flat submission tree. Review the built PDF and the archive before any
 submission. Creating the archive does not publish a release or submit to arXiv.
 
-## Evidence and release status
+## Release and evidence provenance
 
-The numerical evidence is the frozen
-[powerfit v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558), and the
-reported fitting software is
-[pyvoro2 0.6.3](https://doi.org/10.5281/zenodo.19143984). The
-[all-versions project DOI](https://doi.org/10.5281/zenodo.19673557) tracks the
-latest published project release. Until a revised release is deposited, that
-concept DOI still points to v1.0.0.
+The [powerfit v2.0.0 archive](https://doi.org/10.5281/zenodo.24047266)
+contains the revised manuscript and reproducibility materials. The numerical
+evidence is unchanged from the
+[v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558), and the reported
+fitting software is [pyvoro2 0.6.3](https://doi.org/10.5281/zenodo.19143984).
+The [all-versions project DOI](https://doi.org/10.5281/zenodo.19673557)
+identifies the evolving project.
 
 The frozen experiment registry retains its historical numbering and asset
 references. Use the [current experiment crosswalk](../README.md#frozen-records-and-the-current-manuscript)
-and the article itself for present placement and evaluation conventions. The v2.0.0 Zenodo archive (reserved DOI
-[10.5281/zenodo.24047266](https://doi.org/10.5281/zenodo.24047266)) is
-prepared from the tagged source tree with a built
-`manuscript/manuscript.pdf`; see [the release procedure](../docs/releasing.md).
-The DOI becomes resolvable after Zenodo publication; article identifiers are
-added only after they are assigned.
+and the article itself for present placement and evaluation conventions. The
+v2.0.0 archive includes the tagged source tree and the compiled
+`manuscript/manuscript.pdf`; see the [release notes](../docs/release-v2.0.0.md).
