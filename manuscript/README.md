@@ -11,12 +11,12 @@ run from the repository root.
 | [manuscript.tex](manuscript.tex) | Article entry point, abstract, front matter, availability and acknowledgments, bibliography, and includes. |
 | [sections/](sections/) | Sections 1–9: introduction; observations; graph fitting; geometric realization; computational workflow; synthetic experiments; molecular application; discussion; conclusions. |
 | [appendices/](appendices/) | Appendices A–E: graph and optimization arguments; geometry; perturbation estimates; algorithm and synthetic protocols; molecular background and protocols. |
-| [refs.bib](refs.bib) | Bibliography source, including separate project and frozen-evidence DOI entries. |
+| [refs.bib](refs.bib) | Bibliography source, including the powerfit v2.0.0 archive and pyvoro2 0.6.3 citations. |
 | [figures/README.md](figures/README.md) | Source and interpretation map for the seven vector figure PDFs. |
 | [elsarticle.cls](elsarticle.cls), [elsarticle-num.bst](elsarticle-num.bst) | Pinned, unmodified official `elsarticle` 3.5 class and numerical bibliography style. |
 | [tex-support/README.md](tex-support/README.md) | Publisher-file provenance, source files, and retained upstream license information. |
 
-The article uses 15 authored TeX files, seven figure PDFs, and 35 cited
+The article uses 15 authored TeX files, seven figure PDFs, and 34 cited
 references. The current build is 65 pages. The four tables are literal TeX; there
 is no generated table-fragment dependency. The Experiment H candidate graphic
 is not part of the article; the E/H table and accompanying discussion present
@@ -147,18 +147,18 @@ dependencies. The ZIP is an ignored output under `build/`; it is not a
 tracked flat submission tree. Review the built PDF and the archive before any
 submission. Creating the archive does not publish a release or submit to arXiv.
 
-## Evidence and release status
+## Release and evidence provenance
 
-The numerical evidence is the frozen
-[powerfit v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558), and the
-reported fitting software is
-[pyvoro2 0.6.3](https://doi.org/10.5281/zenodo.19143984). The
-[all-versions project DOI](https://doi.org/10.5281/zenodo.19673557) tracks the
-latest published project release. Until a revised release is deposited, that
-concept DOI still points to v1.0.0.
+The [powerfit v2.0.0 archive](https://doi.org/10.5281/zenodo.24047266)
+contains the revised manuscript and reproducibility materials. The numerical
+evidence is unchanged from the
+[v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558), and the reported
+fitting software is [pyvoro2 0.6.3](https://doi.org/10.5281/zenodo.19143984).
+The [all-versions project DOI](https://doi.org/10.5281/zenodo.19673557)
+identifies the evolving project.
 
 The frozen experiment registry retains its historical numbering and asset
 references. Use the [current experiment crosswalk](../README.md#frozen-records-and-the-current-manuscript)
-and the article itself for present placement and evaluation conventions. Version
-2.0.0 is being prepared; its release date, PDF inclusion and future publication
-identifiers are still subject to [docs/releasing.md](../docs/releasing.md).
+and the article itself for present placement and evaluation conventions. The
+v2.0.0 archive includes the tagged source tree and the compiled
+`manuscript/manuscript.pdf`; see the [release notes](../docs/release-v2.0.0.md).

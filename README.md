@@ -3,9 +3,9 @@
 Source and reproducibility materials for **“Fixed-site inverse fitting of
 power-diagram weights from pairwise separator data.”**
 
-**Version 2.0.0 is in preparation.** The revised mathematical article replaces
-the original manuscript; its experimental protocols and numerical evidence are
-the unchanged [v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558).
+**Version 2.0.0** contains the revised mathematical article and its
+reproducibility infrastructure. The article replaces the original manuscript;
+its experimental protocols and numerical evidence are the unchanged [v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558).
 The fitting software is maintained separately in
 [pyvoro2](https://github.com/DeloneCommons/pyvoro2).
 
@@ -153,19 +153,21 @@ table checkers to evaluate that separate checkout. CI checks frozen integrity,
 figures, tables, result completeness, tests, A/B and J1 smoke subsets, and both
 the canonical PDF and extracted arXiv archive. See
 [the CI guide](.github/workflows/README.md) and
-[release procedure](docs/releasing.md).
+[v2.0.0 release notes](docs/release-v2.0.0.md).
 
 ## Citation and licenses
 
 | Resource | Persistent identifier |
 |---|---|
+| `powerfit` v2.0.0 release | [10.5281/zenodo.24047266](https://doi.org/10.5281/zenodo.24047266), the version DOI. |
 | Evolving `powerfit` project | [10.5281/zenodo.19673557](https://doi.org/10.5281/zenodo.19673557), the all-versions concept DOI. |
 | Frozen `powerfit` v1.0.0 evidence | [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558). |
 | Fitting software `pyvoro2` 0.6.3 | [10.5281/zenodo.19143984](https://doi.org/10.5281/zenodo.19143984). |
 
-[CITATION.cff](CITATION.cff) distinguishes these references. Until a new release
-is published, the concept DOI still resolves to v1.0.0; this branch does not
-assign a v2.0.0 DOI or release date.
+[CITATION.cff](CITATION.cff) identifies the v2.0.0 version DOI for citations
+and the all-versions concept DOI for the evolving project. See the
+[v2.0.0 release notes](docs/release-v2.0.0.md) for the archive contents and
+provenance.
 
 The root [LICENSE](LICENSE) covers first-party materials. Bundled third-party
 software retains its upstream terms in

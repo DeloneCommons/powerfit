@@ -1,29 +1,33 @@
 cff-version: 1.2.0
 message: >-
-  Cite this concept DOI for the evolving powerfit project. For the numerical
-  evidence used by the manuscript, cite the version-specific powerfit v1.0.0
-  reference below together with pyvoro2 0.6.3. Also cite the associated
-  manuscript or article when its publication identifier is available.
+  Cite this v2.0.0 DOI for the reproducibility archive. Cite the associated
+  article separately when its publication identifier is available. The
+  reported calculations used pyvoro2 0.6.3.
 title: >-
   powerfit: reproducibility materials for inverse fitting of
   power-diagram weights from pairwise separator data
 type: software
+version: 2.0.0
 authors:
   - family-names: Chernyshov
     given-names: Ivan Yu.
     affiliation: Independent researcher
     orcid: "https://orcid.org/0000-0002-4452-2025"
 repository-code: https://github.com/DeloneCommons/powerfit
-doi: 10.5281/zenodo.19673557
-url: https://doi.org/10.5281/zenodo.19673557
+doi: 10.5281/zenodo.24047266
+url: https://doi.org/10.5281/zenodo.24047266
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.19673557
+    description: Concept DOI for all versions of the powerfit project.
 license: MIT
 abstract: >-
-  Revised manuscript source, figure and build helpers, and frozen experimental
-  protocols, inputs, and results for inverse fitting of power-diagram weights
-  from pairwise separator data. The experimental evidence is preserved in
-  powerfit v1.0.0, while this concept DOI identifies the evolving project. The
-  MIT license applies to first-party materials; bundled third-party artifacts
-  retain their upstream licenses and notices.
+  Version 2.0.0 provides the revised manuscript source, figure and build
+  helpers, and frozen experimental protocols, inputs, and results for inverse
+  fitting of power-diagram weights from pairwise separator data. Experimental
+  evidence remains preserved in powerfit v1.0.0. The MIT license applies to
+  first-party materials; bundled third-party artifacts retain their upstream
+  licenses and notices.
 keywords:
   - power diagram
   - Laguerre tessellation
