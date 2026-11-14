@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -91,18 +93,64 @@ class ManuscriptBuildTests(unittest.TestCase):
         self.assertTrue(any("duplicate" in e.lower()
                             for e in self.checker().check_sources(self.root)))
 
-    def test_pinned_class_source_support_is_bundled(self):
+    def cam_support(self):
         main = self.root / "manuscript.tex"
-        main.write_text(main.read_text().replace("{article}", "{elsarticle}"))
-        (self.root / "elsarticle.cls").write_text("test class")
+        main.write_text(main.read_text().replace(
+            r"\documentclass{article}",
+            r"\documentclass[pdflatex,sn-mathphys-ay]{sn-jnl}"))
+        # The class selects its style internally; the wrapper has no such command.
+        main.write_text(main.read_text().replace(r"\bibliographystyle{plain}", ""))
+        (self.root / "sn-jnl.cls").write_bytes(b"% Official class fixture\r")
+        (self.root / "sn-mathphys-ay.bst").write_text("% Author/year style fixture\n")
+        (self.root / "TEMPLATE_PROVENANCE.md").write_text("Publisher provenance\n")
+        (self.root / "CAM_SYNC.md").write_text("Pinned source baseline\n")
         support = self.root / "tex-support"
         support.mkdir()
-        for name in ["README.md", "README.upstream", "elsarticle.dtx", "elsarticle.ins"]:
-            (support / name).write_text("upstream support")
+        (support / "README.md").write_text("Upstream license notices\n")
+
+    def test_class_selected_author_year_style_is_bundled_with_notices(self):
+        self.cam_support()
         paths = {p.relative_to(self.root).as_posix()
                  for p in self.checker().collect_dependencies(self.root)}
-        self.assertIn("tex-support/elsarticle.dtx", paths)
+        self.assertIn("sn-jnl.cls", paths)
+        self.assertIn("sn-mathphys-ay.bst", paths)
+        self.assertIn("TEMPLATE_PROVENANCE.md", paths)
+        self.assertIn("CAM_SYNC.md", paths)
         self.assertIn("tex-support/README.md", paths)
+
+    def test_missing_pinned_cam_support_is_rejected(self):
+        self.cam_support()
+        for name in ("sn-jnl.cls", "sn-mathphys-ay.bst", "TEMPLATE_PROVENANCE.md",
+                     "CAM_SYNC.md", "tex-support/README.md"):
+            with self.subTest(name=name):
+                path = self.root / name
+                original = path.read_bytes()
+                path.unlink()
+                with self.assertRaisesRegex(ValueError, name):
+                    self.checker().collect_dependencies(self.root)
+                path.write_bytes(original)
+
+    def test_cam_bundle_preserves_publisher_bytes_and_excludes_private_material(self):
+        self.cam_support()
+        (self.root / "manuscript.bbl").write_text(
+            r"\bibitem[Author(2026)]{sample} Example")
+        (self.root / "cover-letter.md").write_text("Private sentinel")
+        (self.root / "elsarticle.cls").write_text("Stale class")
+        (self.root / "manuscript.pdf").write_bytes(b"%PDF-review-output")
+        import make_arxiv_bundle
+        output = self.root.parent / "cam.zip"
+        make_arxiv_bundle.write_bundle(self.root, output)
+        first = output.read_bytes()
+        make_arxiv_bundle.write_bundle(self.root, output)
+        self.assertEqual(output.read_bytes(), first)
+        with zipfile.ZipFile(output) as archive:
+            self.assertIn("sn-mathphys-ay.bst", archive.namelist())
+            self.assertIn("TEMPLATE_PROVENANCE.md", archive.namelist())
+            self.assertIn("CAM_SYNC.md", archive.namelist())
+            self.assertEqual(archive.read("sn-jnl.cls"), b"% Official class fixture\r")
+            self.assertNotIn("cover-letter.md", archive.namelist())
+            self.assertNotIn("elsarticle.cls", archive.namelist())
+            self.assertNotIn("manuscript.pdf", archive.namelist())
 
     def test_missing_or_stale_bibliography_is_rejected(self):
         checker = self.checker()
@@ -111,6 +159,81 @@ class ManuscriptBuildTests(unittest.TestCase):
         self.assertTrue(any("sample" in e for e in checker.check_bibliography(self.root)))
         (self.root / "manuscript.bbl").write_text(r"\bibitem{sample} Example")
         self.assertEqual(checker.check_bibliography(self.root), [])
+
+    def test_cam_layout_notices_are_allowed_without_hiding_build_errors(self):
+        self.cam_support()
+        (self.root / "manuscript.bbl").write_text(r"\bibitem{sample} Example")
+        (self.root / "manuscript.blg").write_text("")
+        (self.root / "manuscript.log").write_text(
+            "Underfull \\hbox (badness 6559) in paragraph at lines 60--63\n"
+            "Underfull \\vbox (badness 10000) has occurred while \\output is active []\n"
+            "Package hyperref Warning: Difference (2) between bookmark levels is greater\n")
+        self.assertEqual(self.checker().check_built(self.root), ["Missing manuscript.pdf"])
+        for diagnostic in (
+            "LaTeX Warning: Reference `missing' on page 1 undefined",
+            "Package natbib Warning: Citation `sample' on page 1 undefined",
+            "Overfull \\hbox (1.0pt too wide) in paragraph",
+            "Package hyperref Warning: Token not allowed in a PDF string",
+        ):
+            with self.subTest(diagnostic=diagnostic):
+                (self.root / "manuscript.log").write_text(diagnostic + "\n")
+                self.assertTrue(any(diagnostic in error
+                                    for error in self.checker().check_built(self.root)))
+        (self.root / "manuscript.log").write_text("")
+        (self.root / "manuscript.blg").write_text("Warning--missing publisher in sample\n")
+        self.assertTrue(any("missing publisher" in error
+                            for error in self.checker().check_built(self.root)))
+
+    def test_layout_notice_allowance_is_limited_to_the_cam_class(self):
+        (self.root / "manuscript.bbl").write_text(r"\bibitem{sample} Example")
+        (self.root / "manuscript.blg").write_text("")
+        (self.root / "manuscript.log").write_text("Underfull \\hbox (badness 6559)\n")
+        self.assertTrue(any("Underfull" in error
+                            for error in self.checker().check_built(self.root)))
+
+    @unittest.skipUnless(all(shutil.which(tool) for tool in (
+        "latexmk", "pdflatex", "bibtex", "kpsewhich", "pdfinfo", "pdffonts")),
+        "TeX and Poppler tools are required for the publisher-migration build")
+    def test_build_refreshes_legacy_publisher_auxiliaries(self):
+        self.cam_support()
+        for name in ("sn-jnl.cls", "sn-mathphys-ay.bst"):
+            shutil.copyfile(SCRIPTS.parent / "manuscript" / name, self.root / name)
+        # Seed a genuine latexmk cache for a publisher style that is then removed.
+        plain = subprocess.check_output(["kpsewhich", "plain.bst"], text=True).strip()
+        shutil.copyfile(plain, self.root / "retired.bst")
+        (self.root / "manuscript.tex").write_text(
+            r"\documentclass{article}\usepackage{lmodern}" "\n"
+            r"\begin{document}Old citation \cite{obsolete}." "\n"
+            r"\bibliographystyle{retired}\bibliography{refs}\end{document}" "\n")
+        (self.root / "refs.bib").write_text(
+            "@book{obsolete, author={Author, Alice}, title={Old Example}, "
+            "year={2025}, publisher={Sample Press}}\n")
+        legacy = subprocess.run(
+            ["latexmk", "-norc", "-pdf", "-bibtex", "-interaction=nonstopmode",
+             "-halt-on-error", "manuscript.tex"],
+            cwd=self.root, capture_output=True, text=True, timeout=120)
+        self.assertEqual(legacy.returncode, 0, legacy.stdout + legacy.stderr)
+        (self.root / "retired.bst").unlink()
+        (self.root / "manuscript.tex").write_text(
+            r"\documentclass[pdflatex,sn-mathphys-ay]{sn-jnl}" "\n"
+            r"\usepackage[T1]{fontenc}\usepackage{lmodern}\usepackage{amsmath,xcolor}" "\n"
+            r"\begin{document}A source-build example \citep{sample}." "\n"
+            r"\bibliography{refs}\end{document}" "\n")
+        (self.root / "refs.bib").write_text(
+            "@book{sample, author={Author, Alice}, title={An Example}, "
+            "year={2026}, publisher={Sample Press}, address={Sample City}}\n")
+        scripts = self.root.parent / "scripts"
+        scripts.mkdir()
+        for name in ("build_manuscript_pdfs.sh", "check_manuscript.py"):
+            shutil.copyfile(SCRIPTS / name, scripts / name)
+        shutil.copyfile(SCRIPTS.parent / ".latexmkrc", self.root.parent / ".latexmkrc")
+        result = subprocess.run(
+            ["bash", str(scripts / "build_manuscript_pdfs.sh")],
+            cwd=self.root.parent, capture_output=True, text=True, timeout=120)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue((self.root / "manuscript.pdf").is_file())
+        self.assertIn("sn-mathphys-ay", (self.root / "manuscript.aux").read_text())
+        self.assertNotIn("obsolete", (self.root / "manuscript.bbl").read_text())
 
     def test_archive_preserves_paths_and_excludes_unreferenced_material(self):
         self.checker()

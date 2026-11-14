@@ -2,7 +2,7 @@
 """Build a source-only arXiv ZIP, preserving the canonical relative paths.
 
 This creates a local archive; it does not submit or publish anything. The pinned
-elsarticle class/style and their source notices are included; other standard
+Springer Nature class/style and their provenance notices are included; other standard
 LaTeX packages remain distribution dependencies.
 """
 from __future__ import annotations

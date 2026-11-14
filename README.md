@@ -9,6 +9,11 @@ its experimental protocols and numerical evidence are the unchanged [v1.0.0 arch
 The fitting software is maintained separately in
 [pyvoro2](https://github.com/DeloneCommons/pyvoro2).
 
+The current `main` manuscript is synchronized with the final CAM submission;
+see [baseline provenance](manuscript/CAM_SYNC.md). This is a development-tree
+update, not a new release. The published v2.0.0 archive retains its manuscript,
+version DOI and citation metadata.
+
 Run the commands below from the repository root.
 
 ## 1. Read or build the article
@@ -21,11 +26,11 @@ With TeX, Poppler and Python 3.10+ installed:
 bash scripts/build_manuscript_pdfs.sh
 ```
 
-This produces **`manuscript/manuscript.pdf`**, a 65-page article, from the
+This produces **`manuscript/manuscript.pdf`** from the
 committed source and figures. It rebuilds the bibliography and checks the PDF.
 It requires no scientific Python packages and performs no experiments.
 See [TeX installation and source structure](manuscript/README.md) for the
-dependency command and the bundled official `elsarticle` class/style.
+dependency command and the bundled official Springer Nature class/style.
 
 To build the PDF and package the arXiv sources in one command:
 
@@ -164,8 +169,9 @@ the canonical PDF and extracted arXiv archive. See
 | Frozen `powerfit` v1.0.0 evidence | [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558). |
 | Fitting software `pyvoro2` 0.6.3 | [10.5281/zenodo.19143984](https://doi.org/10.5281/zenodo.19143984). |
 
-[CITATION.cff](CITATION.cff) identifies the v2.0.0 version DOI for citations
-and the all-versions concept DOI for the evolving project. See the
+[CITATION.cff](CITATION.cff) retains the v2.0.0 archive's citation metadata;
+its version DOI does not identify the CAM-synchronized `main`. The concept DOI
+covers published project versions. See the
 [v2.0.0 release notes](docs/release-v2.0.0.md) for the archive contents and
 provenance.
 

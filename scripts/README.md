@@ -22,6 +22,11 @@ their generators or recompute experiments. The packager already builds the PDF;
 there is no need to run the build command immediately before it. See
 [manuscript/README.md](../manuscript/README.md) for TeX dependencies and archive
 contents. All figure/article fonts must be embedded; Type 3 fonts are rejected.
+The current CAM build uses the pinned Springer Nature `sn-jnl` class,
+`sn-mathphys-ay` author–year style and scalable Latin Modern fonts. The nested
+source ZIP includes these files and their provenance; it excludes private
+submission records and retains the seven original figure filenames and bytes.
+The [synchronization note](../manuscript/CAM_SYNC.md) identifies both baselines.
 
 ### Figure inputs and outputs
 

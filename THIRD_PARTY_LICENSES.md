@@ -84,27 +84,30 @@ such enhancements or derivative works thereof, in binary and source code form.
 - Provenance manifest: `external_software/multiwfn-version.txt`
 - Citation note: `external_software/How_to_cite_Multiwfn.pdf`
 
-### Official elsarticle publication support
+### Official Springer Nature publication support
 
-- Bundled class: [manuscript/elsarticle.cls](manuscript/elsarticle.cls), official
-  `elsarticle` 3.5 (2026-01-09).
-- Bundled numerical bibliography style:
-  [manuscript/elsarticle-num.bst](manuscript/elsarticle-num.bst), version 2.1 from
-  the same official upstream package.
-- Upstream license: LaTeX Project Public License 1.3 or later, as stated in the
-  retained upstream file headers and documentation. These files are not covered
-  by the repository's MIT license.
-- Provenance, checksums, and source/license documentation:
-  [manuscript/tex-support/README.md](manuscript/tex-support/README.md).
-- Retained upstream support: `manuscript/tex-support/README.upstream`,
-  `elsarticle.dtx`, and `elsarticle.ins`.
+- Bundled class: [manuscript/sn-jnl.cls](manuscript/sn-jnl.cls), internal
+  identifier `2019/11/18 v0.1`.
+- Bundled author–year bibliography style:
+  [manuscript/sn-mathphys-ay.bst](manuscript/sn-mathphys-ay.bst),
+  `2024/07/19 v1.1`.
+- Distribution: official Springer Nature December 2024 template, copied
+  byte-for-byte from the pinned CAM manuscript source.
+- Class terms: LaTeX Project Public License 1.3c or later, including the
+  retained LaTeX base-system redistribution notice in its header.
+- Bibliography-style terms: LaTeX Project Public License 1.0 or later; its
+  header additionally says to use it without changes.
+- Provenance, official distribution link and checksums:
+  [manuscript/TEMPLATE_PROVENANCE.md](manuscript/TEMPLATE_PROVENANCE.md).
 
-The class and bibliography style are distributed unchanged, including their
-upstream headers. They are pinned to make the canonical article and arXiv source
-archive use the same official publisher version across TeX installations. The
-arXiv bundle carries the class/style and the listed source/license support
-files. Preserve those notices and consult the upstream terms when
-redistributing or modifying them.
+These files retain their complete upstream headers and are not covered by
+the repository's MIT license. The public source bundle includes the same
+unchanged class/style and their provenance; standard packages and the LaTeX
+base system remain TeX-distribution dependencies. Preserve the notices and
+consult the upstream terms when redistributing them. The obsolete Elsevier
+class, bibliography style, extraction sources and notices have been removed
+from the current tree; this does not change the contents or licensing of the
+published archives.
 
 ### Computer Modern Unicode mappings
 

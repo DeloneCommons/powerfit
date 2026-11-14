@@ -13,9 +13,12 @@ for tool in latexmk pdflatex bibtex kpsewhich pdfinfo pdffonts "$PYTHON_BIN"; do
   fi
 done
 
-for tex_file in elsarticle.cls elsarticle-num.bst amsmath.sty amssymb.sty \
+for tex_file in sn-jnl.cls sn-mathphys-ay.bst lmodern.sty xcolor.sty \
+  amsmath.sty amssymb.sty \
   amsthm.sty mathtools.sty graphicx.sty placeins.sty needspace.sty \
-  booktabs.sty hyperref.sty fontenc.sty inputenc.sty; do
+  booktabs.sty hyperref.sty fontenc.sty inputenc.sty natbib.sty \
+  geometry.sty setspace.sty rotating.sty threeparttable.sty appendix.sty \
+  wrapfig.sty fix-cm.sty; do
   if [[ ! -f "$REPO_ROOT/manuscript/$tex_file" ]] && ! kpsewhich "$tex_file" >/dev/null; then
     echo "error: missing TeX dependency $tex_file; see manuscript/README.md" >&2
     exit 1
@@ -23,7 +26,8 @@ for tex_file in elsarticle.cls elsarticle-num.bst amsmath.sty amssymb.sty \
 done
 
 "$PYTHON_BIN" "$SCRIPT_DIR/check_manuscript.py"
-latexmk -norc -r "$REPO_ROOT/.latexmkrc" -g -pdf -bibtex \
+# Discard stale auxiliaries before rebuilding, including an old publisher BST.
+latexmk -norc -r "$REPO_ROOT/.latexmkrc" -gg -pdf -bibtex \
   -interaction=nonstopmode -halt-on-error -file-line-error -recorder \
   "$REPO_ROOT/manuscript/manuscript.tex"
 "$PYTHON_BIN" "$SCRIPT_DIR/check_manuscript.py" --built

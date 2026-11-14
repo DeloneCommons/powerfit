@@ -17,6 +17,16 @@ REF_RE = re.compile(r"\\(?:ref|eqref|pageref|autoref|cref|Cref)\*?\s*\{([^}]+)\}
 CITE_RE = re.compile(r"\\(?:cite[a-zA-Z]*|nocite)\*?(?:\[[^\]]*\])*\s*\{([^}]+)\}")
 BIB_KEY_RE = re.compile(r"@(?!(?:comment|preamble|string)\b)\w+\s*\{\s*([^,\s]+)\s*,", re.I)
 BIBITEM_RE = re.compile(r"\\bibitem(?:\[[^\]]*\])?\s*\{([^}]+)\}")
+CAM_SUPPORT_FILES = (
+    "sn-jnl.cls", "sn-mathphys-ay.bst", "TEMPLATE_PROVENANCE.md",
+    "CAM_SYNC.md", "tex-support/README.md",
+)
+# These layout notices also occur when the unmodified CAM baseline is built.
+# Keep overfull boxes, all other warnings, and unresolved references fatal.
+CAM_LAYOUT_NOTICE_RE = re.compile(
+    r"^Underfull \\[hv]box\b|"
+    r"^Package hyperref Warning: Difference \(2\) between bookmark levels is greater"
+)
 
 
 def read_tex(path: Path) -> str:
@@ -82,6 +92,11 @@ def collect_dependencies(manuscript_dir: Path) -> list[Path]:
             pattern = rf"\\{command}(?:\[[^\]]*\])?\s*\{{([^}}]+)\}}"
             for group in re.findall(pattern, text):
                 for name in group.split(","):
+                    if command == "documentclass" and name.strip() == "sn-jnl":
+                        # sn-jnl selects this BST internally from its class option.
+                        # Require the pinned support even if a system copy exists.
+                        for support in CAM_SUPPORT_FILES:
+                            files.add(_resolve(root, support, ("",)))
                     local = root / (name.strip() + suffix)
                     if not local.resolve().is_relative_to(root):
                         raise ValueError(f"TeX support path escapes the manuscript: {name}")
@@ -90,9 +105,6 @@ def collect_dependencies(manuscript_dir: Path) -> list[Path]:
         active.remove(path)
 
     visit(_resolve(root, "manuscript.tex", (".tex",)))
-    if (root / "elsarticle.cls") in files and (root / "tex-support").is_dir():
-        for name in ("README.md", "README.upstream", "elsarticle.dtx", "elsarticle.ins"):
-            files.add(_resolve(root, f"tex-support/{name}", ("",)))
     return sorted(files)
 
 
@@ -154,6 +166,7 @@ def _command_output(command: list[str]) -> str:
 
 def check_built(manuscript_dir: Path) -> list[str]:
     errors = check_bibliography(manuscript_dir)
+    cam = (manuscript_dir / "sn-jnl.cls").resolve() in collect_dependencies(manuscript_dir)
     for suffix in (".log", ".blg"):
         path = manuscript_dir / ("manuscript" + suffix)
         if not path.is_file():
@@ -166,7 +179,10 @@ def check_built(manuscript_dir: Path) -> list[str]:
                     r"^Warning--.*$", r"^I (?:couldn't|found no).*$",
                     r"^.*(?:There (?:was|were) \d+ error|Fatal error).*$"]
         for pattern in patterns:
-            errors.extend(f"{path.name}: {line}" for line in re.findall(pattern, text, re.M))
+            for line in re.findall(pattern, text, re.M):
+                if suffix == ".log" and cam and CAM_LAYOUT_NOTICE_RE.match(line):
+                    continue
+                errors.append(f"{path.name}: {line}")
     pdf = manuscript_dir / "manuscript.pdf"
     if not pdf.is_file():
         return errors + ["Missing manuscript.pdf"]

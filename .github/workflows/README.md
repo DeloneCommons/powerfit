@@ -9,11 +9,11 @@ bundled `pyvoro2 0.6.3` wheel, then runs `pip check`. The dependency command is:
 python -m pip install -r environments/requirements-py313.txt -c environments/requirements-lock-py313.txt
 ```
 
-Its TeX environment includes `latexmk`, BibTeX, the publisher packages, scalable
-fonts, and Poppler PDF inspection tools. The pinned, unmodified official
-`elsarticle` 3.5 class and `elsarticle-num` style under `manuscript/` take
-precedence over the distribution's publisher files. Their source and license
-provenance are recorded in
+Its TeX environment includes `latexmk`, BibTeX, scalable Latin Modern fonts
+(`lmodern`), and Poppler PDF inspection tools. The pinned, unmodified official
+Springer Nature `sn-jnl` class and `sn-mathphys-ay` author–year style under
+`manuscript/` take precedence over distribution copies; `texlive-publishers`
+is no longer required. Their source and license provenance are recorded in
 [manuscript/tex-support/README.md](../../manuscript/tex-support/README.md).
 
 ## Verification sequence
@@ -27,7 +27,9 @@ provenance are recorded in
 4. Call the arXiv packager once: it builds and validates
    `manuscript/manuscript.pdf`, then creates `build/powerfit-arxiv.zip` with the
    nested source layout, fresh bibliography, pinned official class/style and
-   upstream source/license support.
+   publisher/source-baseline provenance and license notices. Verify the CAM
+   title-page keywords, MSC classification, author statements and ORCID, plus
+   PubChem's alphanumeric bibliography pagination.
 5. Extract and compile that ZIP in an isolated temporary directory, verifying
    that the packaged source dependencies are sufficient.
 6. Record font and embedded-image inventories, reject unresolved archive
@@ -69,3 +71,8 @@ artifact retained for 14 days. It does not publish or submit the manuscript.
 Generated outputs live under `build/`, `.smoke/`, or the ignored manuscript build
 paths. The final PDFs are checked for successful compilation and font quality;
 their binary bytes are not used as a scientific reproducibility criterion.
+The CAM checker retains the baseline's underfull-box and specific hyperref
+bookmark-level notices in the logs, as documented in the
+[manuscript build guide](../../manuscript/README.md#compile-the-article).
+Unresolved citations/references, bibliography warnings, overfull boxes,
+unexpected warnings, and font-quality failures still fail the build.

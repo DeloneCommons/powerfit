@@ -1,18 +1,25 @@
-\documentclass[preprint,12pt]{elsarticle}
+\documentclass[pdflatex,sn-mathphys-ay]{sn-jnl}
 
+% Technical CAM (Springer Nature) wrapper around the v2.0.0 scientific text.
+% CAM preparation updates citation grammar, figure disclosure and the abstract.
+% Mathematical sections, numerical results and figure PDFs remain unchanged.
+% Author/year citations are handled by the official sn-mathphys-ay.bst.
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{amsmath,amssymb,mathtools}
 \usepackage{graphicx}
 \usepackage{placeins}
 \usepackage{needspace}
 \usepackage{booktabs}
-\usepackage[hidelinks]{hyperref}
+\hypersetup{hidelinks, pdftitle={Fixed-site inverse fitting of power-diagram weights from pairwise separator data}, pdfauthor={Ivan Yu. Chernyshov}}
 
 % Preserve mathematical text extraction across pdfTeX/TeX Live versions.
 \input{tex-support/glyphtounicode-cmr.tex}
 \pdfgentounicode=1
 
+% Keep the original independently numbered theorem environments.
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}
@@ -20,29 +27,36 @@
 \newtheorem{remark}{Remark}
 
 \begin{document}
-\begin{frontmatter}
 
-\title{Fixed-site inverse fitting of power-diagram weights from pairwise separator data}
-\author{Ivan Yu. Chernyshov}
-\ead{ivan.chernyshoff@gmail.com}
-\address{Independent researcher}
+\title[Fixed-site inverse power-weight fitting]{Fixed-site inverse fitting of power-diagram weights from pairwise separator data}
+\author*[1]{\fnm{Ivan Yu.} \sur{Chernyshov}}\email{ivan.chernyshoff@gmail.com}
+\affil*[1]{\orgname{Independent researcher}, \orgaddress{\city{Moscow}, \country{Russia}}}
 
-\begin{abstract}
-Spatial partitions describe regions associated with objects and their neighbors, yet the available information may consist only of local estimates of where selected pairs should be separated. We develop a mathematical and computational framework for fitting a power (Laguerre) diagram—a spatial partition controlled by fixed generating points and adjustable weights—to such estimates.
+\abstract{Local estimates of where selected pairs of objects should be separated need not define a consistent spatial partition. We develop a reproducible framework for fitting such data with a power (Laguerre) diagram, whose cells are determined by fixed points, called sites, and one adjustable weight per site. Each observed separator position specifies a weight difference. We characterize when the observations admit an exact fit and which weight differences they determine, and reconcile inconsistent data by weighted least squares.
+\par
+A fitted separator need not form a shared cell face. We therefore check whether cells share a face and whether it contains the separator's intersection with the line through their sites. For an interior intersection point, its in-plane distance to the face boundary defines centered clearance. The framework is implemented in the Python package pyvoro2.
+\par
+Synthetic experiments recover identifiable weight differences from exact compatible data and examine missing and noisy observations. For 100 molecules, we fit separators predicted from atomic density profiles and compare them with reference separator positions and atom pairs derived from the Quantum Theory of Atoms in Molecules. The experiments show that improved fitting need not improve agreement with an independent reference. Among nonbonded pairs passing the local face test, centered clearance ranks reference pairs better than pair distance or face area in the pooled benchmark.}
+\keywords{Power diagrams, inverse problems, pairwise separators, graph Laplacians, geometric realization}
+\pacs[MSC2020]{Primary 65D18; Secondary 52C22, 65F20}
+\maketitle
 
-We establish how the observations constrain the weights, how inconsistent estimates can be reconciled, and which boundaries are realized in the fitted diagram. Synthetic experiments test the approach with exact, incomplete, and noisy observations, as well as conflicting geometric requirements.
+% CAM requests these statements on the title page. Keep them compact enough
+% to follow the abstract without creating an extra page.
+\vspace{-28pt}
+\noindent\begin{minipage}{\linewidth}
+\footnotesize
+\textbf{Acknowledgments.}
+The author thanks Chris H. Rycroft for feedback that improved the exposition
+and his mother for unconditional support during a difficult period.
+\par\smallskip
+\noindent\textbf{Author contributions.}
+Ivan Yu. Chernyshov (\href{https://orcid.org/0000-0002-4452-2025}{ORCID: 0000-0002-4452-2025})
+conceived the study, developed the software, performed the analyses, and wrote
+the manuscript.
+\end{minipage}
+\clearpage
 
-We then apply it to 100 molecules, fitting interatomic separator predictions from atomic density profiles and comparing the results with a reference partition based on the Quantum Theory of Atoms in Molecules (QTAIM). The resulting diagrams show good agreement with the reference separator positions and recover nearly all QTAIM-supported neighboring pairs, with most adjacency discrepancies arising from additional boundaries beyond the reference pair set.
-\end{abstract}
-
-\begin{keyword}
-Power diagrams \sep inverse problems \sep pairwise separators
-\sep graph Laplacians \sep geometric realization
-\end{keyword}
-
-\end{frontmatter}
-
-\Needspace{8\baselineskip}
 \input{sections/01_introduction}
 \input{sections/02_separators}
 \input{sections/03_graph_fitting}
@@ -53,34 +67,46 @@ Power diagrams \sep inverse problems \sep pairwise separators
 \input{sections/08_discussion}
 \input{sections/09_conclusions}
 
-\section*{Code, data, and manuscript availability}
-The source code, experimental inputs, results, and manuscript are available
-in the \texttt{powerfit} v2.0.0 archive \cite{PowerfitArchive2026}. The
-calculations used \texttt{pyvoro2} 0.6.3 \cite{Pyvoro2_063}, whose
-three-dimensional tessellation backend is Voro++ \cite{Rycroft2009}.
+\backmatter
+\section*{Statements and Declarations}
 
-\section*{Acknowledgments}
-The author thanks Chris H. Rycroft for helpful discussions and constructive
-feedback on an earlier version of this manuscript, which motivated a
-substantial reorganization of its exposition. The author is deeply grateful
-to his mother for her unconditional support during a difficult period.
-
-\section*{Funding}
+\subsection*{Funding}
 This research received no external funding.
 
-\section*{Declaration of generative AI and AI-assisted technologies}
-During the preparation of this work, the author used GPT (OpenAI) to assist with
-manuscript planning, drafting and editing, mathematical and editorial review,
-source-code inspection and development, and the checking and interpretation
-of archived computational results. The author remains responsible for the
-research design, scientific claims, numerical evidence and conclusions.
+\subsection*{Competing interests}
+The author develops and maintains \texttt{pyvoro2}, the open-source software
+used and evaluated in this work. The author declares no other competing interests.
 
-\bibliographystyle{elsarticle-num}
+\subsection*{Code, data, and manuscript availability}
+The source code, experimental inputs, results, and manuscript are available
+in the \texttt{powerfit} v2.0.0 archive \citep{PowerfitArchive2026}. The
+calculations used \texttt{pyvoro2} 0.6.3 \citep{Pyvoro2_063}, whose
+three-dimensional tessellation backend is Voro++ \citep{Rycroft2009}.
+
+\subsection*{Declaration of generative AI and AI-assisted technologies}
+During the preparation of this work, the author used ChatGPT and Codex
+(OpenAI, using multiple GPT model versions) to assist with manuscript planning,
+drafting and editing, mathematical and editorial review, source-code inspection
+and development, and verification and interpretation of archived computational
+results. All seven figures were rendered programmatically with Matplotlib
+3.10.8 using code developed with AI assistance; no direct AI image generation
+was used. The figure-generation
+code and underlying experimental records are available in the versioned archive
+cited above. The resulting figures and calculations were reviewed against
+their source code, mathematical definitions and archived numerical evidence.
+The author remains responsible for the research design, scientific claims,
+numerical evidence, figures and conclusions.
+
+% Feed nonprinting settings to BibTeX without creating a natbib citation.
+\makeatletter
+\if@filesw
+  \immediate\write\@auxout{\string\citation{camBibSettings}}%
+\fi
+\makeatother
 \bibliography{refs}
 
 \appendix
-\counterwithin*{figure}{section}
-\counterwithin*{table}{section}
+% Continue figure and table numbering through the appendices.
 \input{appendices/appendix_a}
 \input{appendices/appendix_b}
 \input{appendices/appendix_c}
