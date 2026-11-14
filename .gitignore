@@ -66,3 +66,6 @@ data/qtaim_showcase/multiwfn_raw/**
 *.pyscf.log
 pyscf_errors.log
 multiwfn_errors.log
+
+# Website development environment
+.venv-site/

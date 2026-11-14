@@ -1,0 +1,80 @@
+name: research-site
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: research-site-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out the exact source revision and history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install article conversion and PDF tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexml latexmk lmodern poppler-utils \
+            texlive-latex-base texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended
+          python -m pip install -r site/requirements.txt -r site/requirements-browser.txt
+          python -m playwright install --with-deps chromium
+      - name: Check the source repository and frozen evidence
+        run: python scripts/check_repo_consistency.py
+      - name: Build and validate HTML, PDF and vector figures
+        run: python site/build.py
+      - name: Test rejection of missing or corrupt scientific content
+        run: python -m unittest discover -s site/tests -v
+      - name: Check desktop and mobile reading under the project base path
+        run: python site/browser_check.py
+      - name: Confirm source and archival integrity after the build
+        run: |
+          python scripts/check_repo_consistency.py
+          git diff --exit-code
+      - name: Upload review website and browser captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-site-review
+          retention-days: 14
+          path: |
+            build/site/
+            build/site-reports/
+            build/site-work/*.log
+      - name: Upload the explicitly assembled Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/site
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check Pages configuration
+        uses: actions/configure-pages@v5
+      - name: Deploy the validated website
+        id: deployment
+        uses: actions/deploy-pages@v4

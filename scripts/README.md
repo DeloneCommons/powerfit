@@ -45,7 +45,7 @@ checks remain enforced. No ZIP input mode is needed: the repository already
 contains the results. See the [figure map](../manuscript/figures/README.md).
 
 Figure generation needs NumPy, pandas and Matplotlib; the pinned lightweight
-installation is in the main README. Figure checking additionally uses Poppler.
+installation is in the [reproducibility guide](../docs/reproducibility.md#verify-figures-and-tables-from-frozen-evidence). Figure checking additionally uses Poppler.
 Repeated outputs must match within one environment; font/rendering versions
 can change PDF bytes between environments. On restricted systems set
 `MPLCONFIGDIR` to a writable directory.
@@ -59,7 +59,7 @@ are separate from byte-for-byte frozen-artifact integrity.
 ## Full A–H and committed-data J rerun
 
 Use a disposable checkout and the full Python 3.13 environment shown in the
-main README: `requirements-py313.txt` constrained by
+[reproducibility guide](../docs/reproducibility.md#repeat-scientific-calculations-in-a-disposable-checkout): `requirements-py313.txt` constrained by
 `requirements-lock-py313.txt`, plus `pyvoro2==0.6.3`. Neither PySCF nor Multiwfn
 is run at this stage. Start with:
 

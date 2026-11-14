@@ -1,0 +1,2 @@
+# Optional local visual QA; installed by the independent website workflow.
+playwright==1.56.0
