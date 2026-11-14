@@ -3,29 +3,83 @@ import re
 from urllib.parse import unquote, urlsplit
 
 
-def source_dois(path):
-    """Read literal DOI fields in refs.bib, failing closed on unsupported forms.
+def _entry_parts(source, start, closing):
+    """Split only top-level commas; nested braces/quotes protect field values."""
+    parts, buffer = [], []
+    depth, quoted, i = 0, False, start
+    while i < len(source):
+        char = source[i]
+        if char == "\\":
+            buffer.append(source[i:i + 2])
+            i += 2
+            continue
+        if char == '%' and not depth and not quoted:
+            end = source.find('\n', i)
+            i = len(source) if end < 0 else end
+            continue
+        if char == closing and not depth and not quoted:
+            return parts + [''.join(buffer).strip()], i + 1
+        if char == '{':
+            depth += 1
+        elif char == '}':
+            if not depth:
+                raise ValueError('Unbalanced braces in bibliography entry')
+            depth -= 1
+        elif char == '"' and not depth:
+            quoted = not quoted
+        if char == ',' and not depth and not quoted:
+            parts.append(''.join(buffer).strip())
+            buffer = []
+        else:
+            buffer.append(char)
+        i += 1
+    raise ValueError('Unterminated bibliography entry or DOI expression')
 
-    This is deliberately not a general BibTeX interpreter. Entries must start on
-    their own lines; DOI values may be braced or quoted literals (not macros or
-    concatenations). Other fields remain the responsibility of canonical BibTeX.
+
+def source_dois(path):
+    """Read literal DOI fields independently of BibTeX line layout.
+
+    This bounded scanner understands entry/field boundaries, braces, quotes,
+    escapes and comments outside values. It does not expand BibTeX macros or
+    concatenations: DOI expressions must be one braced or quoted literal.
+    Other field expressions are left to canonical BibTeX.
     """
     source = path.read_text()
-    starts = list(re.finditer(r'^@\w+\s*\{\s*([^,\s]+)\s*,', source, re.M))
-    records = {}
-    for i, entry in enumerate(starts):
-        key = entry[1].lower()  # Normalize comparison keys, never source bytes.
+    records, i = {}, 0
+    while i < len(source):
+        if source[i] == '%':
+            end = source.find('\n', i)
+            i = len(source) if end < 0 else end + 1
+            continue
+        if source[i] != '@':
+            i += 1
+            continue
+        entry = re.match(r'@(\w+)\s*([\{(])', source[i:])
+        if not entry:
+            raise ValueError('Unsupported bibliography entry syntax')
+        parts, i = _entry_parts(source, i + entry.end(), '}' if entry[2] == '{' else ')')
+        if entry[1].lower() in ('comment', 'preamble', 'string'):
+            continue
+        key = parts[0].lower()
+        if not re.fullmatch(r'[^\s,={}()]+', key):
+            raise ValueError('Missing or malformed bibliography key')
         if key in records:
             raise ValueError(f'Duplicate bibliography key: {key}')
-        block = source[entry.end():starts[i + 1].start() if i + 1 < len(starts) else len(source)]
-        fields = re.findall(r'^\s*doi\s*=\s*(.*?)\s*$', block, re.I | re.M)
-        doi = None
-        if fields:
-            literal = re.fullmatch(r'(?:\{([^{}]+)\}|"([^"]+)")\s*,?', fields[0])
-            if len(fields) != 1 or not literal:
+        doi, seen_doi = None, False
+        for part in parts[1:]:
+            if not part:  # A trailing comma is permitted.
+                continue
+            field = re.fullmatch(r'([A-Za-z][\w-]*)\s*=\s*(.+)', part, re.S)
+            if not field:
+                raise ValueError(f'Malformed bibliography field in {key}: {part}')
+            if field[1].lower() != 'doi':
+                continue
+            literal = re.fullmatch(r'(?:\{([^{}]+)\}|"([^"{}]+)")', field[2], re.S)
+            if seen_doi or not literal:
                 raise ValueError(f'Unsupported DOI metadata for {key}: expected one literal field')
-            doi = literal[1] or literal[2]
+            doi = (literal[1] or literal[2]).strip()
             parse_doi_url('https://doi.org/' + doi)
+            seen_doi = True
         records[key] = doi
     if not records:
         raise ValueError('No authoritative bibliography entries found')

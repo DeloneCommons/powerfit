@@ -83,7 +83,10 @@ def article_checks(page, base, reports, width, mode):
     assert page.url.endswith('#S2.E3')
     page.locator('article a[href^="#bib."]').first.click()
     assert '#bib.' in page.url
-    for anchor in ['S4', 'S4.E38', 'A3', 'A4', 'A5.T4']:
+    levels = page.locator('article h1, article h2, article h3, article h4, article h5, article h6').evaluate_all('(nodes) => nodes.map(n => Number(n.tagName.slice(1)))')
+    assert all(level <= previous + 1 for previous, level in zip([0, *levels], levels)), 'Skipped heading level'
+    for anchor in ['S4', 'S4.E38', 'S4.E41', 'A3', 'A3.E69', 'A3.E70', 'A4', 'A5.T4',
+                   'S4.SS4.SSS0.Px1', 'A2.SS2.SSS0.Px1', 'A4.SS2.SSS0.Px1']:
         page.goto(base + 'article.html#' + anchor)
         target = page.locator(f'[id="{anchor}"]')
         target.scroll_into_view_if_needed()

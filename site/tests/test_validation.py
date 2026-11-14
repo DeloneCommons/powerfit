@@ -72,6 +72,24 @@ class ContentIntegrityTests(unittest.TestCase):
         self.mutate('//*[contains(@class,"ltx_tag_equation")]', lambda n: setattr(n, 'text', '(999)'))
         self.assertTrue(self.check())
 
+    def test_math_superscript_to_subscript_is_rejected(self):
+        path = self.site / 'article.html'
+        before = html.parse(str(path)).xpath('//math[@id="A3.E70.m1"]')[0]
+        self.mutate('//math[@id="A3.E70.m1"]//msup', lambda n: setattr(n, 'tag', 'msub'))
+        after = html.parse(str(path)).xpath('//math[@id="A3.E70.m1"]')[0]
+        self.assertEqual(list(before.itertext()), list(after.itertext()))
+        self.assertEqual(before.xpath('.//annotation/text()'), after.xpath('.//annotation/text()'))
+        self.assertTrue(any('MathML structure' in e for e in self.check()))
+
+    def test_math_alignment_attribute_is_rejected(self):
+        self.mutate('//math//mtable', lambda n: n.set('columnalign', 'left'))
+        self.assertTrue(any('MathML structure' in e for e in self.check()))
+
+    def test_skipped_paragraph_heading_is_rejected(self):
+        self.mutate('//*[@id="S4.SS4.SSS0.Px1"]/*[starts-with(name(),"h")]',
+                    lambda n: setattr(n, 'tag', 'h5'))
+        self.assertTrue(any('heading level' in e for e in self.check()))
+
     def test_wrong_table_cell_is_rejected(self):
         self.mutate('//figure[contains(@class,"ltx_table")]//td[normalize-space()="0.00790"]', lambda n: setattr(n, 'text', '9.999'))
         self.assertTrue(self.check())

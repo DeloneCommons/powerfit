@@ -86,6 +86,12 @@ h4 {
   font-size:1.15rem;
   font-weight:bold;
 }
+.ltx_title_paragraph {
+  /* Keep the original paragraph-heading presentation at its semantic level. */
+  font-size:.83em;
+  font-weight:normal;
+  margin:1.67em 0;
+}
 p {
   margin:1em 0;
 }

@@ -44,6 +44,18 @@ def identity(provenance):
             f'Website source: <a href="{REPOSITORY}/commit/{commit}">{commit[:12]}</a>{dirty}')
 
 
+def normalize_paragraph_headings(article):
+    # LaTeXML reserves h4 for subsubsections even when a paragraph's actual
+    # parent is a subsection. Follow the enclosing structure, preserving classes.
+    for heading in article.xpath('.//*[contains(concat(" ",@class," ")," ltx_title_paragraph ")]'):
+        owner = heading.getparent()
+        for ancestor in owner.iterancestors('section'):
+            parents = ancestor.xpath('./h2 | ./h3 | ./h4 | ./h5')
+            if parents:
+                heading.tag = 'h' + str(int(parents[0].tag[1]) + 1)
+                break
+
+
 def assemble(raw_html, xml, output, metadata, provenance):
     doc = html.parse(str(raw_html))
     article = deepcopy(doc.xpath('//article')[0])
@@ -57,6 +69,7 @@ def assemble(raw_html, xml, output, metadata, provenance):
         node.tag = 'div'
     for node in article.xpath('.//h6[contains(@class,"ltx_title_abstract")]'):
         node.tag = 'h2'
+    normalize_paragraph_headings(article)
     # LaTeXML 0.8.8 treats TeX "0" as false when adding annotations. Preserve
     # that valid source string explicitly; all presentation MathML stays intact.
     for math in article.xpath('.//math[not(semantics)]'):

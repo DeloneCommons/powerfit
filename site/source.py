@@ -10,7 +10,7 @@ from check_manuscript import collect_dependencies, read_tex  # noqa: E402
 
 def argument(text, command):
     """Read a balanced braced argument after an optional star/bracket argument."""
-    match = re.search(r'\\' + command + r'\*?(?:\[[^\]]*\])?\s*\{', text)
+    match = re.search(r'\\' + command + r'\*?\s*(?:\[[^\]]*\]\s*)?\{', text)
     if not match:
         raise ValueError(f'Unsupported manuscript front matter: missing {command}')
     start = match.end()
@@ -45,6 +45,10 @@ def source_metadata(text):
 def make_wrapper(text):
     """Generate an article-class wrapper; never store a second scientific text."""
     meta = source_metadata(text)
+    labels = re.findall(r'\\pacs\b\s*(?:\[([^\]]*)\])?\s*\{', text)
+    if len(labels) != 1 or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9 .()/-]*', labels[0]):
+        raise ValueError('Unsupported manuscript classification: expected one explicit literal pacs label')
+    classification = labels[0]
     if text.count(r'\maketitle') != 1:
         raise ValueError('Unsupported manuscript front matter: expected one maketitle')
     body = text.split(r'\maketitle', 1)[1]
@@ -76,7 +80,7 @@ def make_wrapper(text):
         r'\noindent\href{mailto:' + meta['email'] + '}{' + meta['email'] + '}\n' +
         r'\begin{abstract}' + argument(text, 'abstract') + r'\end{abstract}' + '\n' +
         r'\noindent\textbf{Keywords:} ' + argument(text, 'keywords') + '\n\n' +
-        r'\noindent\textbf{MSC2020:} ' + argument(text, 'pacs') + '\n' + body)
+        r'\noindent\textbf{' + classification + ':} ' + argument(text, 'pacs') + '\n' + body)
 
 
 def authored_sources(manuscript):

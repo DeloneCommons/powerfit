@@ -12,6 +12,7 @@ from urllib.parse import unquote, urlsplit
 from lxml import etree, html
 from source import ROOT, authored_sources, collect_dependencies, read_tex
 from bibliography import is_doi_url, parse_doi_url, source_dois, validate_bibliography_dois
+from mathml import presentation_structure
 
 NS = {'l': 'http://dlmf.nist.gov/LaTeXML'}
 XID = '{http://www.w3.org/XML/1998/namespace}id'
@@ -74,6 +75,16 @@ def validate(output, work, manuscript):
             errors.append(f'Missing converted content: {key}')
         elif text(node) != text(match):
             errors.append(f'Changed converted content: {key}')
+    for node in raw.xpath('//article//math'):
+        match = by_id.get(node.get('id'))
+        if match is None or presentation_structure(node) != presentation_structure(match):
+            errors.append(f'Changed Presentation MathML structure: {node.get("id")}')
+    previous_level = 0
+    for heading in article.xpath('.//h1 | .//h2 | .//h3 | .//h4 | .//h5 | .//h6'):
+        level = int(heading.tag[1])
+        if level > previous_level + 1:
+            errors.append(f'Skipped article heading level: {heading.tag}: {text(heading)}')
+        previous_level = level
     reference_query = '//article//a[contains(concat(" ",@class," ")," ltx_ref ")]'
     original_links = [(n.get('href'), text(n)) for n in raw.xpath(reference_query)]
     final_links = [(n.get('href'), text(n)) for n in page.xpath(reference_query)]

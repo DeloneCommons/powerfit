@@ -3,7 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from source import make_wrapper, source_metadata
+from source import argument, make_wrapper, source_metadata
 ROOT = Path(__file__).resolve().parents[2]
 
 class WrapperTests(unittest.TestCase):
@@ -35,6 +35,31 @@ class WrapperTests(unittest.TestCase):
     def test_unsupported_front_matter_fails_instead_of_disappearing(self):
         with self.assertRaisesRegex(ValueError, 'front matter'):
             make_wrapper(self.source.replace(r'\maketitle', r'\differenttitle'))
+
+    def test_classification_label_follows_source(self):
+        changed = self.source.replace(r'\pacs[MSC2020]', r'\pacs [MSC2010]')
+        wrapper = make_wrapper(changed)
+        self.assertIn(r'\textbf{MSC2010:}', wrapper)
+        self.assertNotIn(r'\textbf{MSC2020:}', wrapper)
+
+    def test_supported_metadata_and_declaration_changes_propagate(self):
+        changed = self.source
+        for command, value in [('author', r'\fnm{Example} \sur{Researcher}'),
+                               ('email', 'example@example.org'),
+                               ('affil', r'\orgname{Example Institute}')]:
+            changed = changed.replace(argument(changed, command), value, 1)
+        declaration = r'\section*{Statements and Declarations}'
+        changed = changed.replace(declaration, declaration + '\nUpdated declaration marker.\n')
+        wrapper = make_wrapper(changed)
+        for value in ('Example Researcher', 'example@example.org', 'Example Institute',
+                      'Updated declaration marker.'):
+            self.assertIn(value, wrapper)
+
+    def test_unsupported_classification_label_fails_explicitly(self):
+        for replacement in (r'\pacs', r'\pacs[]', r'\pacs[\customlabel]',
+                            r'\pacs[MSC2010]{A}\pacs[MSC2020]'):
+            with self.subTest(replacement=replacement), self.assertRaisesRegex(ValueError, 'classification'):
+                make_wrapper(self.source.replace(r'\pacs[MSC2020]', replacement))
 
 if __name__ == '__main__':
     unittest.main()
