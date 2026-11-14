@@ -85,6 +85,36 @@ class ContentIntegrityTests(unittest.TestCase):
                     lambda n: n.set('href', '#bib.bib1' if n.get('href') != '#bib.bib1' else '#bib.bib2'))
         self.assertTrue(self.check())
 
+    def test_corrupt_doi_in_converter_and_site_is_rejected(self):
+        # Simulate converter defects too: parity with its HTML is insufficient.
+        for value in ('https://doi.org/%****%20manuscript.bbl%20Line%20125%20****10.1002/ijch.198000003',
+                      'https://doi.org/10.1002/a-valid-but-wrong-doi'):
+            with self.subTest(value=value):
+                for directory in (self.work, self.site):
+                    path = directory / 'article.html'
+                    doc = html.parse(str(path))
+                    link = doc.xpath('//li[contains(@class,"ltx_bibitem")]//a[starts-with(@href,"https://doi.org/")]')[0]
+                    link.set('href', value)
+                    link.text = value
+                    path.write_bytes(html.tostring(doc, encoding='utf-8'))
+                self.assertTrue(any('DOI' in e for e in self.check()), 'Corrupt DOI accepted')
+
+    def test_missing_doi_in_converter_and_site_is_rejected(self):
+        for directory in (self.work, self.site):
+            path = directory / 'article.html'
+            doc = html.parse(str(path))
+            link = doc.xpath('//li[contains(@class,"ltx_bibitem")]//a[starts-with(@href,"https://doi.org/")]')[0]
+            link.getparent().remove(link)
+            path.write_bytes(html.tostring(doc, encoding='utf-8'))
+        self.assertTrue(any('DOI' in e for e in self.check()))
+
+    def test_malformed_archive_doi_is_rejected(self):
+        path = self.site / 'index.html'
+        doc = html.parse(str(path))
+        doc.xpath('//a[starts-with(@href,"https://doi.org/")]')[0].set('href', 'https://doi.org/10.5281/zenodo. bad')
+        path.write_bytes(html.tostring(doc, encoding='utf-8'))
+        self.assertTrue(any('DOI' in e for e in self.check()))
+
     def test_root_relative_asset_is_rejected(self):
         self.mutate('//link[@rel="stylesheet"]', lambda n: n.set('href', '/site.css'))
         self.assertTrue(self.check())

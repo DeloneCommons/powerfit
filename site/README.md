@@ -35,8 +35,21 @@ regenerates scientific figures, or refreshes the frozen manifest.
 
 For local reading, run `python -m http.server 8000 --directory build/site` and
 open `http://localhost:8000/`. All runtime asset URLs are relative, including
-PDF, CSS, SVG and article links. There are no external fonts, runtime scripts,
-tracking requests or frontend framework dependencies.
+PDF, CSS, JavaScript, SVG and article links. There are no external fonts,
+external runtime requests, tracking or frontend framework dependencies.
+
+The compact **Theme** selector offers System (the default), Light and Dark.
+System follows the OS preference, including changes while reading. Explicit
+Light/Dark choices are stored locally under `powerfit-theme` and apply to both
+pages and reloads; choosing System removes that override. If browser storage
+is blocked, selection still works for the current page. The local `site.js`
+applies the preference before CSS paints. Without JavaScript, CSS follows the
+OS and the unavailable selector stays hidden. All scientific SVG illustrations
+retain a white background and their original colors in both themes.
+
+The article contents start collapsed at widths up to 760 px and open on wider
+screens. The native disclosure remains keyboard accessible; opening it exposes
+subsections on mobile too. Without JavaScript, the contents stay open.
 
 ## Architecture and source relationships
 
@@ -44,12 +57,13 @@ tracking requests or frontend framework dependencies.
 |---|---|
 | `source.py` | Extract current front matter and generate an article-class wrapper around the original nine section and five appendix inputs. |
 | `build.py` | Run the canonical PDF build and LaTeXML, convert committed PDF figures with Poppler, record provenance, assemble and validate. |
-| `render.py`, `site.css` | Add landing-page context, navigation, responsive typography, source identification and archival notices. The abstract is taken from the converted article. |
-| `validate.py` | Check scientific structure, source prose, PDF numbering, converter-to-page content, math, bibliography, links and the public asset allowlist. |
+| `render.py`, `site.css`, `site.js` | Add landing-page context, navigation, responsive typography, theme preferences, source identification and archival notices. The abstract is taken from the converted article. |
+| `validate.py`, `bibliography.py` | Check scientific structure, source prose, PDF numbering, converter-to-page content, math, bibliography DOIs against `refs.bib`, links and the public asset allowlist. |
+| `reviewed-math-warnings.txt` | Finite allowance of reviewed LaTeXML diagnostics, including locations and occurrence counts. |
 | `tests/` | Mutate real built output to prove that scientific omissions and corruptions fail validation; test generated wrapper behavior. |
 | `browser_check.py` | Exercise the real assembled site at desktop/phone widths under `/powerfit/` and save screenshots. |
 | `build/site-work/` | Ignored wrapper, copied inputs, canonical `.aux`/`.bbl`, converter XML/HTML and logs. Never published. |
-| `build/site/` | Only `index.html`, `article.html`, `site.css`, `manuscript.pdf`, seven SVGs, `LICENSE.txt` and `provenance.json`. |
+| `build/site/` | Only `index.html`, `article.html`, `site.css`, `site.js`, `manuscript.pdf`, seven SVGs, `LICENSE.txt` and `provenance.json` (14 files). |
 | `build/site-reports/` | Browser captures and machine-readable QA report. Review artifact only. |
 
 The wrapper is regenerated on every build. Title, author, affiliation, email,
@@ -58,6 +72,17 @@ come from `manuscript/manuscript.tex`. The section/appendix files are copied
 without modification. The bibliography is the freshly built
 `manuscript/manuscript.bbl`, using the existing pinned Springer Nature style;
 there is no independently maintained HTML bibliography.
+
+Conversion uses `latexml --nocomments`. LaTeXML normally injects source-location
+comments every 25 lines. With Springer's `\doiurl` macro expanding into `\url`,
+those comments leaked into three DOI link URLs and their displayed text in the
+initial website conversion. Disabling comment injection fixes the conversion
+generically; neither `refs.bib` nor the generated `.bbl` is rewritten. Every
+rendered bibliography DOI is independently checked by citation key against the
+authoritative literal DOI field in `refs.bib`, including presence, destination
+and displayed URL. DOI URLs elsewhere on the site are also checked for malformed
+syntax. These checks are offline and do not depend on DOI resolver availability.
+Unsupported DOI metadata expressions fail for review instead of being guessed.
 
 Only publisher/page-layout machinery changes in the wrapper: `sn-jnl` becomes
 `article`, the title-page minipage and print spacing are removed, `Needspace`
@@ -102,7 +127,7 @@ Representative evaluation commands, run in disposable copies of `manuscript/`:
 make4ht -u -f html5 manuscript.tex 'mathml'
 make4ht -u -f html5 article.tex 'mathml'
 latexml --dest=manuscript.xml manuscript.tex
-latexml --dest=article.xml article.tex
+latexml --nocomments --dest=article.xml article.tex
 latexmlpost --format=html5 --nosplit --pmml --mathtex \
   --nographicimages --dest=article.html article.xml
 ```
@@ -120,7 +145,12 @@ on this manuscript. They concern semantic interpretation of some mathematical
 expressions, not undefined commands or failed presentation rendering. The
 selected output is **Presentation MathML with original TeX annotations**, not
 Content MathML or a claim of computer-algebra interpretation. Those notices are
-retained in `conversion.log`; other warning classes and all errors are fatal.
+retained in `conversion.log` and explicitly listed in
+[`reviewed-math-warnings.txt`](reviewed-math-warnings.txt). New messages,
+locations or additional occurrences fail the build, as do other warning classes
+and all errors. Resolved warnings may disappear. Never regenerate the allowance
+automatically: inspect affected source and rendered mathematics before changing
+it. Postprocessing has no warning allowance.
 Representative affected boxed/aligned, norm, Laplacian and clearance formulas
 must also be inspected visually when changing converter versions.
 
@@ -159,6 +189,10 @@ table or bibliography entry; corrupt an equation number or table cell; break a
 reference or base-path URL; redirect a citation to the wrong existing entry; swap a figure; alter the PDF; or add an unapproved
 file. A separate mutation removes prose from both converter output and the
 assembled page, proving the source-prose check is independent.
+DOI mutations corrupt or remove links in both converter and assembled output,
+including a syntactically valid but wrong DOI, to prove metadata validation is
+independent too. Diagnostic tests reject new parser warnings, changed source
+locations and excess occurrences.
 
 For browser QA:
 
@@ -170,11 +204,17 @@ python site/browser_check.py
 
 To use an existing Chromium executable, set `POWERFIT_BROWSER` to its path.
 CI installs the Playwright browser and system dependencies. Checks use 1440,
-390 and 320 px viewports, `/powerfit/` URLs, actual TOC/equation/citation clicks,
+390 and 320 px viewports and `/powerfit/` URLs. At each size they exercise System,
+Light and Dark, live OS changes, explicit overrides, cross-page/reload persistence,
+keyboard focus, mobile contents disclosure, actual TOC/equation/citation clicks,
 MathML dimensions, all seven loaded SVGs, the PDF response and page overflow.
-They reject browser errors and unexpected external runtime requests. Screenshots
-cover the landing page, article front matter, Section 4, clearance equations,
-Appendices C/D and Table 4. Inspect the images as well as the JSON report.
+Contrast checks cover text, links, controls, focus rings, mathematics and tables;
+figures must remain white and uninverted. CSS-only OS preference is checked with
+JavaScript disabled; storage denial and white print backgrounds are checked too.
+Browser errors and external runtime requests fail QA.
+Screenshots in **both Light and Dark at all three widths** cover the landing page,
+article front matter, Section 4, clearance equations, Appendices C/D, Table 4 and
+a scientific figure. Inspect the images as well as the JSON report.
 
 ## Actions and GitHub Pages configuration
 

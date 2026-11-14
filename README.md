@@ -52,10 +52,11 @@ infrastructure. The reported calculations use
 The current article is an **author manuscript submitted for peer review** to
 *Computational and Applied Mathematics*. It is **not an accepted or published
 journal article**. The CAM source synchronization is recorded in
-[manuscript/CAM_SYNC.md](manuscript/CAM_SYNC.md); the current author-manuscript
-revision is dated **2026-11-14**, at
+[manuscript/CAM_SYNC.md](manuscript/CAM_SYNC.md). The **original CAM synchronization
+baseline** is dated **2026-11-14**, at
 [`f4010fcb9677`](https://github.com/DeloneCommons/powerfit/commit/f4010fcb967767b4263a465ad2a2eb92d1b1458f).
-The website records the source commit and revision date for each build.
+This historical baseline does not identify later manuscript revisions; the
+website records the manuscript source commit and revision date for each build.
 
 The live HTML/PDF on `main` is **not identical to the published v2.0.0 archive**.
 Its PDF and HTML are generated from the same LaTeX sources. The original

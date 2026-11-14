@@ -11,6 +11,7 @@ from urllib.parse import unquote, urlsplit
 
 from lxml import etree, html
 from source import ROOT, authored_sources, collect_dependencies, read_tex
+from bibliography import is_doi_url, parse_doi_url, source_dois, validate_bibliography_dois
 
 NS = {'l': 'http://dlmf.nist.gov/LaTeXML'}
 XID = '{http://www.w3.org/XML/1998/namespace}id'
@@ -127,6 +128,11 @@ def validate(output, work, manuscript):
     expected_bib = set(re.findall(r'\\bibitem(?:\[[^\]]*\])?\{([^}]+)\}', (work / 'manuscript.bbl').read_text()))
     if {n.get('key') for n in xml.xpath('//l:bibitem', namespaces=NS)} != expected_bib:
         errors.append('Bibliography differs from the canonical PDF bibliography')
+    try:
+        metadata = source_dois(manuscript / 'refs.bib')
+        errors.extend(validate_bibliography_dois(page, xml.xpath('//l:bibitem', namespaces=NS), metadata, XID))
+    except ValueError as exc:
+        errors.append(f'Invalid authoritative DOI metadata: {exc}')
     for graphic in xml.xpath('//l:graphics', namespaces=NS):
         expected = 'figures/' + Path(graphic.get('graphic')).with_suffix('.svg').name
         nodes = page.xpath('//img[@id=$key]', key=graphic.get(XID))
@@ -139,6 +145,11 @@ def validate(output, work, manuscript):
             errors.append(f'Missing language or viewport: {filename}')
         for target in doc.xpath('//@href | //@src'):
             url = urlsplit(target)
+            if is_doi_url(target):
+                try:
+                    parse_doi_url(target)
+                except ValueError as exc:
+                    errors.append(str(exc))
             if url.scheme in ('https', 'http', 'mailto'):
                 continue
             if url.scheme or target.startswith('/') or '..' in Path(unquote(url.path)).parts:
@@ -155,7 +166,7 @@ def validate(output, work, manuscript):
         errors.append('Unexpected figure provenance inventory')
     if set(provenance['source_sha256']) != {p.relative_to(ROOT).as_posix() for p in dependencies}:
         errors.append('Unexpected source provenance inventory')
-    allowed = {'index.html', 'article.html', 'site.css', 'manuscript.pdf', 'provenance.json', 'LICENSE.txt', *expected_figures}
+    allowed = {'index.html', 'article.html', 'site.css', 'site.js', 'manuscript.pdf', 'provenance.json', 'LICENSE.txt', *expected_figures}
     actual = {p.relative_to(output).as_posix() for p in output.rglob('*') if p.is_file()}
     if actual != allowed or any(p.is_symlink() for p in output.rglob('*')):
         errors.append('Website artifact contains missing, unexpected or symbolic files')

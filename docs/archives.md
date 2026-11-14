@@ -10,7 +10,8 @@ No journal publication DOI is claimed.
 
 | Record | Meaning |
 |---|---|
-| Current `main` | The evolving author manuscript; synchronized with the final CAM submission in PR #7 at `f4010fcb967767b4263a465ad2a2eb92d1b1458f` on 2026-11-14. |
+| Current `main` | The evolving author manuscript; use the website's generated revision date and source commit to identify the displayed version. |
+| Original CAM synchronization baseline | PR #7 at `f4010fcb967767b4263a465ad2a2eb92d1b1458f` on 2026-11-14. This historical reference does not identify subsequent manuscript revisions. |
 | [v2.0.0](https://doi.org/10.5281/zenodo.24047266) | A published, immutable archive containing the earlier revised article and reproducibility infrastructure. Its manuscript is **not identical to the current live HTML/PDF**. |
 | [v1.0.0](https://doi.org/10.5281/zenodo.19673558) | The original published scientific evidence and historical manuscript. |
 | [Concept DOI](https://doi.org/10.5281/zenodo.19673557) | The family of published powerfit versions; it does not assign a DOI to every Git commit. |

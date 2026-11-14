@@ -22,11 +22,13 @@ def shell(title, body, page_class):
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Fixed-site inverse fitting of power-diagram weights: author manuscript, mathematics, and reproducibility materials.">
-<title>{escape(title)} — powerfit</title><link rel="stylesheet" href="site.css">
+<title>{escape(title)} — powerfit</title><script src="site.js"></script><link rel="stylesheet" href="site.css">
 </head><body class="{page_class}">
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header"><a class="brand" href="index.html">powerfit<span>Research article</span></a>
-<nav aria-label="Primary"><a href="article.html">Article</a><a href="manuscript.pdf">PDF</a><a href="{REPOSITORY}">Repository</a></nav></header>
+<div class="header-controls"><nav aria-label="Primary"><a href="article.html">Article</a><a href="manuscript.pdf">PDF</a><a href="{REPOSITORY}">Repository</a></nav>
+<label class="theme-control" hidden>Theme <select id="theme-select" aria-label="Theme">
+<option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></div></header>
 {body}
 <footer class="site-footer"><p>© 2026 Ivan Yu. Chernyshov · <a href="LICENSE.txt">MIT license</a> · <a href="provenance.json">Build provenance</a></p>
 <p>Author manuscript submitted for peer review. Not an accepted or published journal article.</p></footer>

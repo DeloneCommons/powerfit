@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build only public reading assets from the authoritative committed manuscript."""
 import hashlib
+from collections import Counter
 import json
 from pathlib import Path
 import re
@@ -30,8 +31,12 @@ def git(*args):
 
 def check_conversion_log(path, allow_math_parser=False):
     text = path.read_text(errors='replace')
-    errors = [line for line in text.splitlines() if re.match(r'(?:Error:|Fatal:|Warning:)', line)
-              and not (allow_math_parser and line.startswith('Warning:not_parsed:'))]
+    allowed = Counter()
+    if allow_math_parser:
+        allowed.update(line for line in (ROOT / 'site/reviewed-math-warnings.txt').read_text().splitlines()
+                       if line and not line.startswith('#'))
+    diagnostics = Counter(line for line in text.splitlines() if re.match(r'(?:Error:|Fatal:|Warning:)', line))
+    errors = list((diagnostics - allowed).elements())
     if errors or re.search(r'\b[1-9]\d* (?:errors?|undefined macros?|missing files?)\b', text):
         raise RuntimeError(f'Unexpected converter diagnostics in {path}: ' + '\n'.join(errors))
 
@@ -60,7 +65,9 @@ def main():
         shutil.copy2(manuscript / name, work / name)
     text = read_tex(manuscript / 'manuscript.tex')
     (work / 'article.tex').write_text(make_wrapper(text), encoding='utf-8')
-    run(['latexml', '--dest=article.xml', 'article.tex'], work, work / 'conversion.log')
+    # Source-location comments otherwise leak through Springer's \doiurl -> \url
+    # expansion at 25-line boundaries in the canonical .bbl. Never edit the .bbl.
+    run(['latexml', '--nocomments', '--dest=article.xml', 'article.tex'], work, work / 'conversion.log')
     check_conversion_log(work / 'conversion.log', allow_math_parser=True)
     run(['latexmlpost', '--format=html5', '--nosplit', '--pmml', '--mathtex',
          '--nographicimages', '--dest=article.html', 'article.xml'], work, work / 'postprocess.log')
@@ -74,6 +81,7 @@ def main():
                              'source_sha256': digest(pdf), 'sha256': digest(output / relative)}
     shutil.copy2(manuscript / 'manuscript.pdf', output / 'manuscript.pdf')
     shutil.copy2(ROOT / 'site/site.css', output / 'site.css')
+    shutil.copy2(ROOT / 'site/site.js', output / 'site.js')
     shutil.copy2(ROOT / 'LICENSE', output / 'LICENSE.txt')
     # Manuscript date follows scientific source history, not this site's build clock.
     science = [p.relative_to(ROOT).as_posix() for p in authored_sources(manuscript)]
