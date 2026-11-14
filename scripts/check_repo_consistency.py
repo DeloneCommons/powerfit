@@ -81,6 +81,9 @@ SKIP_DIR_NAMES = {
 }
 SKIP_ROOT_DIR_NAMES = {"build", ".smoke", ".tmp_figure_binary_constancy"}
 FROZEN_MANIFEST_PATH = Path("scripts/frozen_artifacts.sha256.json")
+# Independently reviewed raw-byte identity of the archival manifest. Updating
+# scientific files and their entries together must not refresh the baseline.
+FROZEN_MANIFEST_SHA256 = "b253d99a740410b7ab7b87eb3dcaf22ab60ad9894056c65224cd5d1c70a4a8d3"
 FROZEN_DIRECTORIES = (
     "experiments", "results", "data", "environments", "external_software",
     "scripts/qtaim",
@@ -256,9 +259,24 @@ def _check_frozen_artifacts() -> list[Problem]:
     scientific files must not silently become part of the frozen snapshot.
     """
     manifest_name = FROZEN_MANIFEST_PATH.as_posix()
+    manifest_path = REPO_ROOT / FROZEN_MANIFEST_PATH
+    if any(
+        (REPO_ROOT / part).is_symlink()
+        for part in [FROZEN_MANIFEST_PATH, *FROZEN_MANIFEST_PATH.parents]
+        if part != Path(".")
+    ):
+        return [Problem(manifest_name, "symlink cannot replace the frozen artifact manifest or its directory")]
     try:
-        payload = json.loads((REPO_ROOT / FROZEN_MANIFEST_PATH).read_text(encoding="utf-8"))
-    except (OSError, ValueError) as exc:
+        manifest_bytes = manifest_path.read_bytes()
+    except OSError as exc:
+        return [Problem(manifest_name, f"cannot read frozen artifact manifest: {exc}")]
+    actual = hashlib.sha256(manifest_bytes).hexdigest()
+    if actual != FROZEN_MANIFEST_SHA256:
+        return [Problem(manifest_name, f"frozen artifact manifest digest mismatch: expected {FROZEN_MANIFEST_SHA256}, got {actual}")]
+    # Parse exactly the bytes that were authenticated above, without rereading.
+    try:
+        payload = json.loads(manifest_bytes.decode("utf-8"))
+    except ValueError as exc:
         return [Problem(manifest_name, f"cannot read frozen artifact manifest: {exc}")]
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         return [Problem(manifest_name, "invalid frozen artifact manifest schema")]

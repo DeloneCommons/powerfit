@@ -32,6 +32,9 @@ class RepositoryFixture(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.addCleanup(patch.stopall)
         patch.object(checker, "REPO_ROOT", self.root).start()
+        # Small independent fixtures have their own reviewed identity. Keep this
+        # adaptation in tests; production has no manifest-refresh mechanism.
+        patch.object(checker, "FROZEN_MANIFEST_SHA256", "").start()
         for directory in PROTECTED_DIRECTORIES:
             self.write(f"{directory}/frozen.txt", "original scientific artifact\n")
         self.write("scripts/_figure_io.py", "# Original figure helper.\n")
@@ -57,7 +60,8 @@ class RepositoryFixture(unittest.TestCase):
             "protected_files": PROTECTED_FILES,
             "files": files,
         }
-        self.write("scripts/frozen_artifacts.sha256.json", json.dumps(payload))
+        manifest = self.write("scripts/frozen_artifacts.sha256.json", json.dumps(payload))
+        checker.FROZEN_MANIFEST_SHA256 = hashlib.sha256(manifest.read_bytes()).hexdigest()
         return payload
 
     def frozen_problems(self):
@@ -80,8 +84,16 @@ class RepositoryFixture(unittest.TestCase):
         shutil.copyfile(SOURCE, self.root / "scripts/check_repo_consistency.py")
 
     def run_cli(self, *arguments):
+        # Import the unchanged copied checker and pin only this process's small
+        # fixture. The production CLI exposes no override for its archival pin.
+        runner = (
+            "import sys; sys.path.insert(0, 'scripts'); "
+            "import check_repo_consistency as audit; "
+            "audit.FROZEN_MANIFEST_SHA256 = sys.argv[1]; "
+            "raise SystemExit(audit.main(sys.argv[2:]))"
+        )
         return subprocess.run(
-            [sys.executable, str(self.root / "scripts/check_repo_consistency.py"), *arguments],
+            [sys.executable, "-c", runner, checker.FROZEN_MANIFEST_SHA256, *arguments],
             cwd=self.root, text=True, capture_output=True, check=False,
         )
 
@@ -90,7 +102,66 @@ class FrozenArtifactChecks(RepositoryFixture):
     def test_unchanged_source_archive_passes_without_git(self):
         self.manifest()
         self.assertFalse((self.root / ".git").exists())
-        self.assertEqual(self.frozen_problems(), [])
+        with patch.object(checker.subprocess, "run", side_effect=AssertionError("Git must not be invoked")):
+            self.assertEqual(self.frozen_problems(), [])
+
+    def assert_manifest_identity_failure(self):
+        problems = self.frozen_problems()
+        self.assertEqual([problem.path for problem in problems], ["scripts/frozen_artifacts.sha256.json"])
+        self.assertIn("manifest digest mismatch", problems[0].detail)
+
+    def test_manifest_only_whitespace_change_is_rejected(self):
+        self.manifest()
+        manifest = self.root / "scripts/frozen_artifacts.sha256.json"
+        original = manifest.read_bytes()
+        manifest.write_bytes(original + b"\n")
+        self.assertNotEqual(manifest.read_bytes(), original)
+        self.assert_manifest_identity_failure()
+
+    def test_manifest_is_authenticated_before_json_is_consumed(self):
+        self.manifest()
+        self.write("scripts/frozen_artifacts.sha256.json", "not JSON\n")
+        self.assert_manifest_identity_failure()
+
+    def test_coordinated_scientific_file_and_manifest_change_is_rejected(self):
+        payload = self.manifest()
+        original_digest = payload["files"]["results/frozen.txt"]
+        changed = self.write("results/frozen.txt", "modified scientific artifact\n")
+        payload["files"]["results/frozen.txt"] = hashlib.sha256(changed.read_bytes()).hexdigest()
+        self.assertNotEqual(payload["files"]["results/frozen.txt"], original_digest)
+        self.write("scripts/frozen_artifacts.sha256.json", json.dumps(payload))
+        self.assert_manifest_identity_failure()
+
+    def test_removed_scientific_file_and_manifest_entry_are_rejected(self):
+        self.write("results/retained.txt", "retained scientific artifact\n")
+        payload = self.manifest()
+        self.assertIn("results/frozen.txt", payload["files"])
+        (self.root / "results/frozen.txt").unlink()
+        del payload["files"]["results/frozen.txt"]
+        self.assertFalse((self.root / "results/frozen.txt").exists())
+        self.write("scripts/frozen_artifacts.sha256.json", json.dumps(payload))
+        self.assert_manifest_identity_failure()
+
+    def test_symlink_cannot_replace_the_manifest_even_with_identical_bytes(self):
+        self.manifest()
+        manifest = self.root / "scripts/frozen_artifacts.sha256.json"
+        copy = self.root / "manifest-copy.json"
+        copy.write_bytes(manifest.read_bytes())
+        manifest.unlink()
+        manifest.symlink_to(copy)
+        problems = self.frozen_problems()
+        self.assertEqual([problem.path for problem in problems], ["scripts/frozen_artifacts.sha256.json"])
+        self.assertIn("symlink", problems[0].detail)
+
+    def test_symlink_cannot_replace_the_manifest_parent_directory(self):
+        self.manifest()
+        scripts = self.root / "scripts"
+        copy = self.root / "scripts-copy"
+        scripts.rename(copy)
+        scripts.symlink_to(copy, target_is_directory=True)
+        problems = self.frozen_problems()
+        self.assertEqual([problem.path for problem in problems], ["scripts/frozen_artifacts.sha256.json"])
+        self.assertIn("symlink", problems[0].detail)
 
     def test_changed_scientific_bytes_are_reported(self):
         self.manifest()
@@ -133,7 +204,10 @@ class FrozenArtifactChecks(RepositoryFixture):
             with self.subTest(relative=relative):
                 payload = self.manifest()
                 payload["files"][relative] = digest
-                self.write("scripts/frozen_artifacts.sha256.json", json.dumps(payload))
+                manifest = self.write("scripts/frozen_artifacts.sha256.json", json.dumps(payload))
+                # Reach structural validation with an authenticated invalid
+                # fixture; ordinary mutations must retain the original pin.
+                checker.FROZEN_MANIFEST_SHA256 = hashlib.sha256(manifest.read_bytes()).hexdigest()
                 problems = self.frozen_problems()
                 self.assertTrue(any(problem.path == "scripts/frozen_artifacts.sha256.json" and "invalid" in problem.detail for problem in problems))
 
@@ -155,6 +229,7 @@ class RepositoryIntegrationChecks(RepositoryFixture):
         result = self.run_cli()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("missing sections/results.tex", result.stdout)
+        self.assertNotIn("[frozen-artifacts]", result.stdout)
 
 
 if __name__ == "__main__":
