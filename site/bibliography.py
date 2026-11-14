@@ -9,10 +9,8 @@ def _entry_parts(source, start, closing):
     depth, quoted, i = 0, False, start
     while i < len(source):
         char = source[i]
-        if char == "\\":
-            buffer.append(source[i:i + 2])
-            i += 2
-            continue
+        # Backslashes do not escape BibTeX's structural delimiters. TeX commands
+        # are interpreted later; skipping "\}" here can hide a following field.
         if char == '%' and not depth and not quoted:
             end = source.find('\n', i)
             i = len(source) if end < 0 else end
@@ -39,8 +37,8 @@ def _entry_parts(source, start, closing):
 def source_dois(path):
     """Read literal DOI fields independently of BibTeX line layout.
 
-    This bounded scanner understands entry/field boundaries, braces, quotes,
-    escapes and comments outside values. It does not expand BibTeX macros or
+    This bounded scanner understands entry/field boundaries, braces, quotes
+    and comments outside values. It does not expand BibTeX macros or
     concatenations: DOI expressions must be one braced or quoted literal.
     Other field expressions are left to canonical BibTeX.
     """
@@ -72,6 +70,8 @@ def source_dois(path):
             field = re.fullmatch(r'([A-Za-z][\w-]*)\s*=\s*(.+)', part, re.S)
             if not field:
                 raise ValueError(f'Malformed bibliography field in {key}: {part}')
+            if field[1].lower() == 'crossref':
+                raise ValueError(f'Unsupported BibTeX crossref inheritance in {key}')
             if field[1].lower() != 'doi':
                 continue
             literal = re.fullmatch(r'(?:\{([^{}]+)\}|"([^"{}]+)")', field[2], re.S)

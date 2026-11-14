@@ -85,10 +85,17 @@ syntax. These checks are offline and do not depend on DOI resolver availability.
 Unsupported DOI metadata expressions fail for review instead of being guessed.
 The bounded BibTeX scanner reads field boundaries independently of line layout,
 including complete single-line entries and a DOI following another field on the
-same line. Balanced braces, quoted values and escapes protect embedded commas;
+same line. Balanced braces and quoted values protect embedded commas;
 text mentioning `doi` inside another field is not treated as a DOI field.
+Backslashes do not escape structural braces or quotes at the BibTeX parsing
+layer. The scanner therefore counts those delimiters even after a backslash,
+so an unrelated field cannot consume and conceal a following DOI. Regression
+tests include the audited escaped-delimiter record, its actual Springer BibTeX
+output, and rejection of a rendered entry that omits its DOI.
 DOIs must be single braced or quoted literals. Macros, concatenations, duplicate
-DOI fields and malformed expressions fail explicitly. This is not a general
+DOI fields and malformed expressions fail explicitly. `crossref` inheritance is
+unsupported and fails explicitly rather than silently losing an inherited DOI;
+the current bibliography does not use it. This is not a general
 BibTeX evaluator; the canonical BibTeX build still processes the bibliography.
 
 Only publisher/page-layout machinery changes in the wrapper: `sn-jnl` becomes
