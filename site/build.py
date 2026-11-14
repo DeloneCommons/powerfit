@@ -17,6 +17,18 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def figure_destinations(paths):
+    """Keep published URLs, rejecting distinct sources before any SVG is written."""
+    destinations, owners = {}, {}
+    for path in paths:
+        relative = 'figures/' + path.with_suffix('.svg').name
+        if relative in owners and owners[relative] != path:
+            raise ValueError(f'Figure output collision: {relative}: {owners[relative]} and {path}')
+        owners[relative] = path
+        destinations[path] = relative
+    return destinations
+
+
 def run(command, cwd, log):
     print('+', ' '.join(map(str, command)), flush=True)
     with log.open('w') as stream:
@@ -55,6 +67,7 @@ def main():
         path.mkdir(parents=True)
     (output / 'figures').mkdir()
     deps = collect_dependencies(manuscript)
+    figure_paths = figure_destinations(p for p in deps if p.suffix == '.pdf')
     source_hashes = {p.relative_to(ROOT).as_posix(): digest(p) for p in deps}
     run(['bash', 'scripts/build_manuscript_pdfs.sh'], ROOT, work / 'pdf-build.log')
     for path in deps:
@@ -73,8 +86,7 @@ def main():
          '--nographicimages', '--dest=article.html', 'article.xml'], work, work / 'postprocess.log')
     check_conversion_log(work / 'postprocess.log')
     figures = {}
-    for pdf in sorted(p for p in deps if p.suffix == '.pdf'):
-        relative = 'figures/' + pdf.with_suffix('.svg').name
+    for pdf, relative in sorted(figure_paths.items()):
         run(['pdftocairo', '-svg', str(pdf), str(output / relative)], ROOT,
             work / (pdf.stem + '.log'))
         figures[relative] = {'source': pdf.relative_to(ROOT).as_posix(),
