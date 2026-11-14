@@ -5,7 +5,7 @@
 \subsection{Pairwise separators and realized faces}
 \label{subsec:faces}
 
-For a finite nonperiodic configuration, the \emph{power cell} $C_i(w)$ of site $i$ consists of all points at which its power distance is minimal among the sites \cite{Aurenhammer1987}. For two distinct sites $i$ and $j$, we distinguish their \emph{pairwise bisector} $H_{ij}(w)$, where their power distances are equal, from their \emph{common cell intersection} $F_{ij}(w)$, where both sites attain the minimum power distance. Explicitly,
+For a finite nonperiodic configuration, the \emph{power cell} $C_i(w)$ of site $i$ consists of all points at which its power distance is minimal among the sites \citep{Aurenhammer1987}. For two distinct sites $i$ and $j$, we distinguish their \emph{pairwise bisector} $H_{ij}(w)$, where their power distances are equal, from their \emph{common cell intersection} $F_{ij}(w)$, where both sites attain the minimum power distance. Explicitly,
 \begin{align}
 C_i(w)&=\{x\in\mathbb R^d:\pi_i(x)\le\pi_k(x)
 \text{ for all }k\}, \label{eq:power-cell}\\[2pt]
@@ -43,7 +43,7 @@ Figure~\ref{fig:three-face-cases} shows how changing only the competing weights 
 \begin{figure}[!tb]
 \centering
 \includegraphics[width=\linewidth]{figures/figure_04_realization.pdf}
-\caption{Three outcomes for the fixed sites in Eq.~\eqref{eq:four-sites}, with $w_1=w_2=0$. The dashed bisector $H_{12}$ and diamond $q_{12}$ stay fixed. Shading distinguishes the power cells; the blue segment shows $F_{12}$ when it is nonempty. (a) $F_{12}=\varnothing$. (b) $F_{12}=\{1\}\times[-3/2,-1/2]$, away from $q_{12}$. (c) $F_{12}=\{1\}\times[-1/2,1/2]$, with $q_{12}$ strictly inside; the bracket measures the distance $1/2$ to an endpoint. Site markers need not lie in their own cells: in (b), $p_4\in F_{12}$ but $p_4\notin C_4$. All panels use the same scale and drawing window; the cells are defined in the full plane.}
+\caption{Three outcomes for the fixed sites in Eq.~\eqref{eq:four-sites}, with $w_1=w_2=0$. The dashed bisector $H_{12}$ and diamond $q_{12}$ stay fixed. Shading distinguishes the power cells; the blue segment shows $F_{12}$ when it is nonempty. (a) $F_{12}=\varnothing$. (b) $F_{12}=\{1\}\times[-3/2,-1/2]$, away from $q_{12}$. (c) $F_{12}=\{1\}\times[-1/2,1/2]$, with $q_{12}$ strictly inside; the bracket measures the distance $1/2$ to an endpoint. Site markers need not lie in their own cells: in (b), $p_4\in F_{12}$ but $p_4\notin C_4$. All panels use the same scale and drawing window; the cells are defined in the full plane. Rendered using AI-assisted code; see the AI declaration.}
 \label{fig:three-face-cases}
 \end{figure}
 
@@ -86,7 +86,7 @@ q_{ij}(w)\in\operatorname{int}_{H_{ij}}F_{ij}(w).
 \end{equation}
 Strict competitor inequalities also persist in a small ambient neighborhood of $q_{ij}$. On opposite sides of the bisector near that point, sites $i$ and $j$, respectively, are the unique power minimizers. Thus strict visibility certifies a genuine local facet between two full-dimensional cells.
 
-When all site weights are equal, $q_{ij}$ is the midpoint, and strict positivity of the gaps means that every other site lies outside the closed ball with diameter $p_ip_j$. This is the strict form of the classical \emph{Gabriel} edge condition. Its weighted counterpart uses the full affine connector line, so the witness may lie outside the site segment \cite[Sec.~2]{Alexa2020}. The all-strict test above is therefore a weighted Gabriel edge certificate. We use \emph{weak connector visibility} separately for the non-strict condition $q_{ij}\in F_{ij}$, which permits boundary contacts and persistent ties and does not by itself certify a genuine facet; see~\ref{app:geometry-degeneracy}.
+When all site weights are equal, $q_{ij}$ is the midpoint, and strict positivity of the gaps means that every other site lies outside the closed ball with diameter $p_ip_j$. This is the strict form of the classical \emph{Gabriel} edge condition. Its weighted counterpart uses the full affine connector line, so the witness may lie outside the site segment \citep[Sec.~2]{Alexa2020}. The all-strict test above is therefore a weighted Gabriel edge certificate. We use \emph{weak connector visibility} separately for the non-strict condition $q_{ij}\in F_{ij}$, which permits boundary contacts and persistent ties and does not by itself certify a genuine facet; see~\ref{app:geometry-degeneracy}.
 
 The competitor gaps can be expressed directly in terms of the fitted weights. Writing $\delta_{ij}=p_j-p_i$ and $q_{ij}=p_i+t_{ij}\delta_{ij}$, expansion of the squared distances gives
 \begin{equation}

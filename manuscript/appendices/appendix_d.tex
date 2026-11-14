@@ -28,7 +28,7 @@ This is a property of the Boolean update \emph{conditional on executed mask upda
 \label{app:algorithm-implementation}
 
 The conventions below describe \texttt{pyvoro2} 0.6.3, source snapshot
-\texttt{eaffdcb} \cite{Pyvoro2_063}.
+\texttt{eaffdcb} \citep{Pyvoro2_063}.
 
 \paragraph{Inputs and image diagnostics}
 The realization procedure operates on resolved observations in two or three spatial dimensions. The \emph{observation confidences} are the fitting weights $\lambda_r$; the implementation allows them to be zero. A fitting call selects one measurement convention, and any hard restriction applies the same interval or fixed value in those units to every supplied row. Subsetting removes the restrictions on omitted rows. Supplied periodic shifts are preserved; missing shifts are resolved before fitting by the selected input policy, not by the mask update.
@@ -50,7 +50,7 @@ used in Eq.~\eqref{eq:measured-least-squares}.
 The analytic quadratic solver is consistent with this reported
 mismatch-plus-regularization objective.
 The frozen weight update in the alternating direction method of
-multipliers (ADMM) \cite{Boyd2011}, however, uses the effective penalty
+multipliers (ADMM) \citep{Boyd2011}, however, uses the effective penalty
 $(\gamma/2)\sum_i(w_i-w_i^{\mathrm{ref}})^2$, while the objective
 reporter retains the coefficient $\gamma$. At positive regularization
 strength, ADMM convergence therefore does not certify minimization of
@@ -85,7 +85,7 @@ Both RMS summaries are the square root of the unweighted arithmetic mean of squa
 \subsection{Synthetic experimental protocols and evaluation populations}
 \label{app:numerical-protocols}
 
-The \texttt{powerfit} version~2.0.0 archive \cite{PowerfitArchive2026}
+The \texttt{powerfit} version~2.0.0 archive \citep{PowerfitArchive2026}
 contains the experiment code, configurations, and numerical outputs. These
 experimental materials are unchanged from version~1.0.0. The files
 \path{experiments/registry/README.md} and \path{results/README.md} map the
@@ -154,7 +154,7 @@ observations, $\operatorname{round}(fm)$ distinct rows are sampled without
 replacement, so the realized contamination fraction need not equal $f$.
 
 The quadratic fit uses the analytic solver. The Huber fit uses a threshold of
-$0.03$ in normalized-coordinate units and is solved by ADMM \cite{Boyd2011},
+$0.03$ in normalized-coordinate units and is solved by ADMM \citep{Boyd2011},
 with the archived limit of
 5,000 iterations and ADMM penalty parameter $\rho=1$. Clean-reference separator RMSE is
 evaluated on the original generating pair observations against their

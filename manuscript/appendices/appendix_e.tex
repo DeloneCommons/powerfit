@@ -6,21 +6,21 @@ We first describe the QTAIM partition and the conversion of a boundary landmark 
 \subsection{Atomic regions and the density-based reference}
 \label{app:qtaim-background}
 
-A molecule has identifiable nuclei but a continuous electron density $\rho$ shared throughout space. In calculations with atom-centered Gaussian basis sets, the molecular orbitals are expanded in functions centered on the nuclei \cite{Boys1950,WeigendAhlrichs2005}. These basis functions are built from Gaussians multiplied by polynomial factors. In a real basis $\{\chi_\mu\}$, the density has the form
+A molecule has identifiable nuclei but a continuous electron density $\rho$ shared throughout space. In calculations with atom-centered Gaussian basis sets, the molecular orbitals are expanded in functions centered on the nuclei \citep{Boys1950,WeigendAhlrichs2005}. These basis functions are built from Gaussians multiplied by polynomial factors. In a real basis $\{\chi_\mu\}$, the density has the form
 \[
 \rho(x)=\sum_{\mu,\nu}D_{\mu\nu}\chi_\mu(x)\chi_\nu(x),
 \]
 where $D$ is the density matrix in that basis. Products involving different centers contribute to the density between atoms. The result is a molecular density, rather than a sum of independent spherical atomic densities; the locations of the basis centers do not prescribe its basin boundaries.
 
-QTAIM defines those basins from the gradient field of the total density: points whose gradient-ascent paths end at the same attractor belong to one basin, with attractors usually associated with nuclei \cite{Bader1980,Bader1990}. At regular points of an interatomic boundary with normal $n(x)$, the field is tangent to the boundary:
+QTAIM defines those basins from the gradient field of the total density: points whose gradient-ascent paths end at the same attractor belong to one basin, with attractors usually associated with nuclei \citep{Bader1980,Bader1990}. At regular points of an interatomic boundary with normal $n(x)$, the field is tangent to the boundary:
 \[
 \nabla\rho(x)\cdot n(x)=0.
 \]
-Integrating $\rho$ over an atomic basin gives its electron population; subtracting this population from the nuclear charge gives the atomic charge in units of the elementary charge \cite{Bader1990}.
+Integrating $\rho$ over an atomic basin gives its electron population; subtracting this population from the nuclear charge gives the atomic charge in units of the elementary charge \citep{Bader1990}.
 
-The zero-flux condition also has a physical role. Bader connects it to a generalization of Schwinger's principle of stationary action for open quantum subsystems \cite{Bader1994}. An atom defined in this way remains an interacting part of the molecule. The condition concerns the gradient of the density, not an electronic current or isolation from the other atoms. This connection to subsystem quantum mechanics motivates QTAIM as a reference beyond a purely geometric division of space.
+The zero-flux condition also has a physical role. \citet{Bader1994} connects it to a generalization of Schwinger's principle of stationary action for open quantum subsystems. An atom defined in this way remains an interacting part of the molecule. The condition concerns the gradient of the density, not an electronic current or isolation from the other atoms. This connection to subsystem quantum mechanics motivates QTAIM as a reference beyond a purely geometric division of space.
 
-The basin boundaries need not be planar or perpendicular to nuclear connectors. A nondegenerate bond critical point (BCP) is a stationary point of $\rho$ with two negative and one positive Hessian eigenvalues. Its two ascending branches are tangent at the BCP to the positive-curvature eigenvector. They lead toward neighboring atomic attractors and together form a \emph{bond path} \cite{Bader1980,Bader1990}. The BCP lies on the intervening basin boundary and supplies a local landmark associated with that atom pair. The experiments use these landmarks to assess separator positions and pair relations; they do not compare complete basin surfaces, electron populations or atomic charges.
+The basin boundaries need not be planar or perpendicular to nuclear connectors. A nondegenerate bond critical point (BCP) is a stationary point of $\rho$ with two negative and one positive Hessian eigenvalues. Its two ascending branches are tangent at the BCP to the positive-curvature eigenvector. They lead toward neighboring atomic attractors and together form a \emph{bond path} \citep{Bader1980,Bader1990}. The BCP lies on the intervening basin boundary and supplies a local landmark associated with that atom pair. The experiments use these landmarks to assess separator positions and pair relations; they do not compare complete basin surfaces, electron populations or atomic charges.
 
 \subsection{From a critical point to a separator observation}
 \label{app:bcp-projection}
@@ -53,9 +53,9 @@ Nor does a plane through one boundary point necessarily approximate the whole bo
 \subsection{Dataset, predictors and error aggregation}
 \label{app:molecular-protocols}
 
-The J1 benchmark contains 100 neutral singlet molecules, with 50 acyclic and 50 cyclic structures containing H, C, N, O, F, S and Cl. The dataset was assembled through deterministic PubChem searches \cite{PubChem2025}, followed by RDKit filtering and deduplication by molecular connectivity \cite{RDKit2026}. The selection records and final molecule manifest are in \path{data/qtaim_main/} of the \texttt{powerfit} version~2.0.0 archive \cite{PowerfitArchive2026}. Its \path{scripts/qtaim/README.md} describes the calculation pipeline, and \path{results/qtaim_main/README.md} locates the J1--J4 result records.
+The J1 benchmark contains 100 neutral singlet molecules, with 50 acyclic and 50 cyclic structures containing H, C, N, O, F, S and Cl. The dataset was assembled through deterministic PubChem searches \citep{PubChem2025}, followed by RDKit filtering and deduplication by molecular connectivity \citep{RDKit2026}. The selection records and final molecule manifest are in \path{data/qtaim_main/} of the \texttt{powerfit} version~2.0.0 archive \citep{PowerfitArchive2026}. Its \path{scripts/qtaim/README.md} describes the calculation pipeline, and \path{results/qtaim_main/README.md} locates the J1--J4 result records.
 
-Geometry optimization used geomeTRIC \cite{WangSong2016} with PySCF energies and gradients; the subsequent single-point calculations also used PySCF \cite{Sun2020}. Both used the B3LYP functional \cite{Becke1993,Stephens1994} and def2-SVP basis \cite{WeigendAhlrichs2005}. Multiwfn supplies the critical points and their reported atom-pair associations \cite{LuChen2012,Lu2024Multiwfn}; the reference graph uses those associations, deduplicated as unordered pairs. A separate explicit-hydrogen RDKit graph supplies the bonded label: two atoms are bonded precisely when their graph distance is one. Thus both bonded and nonbonded reference pairs can have a BCP.
+Geometry optimization used geomeTRIC \citep{WangSong2016} with PySCF energies and gradients; the subsequent single-point calculations also used PySCF \citep{Sun2020}. Both used the B3LYP functional \citep{Becke1993,Stephens1994} and def2-SVP basis \citep{WeigendAhlrichs2005}. Multiwfn supplies the critical points and their reported atom-pair associations \citep{LuChen2012,Lu2024Multiwfn}; the reference graph uses those associations, deduplicated as unordered pairs. A separate explicit-hydrogen RDKit graph supplies the bonded label: two atoms are bonded precisely when their graph distance is one. Thus both bonded and nonbonded reference pairs can have a BCP.
 
 The archive's reproduction environment is specified in
 \texttt{environments/\allowbreak requirements-lock-py313.txt}.
@@ -101,7 +101,7 @@ The nonperiodic molecular diagrams use atom-coordinate bounding boxes padded by 
 \end{tabular}
 \end{table}
 
-A realized pair is counted as \emph{visible} when the connector-line intersection belongs to its clipped face under the archived polygon-membership test \cite{Pyvoro2_063}. This numerical convention includes boundary points rather than requiring a strictly positive analytic gap. In orthonormal face coordinates measured in \AA{}, the test treats oriented edge cross products of magnitude at most $10^{-10}$~\AA$^2$ as zero. The resulting \texttt{intersection\_inside} flag supplies the visibility filter in J3 and the eligible-face selection in J4b.
+A realized pair is counted as \emph{visible} when the connector-line intersection belongs to its clipped face under the archived polygon-membership test \citep{Pyvoro2_063}. This numerical convention includes boundary points rather than requiring a strictly positive analytic gap. In orthonormal face coordinates measured in \AA{}, the test treats oriented edge cross products of magnitude at most $10^{-10}$~\AA$^2$ as zero. The resulting \texttt{intersection\_inside} flag supplies the visibility filter in J3 and the eligible-face selection in J4b.
 
 Table~\ref{tab:molecular-candidates} collects the three cutoff settings. Every setting contains and realizes all 3,975 reference pairs, which are evaluated before visibility filtering. The visible subset retains 3,973 reference pairs in each setting.
 

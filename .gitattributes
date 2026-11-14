@@ -1,1 +1,4 @@
 * text=auto eol=lf
+# Retain the official publisher files byte-for-byte, including CR-only class lines.
+manuscript/sn-jnl.cls -text
+manuscript/sn-mathphys-ay.bst -text

@@ -4,6 +4,11 @@ This directory contains the source of **“Fixed-site inverse fitting of
 power-diagram weights from pairwise separator data.”** All commands below are
 run from the repository root.
 
+The current sources are the final manuscript submitted to *Computational and
+Applied Mathematics* (CAM), synchronized from the pinned CAM baseline recorded
+in [CAM_SYNC.md](CAM_SYNC.md). This development-tree update is not a release;
+the published v1.0.0 and v2.0.0 archives retain their original contents and DOIs.
+
 ## Source structure
 
 | Path | Role |
@@ -13,11 +18,12 @@ run from the repository root.
 | [appendices/](appendices/) | Appendices A–E: graph and optimization arguments; geometry; perturbation estimates; algorithm and synthetic protocols; molecular background and protocols. |
 | [refs.bib](refs.bib) | Bibliography source, including the powerfit v2.0.0 archive and pyvoro2 0.6.3 citations. |
 | [figures/README.md](figures/README.md) | Source and interpretation map for the seven vector figure PDFs. |
-| [elsarticle.cls](elsarticle.cls), [elsarticle-num.bst](elsarticle-num.bst) | Pinned, unmodified official `elsarticle` 3.5 class and numerical bibliography style. |
-| [tex-support/README.md](tex-support/README.md) | Publisher-file provenance, source files, and retained upstream license information. |
+| [sn-jnl.cls](sn-jnl.cls), [sn-mathphys-ay.bst](sn-mathphys-ay.bst) | Pinned, unmodified official Springer Nature class and author–year bibliography style. |
+| [TEMPLATE_PROVENANCE.md](TEMPLATE_PROVENANCE.md), [tex-support/README.md](tex-support/README.md) | Publisher-file provenance, checksums, and retained upstream license information. |
+| [CAM_SYNC.md](CAM_SYNC.md) | Public/CAM baselines, import scope, figure hashes, and packaging adaptations. |
 
 The article uses 15 authored TeX files, seven figure PDFs, and 34 cited
-references. The current build is 65 pages. The four tables are literal TeX; there
+references. A local TeX Live 2025 build is 52 pages. The four tables are literal TeX; there
 is no generated table-fragment dependency. The Experiment H candidate graphic
 is not part of the article; the E/H table and accompanying discussion present
 that comparison.
@@ -37,7 +43,7 @@ row and column on disagreement and never rewrites the TeX or results.
 | Table 1: E/H one-pass and refined fits | [sections/06_experiments.tex](sections/06_experiments.tex), `tab:refinement-paired` | `active_set/runs.csv`, `supergraph_mismatch/runs.csv` | Pair by seed and configuration; 20 E pairs and 72 H pairs with positive mismatch. Arithmetic mean of per-run scores; better/tied/worse counts from unrounded changes. |
 | Table 2: J2 separator errors | [sections/07_molecular.tex](sections/07_molecular.tex), `tab:molecular-fits` | `qtaim_main/J2_true_support_ladder/edge_level.csv` | Pooled edge RMSE over 3,975 reference pairs: 3,703 bonded and 272 nonbonded. |
 | Table 3: J4b rankings | [sections/07_molecular.tex](sections/07_molecular.tex), `tab:molecular-clearance-ranking` | `qtaim_main/J4_mask_transfer_refresh/edge_level.csv` | Average precision within each model's visible nonbonded faces, separately for clearance, distance and area. |
-| Table E.1: J3 candidate cutoffs | [appendices/appendix_e.tex](appendices/appendix_e.tex), `tab:molecular-candidates` | `qtaim_main/J3_candidate_recovery_refresh/{candidate,selected,qtaim}_edge_level.csv` | Whole realized graph and its visible subset; pooled reference-pair RMSE before visibility filtering, for each cutoff. |
+| Table 4: J3 candidate cutoffs | [appendices/appendix_e.tex](appendices/appendix_e.tex), `tab:molecular-candidates` | `qtaim_main/J3_candidate_recovery_refresh/{candidate,selected,qtaim}_edge_level.csv` | Whole realized graph and its visible subset; pooled reference-pair RMSE before visibility filtering, for each cutoff. |
 
 For E/H, lower RMSE and higher F1 count as better; changes within an absolute
 `1e-12` tolerance count as ties. Pair identities include configuration and seed,
@@ -64,11 +70,14 @@ statement in the manuscript.
 
 The build requires `latexmk`, pdfLaTeX, BibTeX, `kpsewhich`, and Poppler's
 `pdfinfo` and `pdffonts` commands on `PATH`, plus Python 3.10+ for standard-library
-source and PDF checks. It uses the pinned official `elsarticle` 3.5 class
-(2026-01-09) and `elsarticle-num` bibliography style included in this directory.
-Their upstream contents and headers are retained unchanged. The preamble
-also uses `fontenc`, `inputenc`, `amsmath`, `amssymb`, `amsthm`, `mathtools`,
-`graphicx`, `placeins`, `needspace`, `booktabs`, and `hyperref`.
+source and PDF checks. It uses the pinned official `sn-jnl` class and
+`sn-mathphys-ay` bibliography style included in this directory, from the
+Springer Nature December 2024 distribution. Their upstream bytes and headers
+are retained unchanged. The class selects the author–year style internally.
+The wrapper also uses `fontenc`, `inputenc`, `lmodern`, `xcolor`, `amsmath`,
+`amssymb`, `mathtools`, `graphicx`, `placeins`, `needspace`, and `booktabs`;
+the class loads `hyperref`, `natbib`, `amsthm`, `geometry`, `setspace`,
+`rotating`, `threeparttable`, `appendix`, `wrapfig`, and `fix-cm`.
 The unmodified upstream `tex-support/glyphtounicode-cmr.tex` supplies
 mathematical Unicode mappings for reliable text extraction across TeX versions;
 it does not change the typeset content or load the `pdfx` package.
@@ -77,16 +86,16 @@ For Debian or Ubuntu:
 
 ```bash
 sudo apt-get update
-sudo apt-get install python3 latexmk poppler-utils cm-super \
+sudo apt-get install python3 latexmk poppler-utils lmodern \
   texlive-latex-base texlive-latex-recommended texlive-latex-extra \
-  texlive-publishers texlive-fonts-recommended
+  texlive-fonts-recommended
 ```
 
-The bundled official class and style take precedence over the versions supplied
-by `texlive-publishers`. This pin keeps the reviewed layout independent of the
-distribution's publisher-class version. See
-[tex-support/README.md](tex-support/README.md) for upstream provenance and source
-files. `cm-super` supplies scalable Computer Modern fonts for T1 encoding, and
+The bundled official class and style take precedence over distribution copies.
+This pin keeps the reviewed layout independent of the distribution's publisher
+version. See [TEMPLATE_PROVENANCE.md](TEMPLATE_PROVENANCE.md) and
+[tex-support/README.md](tex-support/README.md) for upstream provenance and terms.
+`lmodern` supplies scalable Latin Modern fonts for T1 encoding, and
 `poppler-utils` supplies the PDF inspection and rendering tools. No scientific
 Python packages are needed to compile the article.
 
@@ -98,9 +107,18 @@ This compiles the committed sources and figures into
 `manuscript/manuscript.pdf` and runs the bibliography build. It does not run
 figure generators, export tables, or recompute scientific results. The article
 PDF, generated `manuscript.bbl`, and auxiliary files are ignored build outputs.
+The build first clears generated TeX auxiliaries so a previous publisher's
+cached bibliography cannot prevent the CAM rebuild.
 
 The build rejects Type 3 fonts and requires every font to be embedded, including
 the workflow figure heading. There are no font-specific exceptions.
+
+Unresolved citations/references, bibliography warnings, overfull boxes and
+unexpected LaTeX/package warnings fail validation. For `sn-jnl` builds only,
+the checker permits underfull boxes and the specific hyperref notice
+`Difference (2) between bookmark levels is greater`: both also occur when the
+unchanged CAM baseline is compiled. These layout notices are retained in the
+logs; no source or publisher file is patched to suppress them.
 
 ## Regenerate or check figures
 
@@ -136,26 +154,34 @@ The source ZIP preserves the layout required by the TeX `\input` and
 | `figures/*.pdf` | The seven article figures. |
 | `refs.bib` | Bibliography source. |
 | `manuscript.bbl` | Bibliography generated by the fresh build. |
-| `elsarticle.cls`, `elsarticle-num.bst` | The pinned official class and numerical bibliography style. |
-| `tex-support/README.md`, `tex-support/README.upstream` | Provenance and retained upstream documentation/license information. |
-| `tex-support/elsarticle.dtx`, `tex-support/elsarticle.ins` | Upstream class source and extraction instructions. |
+| `sn-jnl.cls`, `sn-mathphys-ay.bst` | The pinned official class and author–year bibliography style. |
+| `TEMPLATE_PROVENANCE.md`, `CAM_SYNC.md`, `tex-support/README.md` | Publisher/source-baseline provenance and upstream license information. |
 | `tex-support/glyphtounicode-cmr.tex` | Unmodified upstream Computer Modern Unicode mappings and license notice. |
 
-The archive carries the same unmodified official class/style and their support
-sources as the canonical build. The remaining packages are TeX-distribution
-dependencies. The ZIP is an ignored output under `build/`; it is not a
+The archive contains 30 files, carrying the same unmodified official
+class/style and provenance as the canonical build. The remaining packages are
+TeX-distribution dependencies. Unlike the journal portal's flat source export,
+this public bundle retains nested sources and original figure filenames, with
+no text expansion or figure renaming. Entries have stable timestamps and
+permissions; the generated bibliography is refreshed before packaging.
+Only resolved dependencies and the listed notices are included, excluding
+administrative records, stale files, build logs, and the review PDF.
+The ZIP is an ignored output under `build/`; it is not a
 tracked flat submission tree. Review the built PDF and the archive before any
 submission. Creating the archive does not publish a release or submit to arXiv.
 
 ## Release and evidence provenance
 
 The [powerfit v2.0.0 archive](https://doi.org/10.5281/zenodo.24047266)
-contains the revised manuscript and reproducibility materials. The numerical
+contains the archived v2.0.0 manuscript and reproducibility materials; it does
+not identify the CAM-synchronized development tree. The numerical
 evidence is unchanged from the
 [v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558), and the reported
 fitting software is [pyvoro2 0.6.3](https://doi.org/10.5281/zenodo.19143984).
 The [all-versions project DOI](https://doi.org/10.5281/zenodo.19673557)
-identifies the evolving project.
+identifies the published project versions, rather than an unpublished `main`.
+`CITATION.cff`, `.zenodo.json` and the v2.0.0 release notes remain historical
+archive metadata. No tag, release or deposit is created by this synchronization.
 
 The frozen experiment registry retains its historical numbering and asset
 references. Use the [current experiment crosswalk](../README.md#frozen-records-and-the-current-manuscript)

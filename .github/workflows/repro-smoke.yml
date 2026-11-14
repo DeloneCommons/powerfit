@@ -49,13 +49,13 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             cm-super \
             latexmk \
+            lmodern \
             poppler-utils \
             texlive-fonts-recommended \
             texlive-latex-base \
             texlive-latex-extra \
             texlive-latex-recommended \
             texlive-pictures \
-            texlive-publishers \
             texlive-science
 
       - name: Run focused manuscript and integrity tests
@@ -101,6 +101,20 @@ jobs:
       - name: Build the canonical PDF and package the arXiv source archive
         run: python scripts/make_arxiv_bundle.py --output build/powerfit-arxiv.zip 2>&1 | tee build/reports/arxiv-package.txt
 
+      - name: Verify CAM title page and bibliography pagination
+        run: |
+          pdftotext -f 1 -l 1 manuscript/manuscript.pdf build/reports/cam-title-page.txt
+          for marker in 'Keywords' 'MSC2020' 'Acknowledgments' 'Author contributions' '0000-0002-4452-2025'; do
+            if ! grep -Fq -- "$marker" build/reports/cam-title-page.txt; then
+              echo "error: CAM title page is missing $marker" >&2
+              exit 1
+            fi
+          done
+          pdftotext manuscript/manuscript.pdf build/reports/manuscript-text.txt
+          for marker in D1516 D1525; do
+            grep -Fq -- "$marker" build/reports/manuscript-text.txt
+          done
+
       - name: Compile the arXiv archive in isolation
         run: |
           bundle_dir=$(mktemp -d "$RUNNER_TEMP/powerfit-arxiv-XXXXXX")
@@ -113,7 +127,7 @@ jobs:
           source_dir=$(dirname -- "${sources[0]}")
           (
             cd "$source_dir"
-            latexmk -g -pdf -bibtex -interaction=nonstopmode -halt-on-error manuscript.tex
+            latexmk -norc -g -pdf -bibtex -interaction=nonstopmode -halt-on-error manuscript.tex
           ) 2>&1 | tee build/reports/arxiv-build.txt
           cp "$source_dir/manuscript.log" build/reports/arxiv-manuscript.log
           if [[ -f "$source_dir/manuscript.blg" ]]; then

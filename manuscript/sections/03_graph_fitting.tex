@@ -18,14 +18,14 @@ We represent the observations by a graph whose vertices are the sites and whose 
 B^Tw=z.
 \label{eq:exact-incidence}
 \end{equation}
-This is a standard graph-potential representation of pairwise differences \cite{Jiang2011}.
+This is a standard graph-potential representation of pairwise differences \citep{Jiang2011}.
 
 Figure~\ref{fig:incompatible-cycle} shows the signed cycle sum for this example. For any weight vector, the corresponding sum of differences must vanish by telescoping. This gives the general compatibility condition below.
 
 \begin{figure}[tbp]
 \centering
 \includegraphics[width=\linewidth]{figures/figure_03_cycle.pdf}
-\caption{An abstract observation graph, with no geometric meaning assigned to the vertex positions. Solid arrows orient the three observations in Eq.~\eqref{eq:incompatible-triangle}. The cycle $1\to2\to3\to1$ traverses the $1\to3$ observation backwards (dashed return), giving the contribution $-z_{13}$. This is a signed traversal of the underlying undirected graph, not a fourth observation. Its nonzero sum prevents any single weight vector from reproducing all three targets.}
+\caption{An abstract observation graph, with no geometric meaning assigned to the vertex positions. Solid arrows orient the three observations in Eq.~\eqref{eq:incompatible-triangle}. The cycle $1\to2\to3\to1$ traverses the $1\to3$ observation backwards (dashed return), giving the contribution $-z_{13}$. This is a signed traversal of the underlying undirected graph, not a fourth observation. Its nonzero sum prevents any single weight vector from reproducing all three targets. Rendered using AI-assisted code; see the AI declaration.}
 \label{fig:incompatible-cycle}
 \end{figure}
 \FloatBarrier
@@ -103,7 +103,7 @@ Since the objective is convex, its minimizers are characterized by the normal eq
 \label{eq:laplacian-normal}
 \end{equation}
 
-Here $L$ is the weighted graph Laplacian, as in classical graph-potential least squares \cite{Jiang2011}. For any $v\in\mathbb R^n$,
+Here $L$ is the weighted graph Laplacian, as in classical graph-potential least squares \citep{Jiang2011}. For any $v\in\mathbb R^n$,
 \begin{equation}
 v^TLv=\sum_{r=1}^{m}\rho_r(v_{i_r}-v_{j_r})^2\ge 0.
 \end{equation}
@@ -116,7 +116,7 @@ For the inconsistent three-site example in Fig.~\ref{fig:incompatible-cycle}, wi
 The residuals $B^Tw-z=(1/3,\,1/3,\,-1/3)$ follow the order of the three observations. Each therefore has magnitude $1/3$: the fit balances the conflicting observations rather than selecting one to discard.
 
 For fixed generator positions, this quadratic structure also follows from
-the interface discrepancy of Spettl et al.\ \cite{Spettl2016}.
+the interface discrepancy of \citet{Spettl2016}.
 For a point $x$ assigned to pair $i,j$, identifying squared generator
 radii with the weights gives
 \[
@@ -140,7 +140,7 @@ agreement with that mean need not imply a small error over the sampled
 interface. Thus, data sufficient to determine the weights need not suffice
 to assess the approximation of an entire boundary.
 
-The quadratic loss is not essential to the observation model. When large residuals should have less influence, the squared penalties can be replaced by convex losses such as the Huber loss, which is quadratic near zero and linear beyond a residual threshold \cite{Huber1964}. The resulting fixed-observation problem remains convex, although its minimizer is generally no longer obtained from a linear Laplacian system.
+The quadratic loss is not essential to the observation model. When large residuals should have less influence, the squared penalties can be replaced by convex losses such as the Huber loss, which is quadratic near zero and linear beyond a residual threshold \citep{Huber1964}. The resulting fixed-observation problem remains convex, although its minimizer is generally no longer obtained from a linear Laplacian system.
 
 \subsection{Hard separator constraints}
 
@@ -164,7 +164,7 @@ u_h=\frac{\overline y_h-\beta_h}{\alpha_h}.
 \end{equation}
 An exact separator requirement is the special case $\ell_h=u_h$. Unlike residuals in the least-squares objective, these restrictions must be satisfied by the fitted weights.
 
-Their joint feasibility is described by a directed graph of \emph{difference constraints}: each inequality $w_v\le w_u+c_{uv}$ is represented by an arc $u\to v$ with cost $c_{uv}$. This constraint graph differs from the observation multigraph used for fitting. The standard negative-cycle criterion \cite[Sec.~24.4]{Cormen2009} takes the following form in our sign convention.
+Their joint feasibility is described by a directed graph of \emph{difference constraints}: each inequality $w_v\le w_u+c_{uv}$ is represented by an arc $u\to v$ with cost $c_{uv}$. This constraint graph differs from the observation multigraph used for fitting. The standard negative-cycle criterion \citep[Sec.~24.4]{Cormen2009} takes the following form in our sign convention.
 
 \begin{proposition}[Feasibility of difference constraints]
 \label{prop:hard-feasibility}
@@ -188,7 +188,7 @@ d(v)\le d(u)+c_{uv}
 for every arc $u\to v$. Therefore, setting $w_v=d(v)$ satisfies every difference constraint.
 \end{proof}
 
-The criterion can be checked using standard shortest-path algorithms, such as Bellman--Ford \cite{Bellman1958}. A negative cycle certifies infeasibility of the prescribed restrictions, independently of any least-squares objective.
+The criterion can be checked using standard shortest-path algorithms, such as Bellman--Ford \citep{Bellman1958}. A negative cycle certifies infeasibility of the prescribed restrictions, independently of any least-squares objective.
 
 When hard restrictions are feasible, they can be imposed on the least-squares fit. Let
 \begin{equation}
