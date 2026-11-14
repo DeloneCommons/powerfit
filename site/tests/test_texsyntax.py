@@ -9,7 +9,18 @@ from texsyntax import command_at, group, skip_space, strip_comments
 class LexicalTests(unittest.TestCase):
     def test_comments_respect_control_symbols(self):
         self.assertEqual(strip_comments('one%hidden\ntwo\\% kept\nthree\\\\%hidden\n'),
-                         'one\ntwo\\% kept\nthree\\\\\n')
+                         'onetwo\\% kept\nthree\\\\')
+
+    def test_comment_eol_and_next_line_indentation_are_consumed(self):
+        self.assertEqual(strip_comments('com% annotation\n    pact'), 'compact')
+        self.assertEqual(strip_comments('con% first\n\t% second\n  nected'), 'connected')
+        self.assertEqual(strip_comments('left\n    right'), 'left\n    right')
+        self.assertEqual(strip_comments(r'\text{con% annotation' + '\n    nected}'), r'\text{connected}')
+
+    def test_consumed_comment_does_not_merge_control_word_tokens(self):
+        self.assertEqual(strip_comments(r'\alpha% note' + '\n    x'), r'\alpha x')
+        self.assertEqual(strip_comments(r'\al% note' + '\n    pha'), r'\al pha')
+        self.assertEqual(strip_comments(r'\alpha% first' + '\n % second\n x'), r'\alpha x')
 
     def test_commands_are_tokens_not_substrings(self):
         self.assertEqual(command_at(r'\titleextra{x}', 0), ('titleextra', 11))

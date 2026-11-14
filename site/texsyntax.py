@@ -24,7 +24,11 @@ def skip_space(text, pos):
 
 
 def strip_comments(text):
-    """Remove unescaped percent comments while retaining line boundaries."""
+    """Consume TeX comments, their EOL and following line indentation.
+
+    Ordinary uncommented line breaks remain separators. Callers needing original
+    source coordinates must retain their own mapping while consuming comments.
+    """
     kept, pos = [], 0
     while pos < len(text):
         if text[pos] == '\\' and pos + 1 < len(text) and text[pos + 1] != '\n':
@@ -33,7 +37,15 @@ def strip_comments(text):
             pos = end
         elif text[pos] == '%':
             end = text.find('\n', pos)
-            pos = len(text) if end == -1 else end
+            pos = len(text) if end == -1 else end + 1
+            while pos < len(text) and text[pos] in ' \t':
+                pos += 1
+            # A percent sign terminated any preceding control word before TeX
+            # discarded the line. Retain that token boundary without creating
+            # visible text space (TeX consumes spaces after control words).
+            if (kept and re.fullmatch(r'\\[A-Za-z]+', kept[-1]) and
+                    pos < len(text) and re.match(r'[A-Za-z]', text[pos])):
+                kept.append(' ')
         else:
             kept.append(text[pos])
             pos += 1

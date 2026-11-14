@@ -1,6 +1,7 @@
 """Small independent fixtures for the bounded Springer wrapper grammar."""
 import re
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -122,6 +123,27 @@ class WrapperTests(unittest.TestCase):
         changed = changed.replace(r'\keywords{Geometry, inference}',
                                   r'\keywords % trailing comment' + '\n{Geometry, inference}')
         self.assertIn(r'A literal \{brace\} and 10\% improvement.', make_wrapper(changed))
+
+    def test_word_internal_comments_agree_in_metadata_arguments_and_wrapper(self):
+        changed = FIXTURE.replace('A small manuscript', 'A com% title note\n    pact manuscript').replace(
+            'An abstract with {nested text}.', r'A reproduc% abstract note' +
+            '\n    ible result with $' + r'\text{con% math-text note' + '\n    nected}$.')
+        self.assertEqual(source_metadata(changed)['title'], 'A compact manuscript')
+        self.assertEqual(argument(changed, 'abstract'), r'A reproducible result with $\text{connected}$.')
+        wrapper = make_wrapper(changed)
+        self.assertIn(r'\title{A compact manuscript}', wrapper)
+        self.assertIn(r'A reproducible result with $\text{connected}$.', wrapper)
+
+    def test_source_reader_consumes_comments_before_production_wrapper(self):
+        changed = FIXTURE.replace('A small manuscript', 'A com% note\n    pact manuscript').replace(
+            'An abstract with {nested text}.', 'A reproduc% note\n    ible result.')
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'manuscript.tex'
+            path.write_text(changed)
+            source = read_tex(path)
+        self.assertIn(r'\title[Short title]{A compact manuscript}', source)
+        self.assertIn(r'\abstract{A reproducible result.}', source)
+        self.assertIn(r'\title{A compact manuscript}', make_wrapper(source))
 
     def test_unbalanced_or_nonliteral_classification_fails(self):
         for value in (r'\pacs', r'\pacs[]', r'\pacs[\customlabel]'):

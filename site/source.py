@@ -5,8 +5,13 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from check_manuscript import collect_dependencies, read_tex  # noqa: E402
+from check_manuscript import collect_dependencies  # noqa: E402
 from texsyntax import command_at, group, skip_space, strip_comments  # noqa: E402
+
+def read_tex(path):
+    """Read wrapper input with TeX comment/EOL semantics, preserving word joins."""
+    return strip_comments(Path(path).read_text(encoding='utf-8'))
+
 
 FIELDS = ('title', 'author', 'email', 'affil', 'abstract', 'keywords', 'pacs')
 # These packages are already represented by the article wrapper (or concern
@@ -250,7 +255,7 @@ def make_wrapper(text):
 
 
 def authored_sources(manuscript):
-    """Only authored text, excluding the upstream Unicode mapping data."""
-    return [manuscript / 'manuscript.tex',
-            *sorted((manuscript / 'sections').glob('*.tex')),
-            *sorted((manuscript / 'appendices').glob('*.tex'))]
+    """Active authored inputs in document order, excluding publisher support."""
+    from inventory import read_inventory
+    return [manuscript / item['path'] for item in read_inventory(manuscript / 'manuscript.tex')['sources']
+            if item['role'] == 'authored']
