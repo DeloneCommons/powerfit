@@ -1,0 +1,2 @@
+# DOM/XML validation and assembly; no scientific Python dependencies.
+lxml==5.4.0

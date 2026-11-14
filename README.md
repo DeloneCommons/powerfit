@@ -1,181 +1,86 @@
 # powerfit
 
-Source and reproducibility materials for **“Fixed-site inverse fitting of
-power-diagram weights from pairwise separator data.”**
+**Fixed-site inverse fitting of power-diagram weights from pairwise separator data**
 
-**Version 2.0.0** contains the revised mathematical article and its
-reproducibility infrastructure. The article replaces the original manuscript;
-its experimental protocols and numerical evidence are the unchanged [v1.0.0 archive](https://doi.org/10.5281/zenodo.19673558).
+Ivan Yu. Chernyshov
+
+How can independently estimated separators between pairs of objects define a
+single spatial partition? This work fits a power (Laguerre) diagram at fixed
+sites, identifies what the observations determine, and checks which geometric
+faces the fitted weights actually support.
+
+**[Read the full article](https://delonecommons.github.io/powerfit/article.html)** ·
+**[Download the PDF](https://delonecommons.github.io/powerfit/manuscript.pdf)** ·
+**[Reproducibility guide](docs/reproducibility.md)** ·
+[Research website](https://delonecommons.github.io/powerfit/)
+
+## The research
+
+Each pairwise separator position specifies a difference of site weights.
+Graph conditions characterize exact compatibility and identifiable weight
+differences; weighted least squares reconciles inconsistent observations.
+A fitted separator need not form a shared cell face. Local membership and
+centered clearance assess the geometry independently of fitting error.
+
+Synthetic experiments and an application to 100 molecules illustrate the
+method and its limitations: better fitting need not improve agreement with an
+independent reference. The molecular study evaluates separator positions and
+pair adjacencies, rather than reconstructing complete QTAIM atomic basins.
+
+## Relationship to pyvoro2
+
 The fitting software is maintained separately in
-[pyvoro2](https://github.com/DeloneCommons/pyvoro2).
+[pyvoro2](https://github.com/DeloneCommons/pyvoro2). **powerfit** contains the
+research article, experimental protocols, inputs, results and verification
+infrastructure. The reported calculations use
+[pyvoro2 0.6.3](https://doi.org/10.5281/zenodo.19143984).
 
-The current `main` manuscript is synchronized with the final CAM submission;
-see [baseline provenance](manuscript/CAM_SYNC.md). This is a development-tree
-update, not a new release. The published v2.0.0 archive retains its manuscript,
-version DOI and citation metadata.
+## Explore the repository
 
-Run the commands below from the repository root.
-
-## 1. Read or build the article
-
-The current source is [manuscript/manuscript.tex](manuscript/manuscript.tex).
-The seven figure PDFs and four inline numerical tables are already included.
-With TeX, Poppler and Python 3.10+ installed:
-
-```bash
-bash scripts/build_manuscript_pdfs.sh
-```
-
-This produces **`manuscript/manuscript.pdf`** from the
-committed source and figures. It rebuilds the bibliography and checks the PDF.
-It requires no scientific Python packages and performs no experiments.
-See [TeX installation and source structure](manuscript/README.md) for the
-dependency command and the bundled official Springer Nature class/style.
-
-To build the PDF and package the arXiv sources in one command:
-
-```bash
-python scripts/make_arxiv_bundle.py --output build/powerfit-arxiv.zip
-```
-
-The ZIP includes a fresh bibliography and the required source/figure files.
-PDFs, ZIPs and other build outputs are ignored local files. Packaging does not
-submit or publish the article.
-
-## 2. Reproduce the seven figures and check the four tables
-
-For figures, create a small environment using the archived package constraints:
-
-```bash
-python3.13 -m venv .venv
-source .venv/bin/activate
-python -m pip install -c environments/requirements-lock-py313.txt numpy pandas matplotlib
-python scripts/build_manuscript_figures.py --output-dir build/figures
-python scripts/check_manuscript_figures.py
-```
-
-The builder reads frozen results and exact schematic constructions, and writes
-seven PDFs plus supplementary SVGs to `build/figures/`. The checker regenerates
-them in temporary directories, checks repeatability and compares their rendered
-content with the committed figures. It also needs Poppler. See the
-[figure source map](manuscript/figures/README.md) for inputs and interpretation.
-
-The numerical tables are literal TeX, verified directly against the result CSVs:
-
-```bash
-python scripts/check_manuscript_tables.py
-```
-
-This standard-library check recomputes the E/H paired comparisons, J2 pooled
-errors, J4b rankings and J3 candidate statistics. It reports mismatched cells
-without rewriting the article. The
-[table evidence map](manuscript/README.md#numerical-table-evidence) explains the
-populations and aggregation rules. These figure/table commands reuse frozen
-evidence; they do not repeat scientific calculations.
-
-## 3. Find the code, configurations, inputs and results
-
-| Location | Contents |
+| Location | Start here for |
 |---|---|
-| [manuscript/](manuscript/README.md) | Current article, bibliography and seven figure PDFs. |
-| [experiments/runners/](experiments/runners/) | Synthetic experiment runners A–H. |
-| [experiments/configs/](experiments/configs/) | Frozen YAML protocols; the J YAML is a reference record, not a configuration loaded by the molecular CLIs. |
-| [experiments/analysis/](experiments/analysis/) | Scientific postprocessing, including historical derived outputs. |
-| [scripts/qtaim/](scripts/qtaim/) | Molecular analyses J and the separate PySCF/Multiwfn input-generation pipeline. |
-| [data/](data/README.md) | Molecular manifests, geometries, wavefunctions, topology JSON and proatomic lookup data. |
-| [results/](results/README.md) | Frozen run-level CSVs, summaries, metadata and historical derived assets. |
-| [scripts/](scripts/README.md) | Current build/check commands and the scientific rerun entry point. |
-| [environments/](environments/README.md) | Original requirements, package pins and recorded system information. |
-| [external_software/](external_software/README.md) | Pinned `pyvoro2 0.6.3` wheel, Multiwfn executable and provenance. |
+| [manuscript/](manuscript/README.md) | Authoritative LaTeX article, appendices, bibliography, seven figures and PDF/source-bundle commands. |
+| [docs/](docs/README.md) | Reproducibility, archive identity and documentation navigation. |
+| [site/](site/README.md) | HTML conversion, website validation and GitHub Pages setup. |
+| [scripts/](scripts/README.md) | Established build/check commands and scientific rerun workflows; molecular tools remain in `scripts/qtaim/`. |
+| [experiments/](experiments/README.md) | Frozen synthetic protocols, runners and analyses. |
+| [results/](results/README.md) and [data/](data/README.md) | Frozen numerical evidence and molecular inputs. |
+| [environments/](environments/README.md) and [external_software/](external_software/README.md) | Archived dependencies and third-party software provenance. |
 
-## 4. Repeat the scientific calculations
+## Manuscript status and archives
 
-Use a **separate disposable checkout**: this command writes new results into
-`results/`. In that checkout, install the full pinned scientific environment:
+The current article is an **author manuscript submitted for peer review** to
+*Computational and Applied Mathematics*. It is **not an accepted or published
+journal article**. The CAM source synchronization is recorded in
+[manuscript/CAM_SYNC.md](manuscript/CAM_SYNC.md). The **original CAM synchronization
+baseline** is dated **2026-11-14**, at
+[`f4010fcb9677`](https://github.com/DeloneCommons/powerfit/commit/f4010fcb967767b4263a465ad2a2eb92d1b1458f).
+This historical baseline does not identify later manuscript revisions; the
+website records the manuscript source commit and revision date for each build.
 
-```bash
-python3.13 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r environments/requirements-py313.txt -c environments/requirements-lock-py313.txt
-python -m pip install external_software/pyvoro2-0.6.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
-bash scripts/rerun_paper_results.sh
-```
+The live HTML/PDF on `main` is **not identical to the published v2.0.0 archive**.
+Its PDF and HTML are generated from the same LaTeX sources. The original
+**989 SHA-256-protected scientific files** remain unchanged.
 
-The bundled wheel is for CPython 3.13 on Linux x86-64. Other platforms require
-a compatible installation of **`pyvoro2==0.6.3`**; the rerun checks the active
-version before writing results. The archived environment files stay unchanged.
-
-The command performs all synthetic A–H runs, including the dense C sweep, and
-J1/J2/J3/J4a/J4b/J4d analyses of the **committed molecular inputs**. It then
-checks result completeness and agreement with the four printed tables. It does
-not build the article or replace its figures/tables. Runtime and provenance
-fields can differ, so new result files need not have the archive's byte hashes.
-
-Repeating the upstream quantum chemistry is a separate, more expensive task:
-RDKit/PySCF/geomeTRIC generate molecular geometries and wavefunctions; Multiwfn
-generates topology and atomic radial data. The
-[scientific workflow guide](scripts/README.md#upstream-molecular-input-regeneration)
-gives the fixed-manifest commands, additional environment and overwrite rules.
-It also states which historical secondary outputs the default rerun excludes.
-
-## 5. Understand the frozen v1.0.0 material
-
-The new article changes the mathematics and interpretation, while retaining
-the original experimental evidence. **989 files** under `experiments/`,
-`results/`, `data/`, `environments/`, `external_software/`, `scripts/qtaim/`,
-and the shared `scripts/_figure_io.py` remain byte-identical to
-`80933a14c57d4766bd2c03b2990d949a452031fc` (`v1.0.0`).
-
-Their historical READMEs, registry entries and source comments are frozen too:
-old manuscript numbers, paths and commands describe v1.0.0. Use the current
-guides for v2.0.0 commands. Retired manuscript-only generators are available in
-the [v1.0.0 source](https://github.com/DeloneCommons/powerfit/tree/v1.0.0);
-the experimental algorithms, postprocessing and shared scientific helpers remain
-here because they are needed to understand or repeat the original calculations.
-
-### Frozen records and the current manuscript
-
-| Experiments | Current placement | Archived protocol |
-|---|---|---|
-| A / C / D: recovery, missing data, feasibility | Section 6.1; Appendix D.3.1 | [A](experiments/registry/A_exact_recovery.md), [C](experiments/registry/C_missing_data.md), [D](experiments/registry/D_infeasible_constraints.md) |
-| B: noise and outliers | Section 6.1; Appendix D.3.2 | [B](experiments/registry/B_noise_robustness.md) |
-| F: periodic images | Section 6.2; Appendix D.3.3 | [F](experiments/registry/F_periodic_cases.md) |
-| G: structured mismatch | Section 6.2; Appendix D.3.4 | [G](experiments/registry/G_model_mismatch.md) |
-| E / H: refinement | Section 6.3; Appendix D.3.4 | [E](experiments/registry/E_active_set.md), [H](experiments/registry/H_supergraph_mismatch.md) |
-| J: molecular fitting and diagnostics | Section 7; Appendix E | [J](experiments/registry/J_qtaim_molecular.md) |
-
-To audit an untouched checkout and run the focused tests:
-
-```bash
-python scripts/check_repo_consistency.py
-python scripts/check_rerun_results.py
-python -m unittest discover -s tests -v
-```
-
-The integrity audit always verifies the frozen-file manifest. It should fail
-on results deliberately overwritten by a scientific rerun; use the result and
-table checkers to evaluate that separate checkout. CI checks frozen integrity,
-figures, tables, result completeness, tests, A/B and J1 smoke subsets, and both
-the canonical PDF and extracted arXiv archive. See
-[the CI guide](.github/workflows/README.md) and
-[v2.0.0 release notes](docs/release-v2.0.0.md).
-
-## Citation and licenses
-
-| Resource | Persistent identifier |
+| Published record | DOI |
 |---|---|
-| `powerfit` v2.0.0 release | [10.5281/zenodo.24047266](https://doi.org/10.5281/zenodo.24047266), the version DOI. |
-| Evolving `powerfit` project | [10.5281/zenodo.19673557](https://doi.org/10.5281/zenodo.19673557), the all-versions concept DOI. |
-| Frozen `powerfit` v1.0.0 evidence | [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558). |
-| Fitting software `pyvoro2` 0.6.3 | [10.5281/zenodo.19143984](https://doi.org/10.5281/zenodo.19143984). |
+| powerfit v2.0.0 archive | [10.5281/zenodo.24047266](https://doi.org/10.5281/zenodo.24047266) |
+| powerfit v1.0.0 scientific evidence | [10.5281/zenodo.19673558](https://doi.org/10.5281/zenodo.19673558) |
+| powerfit concept DOI, covering published versions | [10.5281/zenodo.19673557](https://doi.org/10.5281/zenodo.19673557) |
 
-[CITATION.cff](CITATION.cff) retains the v2.0.0 archive's citation metadata;
-its version DOI does not identify the CAM-synchronized `main`. The concept DOI
-covers published project versions. See the
-[v2.0.0 release notes](docs/release-v2.0.0.md) for the archive contents and
-provenance.
+[CITATION.cff](CITATION.cff) retains the v2.0.0 archive's citation metadata.
+Its DOI does not identify the current manuscript; no journal publication DOI
+is claimed. See [archives and citation guidance](docs/archives.md) and the
+[historical release note](docs/release-v2.0.0.md).
 
-The root [LICENSE](LICENSE) covers first-party materials. Bundled third-party
-software retains its upstream terms in
-[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md). The Zenodo archive uses
-`Other (Open)` for the mixed-license collection.
+First-party materials use the [MIT license](LICENSE). Bundled third-party
+materials retain their [upstream terms](THIRD_PARTY_LICENSES.md); the Zenodo
+collection uses `Other (Open)` for this license mixture.
+
+## Build or verify
+
+Start with the [reproducibility overview](docs/reproducibility.md). It preserves
+the PDF, source-bundle, figure/table verification, environment setup and
+scientific-rerun instructions. The [documentation index](docs/README.md) links
+the detailed guides; [CI documentation](.github/workflows/README.md) describes
+the independent scientific and website checks.

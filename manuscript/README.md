@@ -184,7 +184,7 @@ identifies the published project versions, rather than an unpublished `main`.
 archive metadata. No tag, release or deposit is created by this synchronization.
 
 The frozen experiment registry retains its historical numbering and asset
-references. Use the [current experiment crosswalk](../README.md#frozen-records-and-the-current-manuscript)
+references. Use the [current experiment crosswalk](../docs/archives.md#frozen-records-and-the-current-manuscript)
 and the article itself for present placement and evaluation conventions. The
 v2.0.0 archive includes the tagged source tree and the compiled
 `manuscript/manuscript.pdf`; see the [release notes](../docs/release-v2.0.0.md).

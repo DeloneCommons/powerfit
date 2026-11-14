@@ -1,0 +1,315 @@
+# Public research website
+
+The site at **https://delonecommons.github.io/powerfit/** provides a landing page,
+one complete HTML article, and the canonical PDF. `manuscript/` remains the
+only maintained scientific source. This directory contains presentation,
+conversion and validation code, not a second article.
+
+## Build locally
+
+Use Python 3.10+ and Git with history. On Debian 13 or Ubuntu 24.04:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends \
+  latexml latexmk lmodern poppler-utils \
+  texlive-latex-base texlive-latex-recommended texlive-latex-extra \
+  texlive-fonts-recommended
+python -m venv .venv-site
+. .venv-site/bin/activate
+python -m pip install -r site/requirements.txt
+python site/build.py
+python site/validate.py
+python -m unittest discover -s site/tests -v
+```
+
+Use a complete Git checkout: the build reads commit history for identification.
+The canonical PDF command, source-bundle command and scientific commands remain
+unchanged; see the [manuscript guide](../manuscript/README.md) and
+[reproducibility overview](../docs/reproducibility.md).
+
+`site/build.py` replaces only its owned `build/site/` and `build/site-work/`
+directories. It calls the existing PDF build once, copies its PDF, and checks
+that every input's SHA-256 remains unchanged. It never executes experiments,
+regenerates scientific figures, or refreshes the frozen manifest.
+
+For local reading, run `python -m http.server 8000 --directory build/site` and
+open `http://localhost:8000/`. All runtime asset URLs are relative, including
+PDF, CSS, JavaScript, SVG and article links. There are no external fonts,
+external runtime requests, tracking or frontend framework dependencies.
+
+The compact **Theme** selector offers System (the default), Light and Dark.
+System follows the OS preference, including changes while reading. Explicit
+Light/Dark choices are stored locally under `powerfit-theme` and apply to both
+pages and reloads; choosing System removes that override. If browser storage
+is blocked, selection still works for the current page. The local `site.js`
+applies the preference before CSS paints. Without JavaScript, CSS follows the
+OS and the unavailable selector stays hidden. All scientific SVG illustrations
+retain a white background and their original colors in both themes.
+
+The article contents start collapsed at widths up to 760 px and open on wider
+screens. The native disclosure remains keyboard accessible; opening it exposes
+subsections on mobile too. Without JavaScript, the contents stay open.
+
+## Architecture and source relationships
+
+| File / output | Role |
+|---|---|
+| `source.py` | Extract current front matter and generate an article-class wrapper around the original nine section and five appendix inputs. |
+| `build.py` | Run the canonical PDF build and LaTeXML, convert committed PDF figures with Poppler, record provenance, assemble and validate. |
+| `render.py`, `site.css`, `site.js` | Add landing-page context, navigation, responsive typography, theme preferences, source identification and archival notices. The abstract is taken from the converted article. |
+| `validate.py`, `mathml.py`, `bibliography.py` | Check scientific structure, source prose, PDF numbering, converter-to-page text and Presentation MathML trees, bibliography DOIs against `refs.bib`, links and the public asset allowlist. |
+| `reviewed-math-warnings.txt` | Finite allowance of reviewed LaTeXML diagnostics, including locations and occurrence counts. |
+| `tests/` | Mutate real built output to prove that scientific omissions and corruptions fail validation; test generated wrapper behavior. |
+| `browser_check.py` | Exercise the real assembled site at desktop/phone widths under `/powerfit/` and save screenshots. |
+| `build/site-work/` | Ignored wrapper, copied inputs, canonical `.aux`/`.bbl`, converter XML/HTML and logs. Never published. |
+| `build/site/` | Only `index.html`, `article.html`, `site.css`, `site.js`, `manuscript.pdf`, seven SVGs, `LICENSE.txt` and `provenance.json` (14 files). |
+| `build/site-reports/` | Browser captures and machine-readable QA report. Review artifact only. |
+
+The wrapper is regenerated on every build. Title, author, affiliation, email,
+abstract, keywords, classification, acknowledgments, declarations and includes
+come from `manuscript/manuscript.tex`. The section/appendix files are copied
+without modification. The bibliography is the freshly built
+`manuscript/manuscript.bbl`, using the existing pinned Springer Nature style;
+there is no independently maintained HTML bibliography.
+
+Conversion uses `latexml --nocomments`. LaTeXML normally injects source-location
+comments every 25 lines. With Springer's `\doiurl` macro expanding into `\url`,
+those comments leaked into three DOI link URLs and their displayed text in the
+initial website conversion. Disabling comment injection fixes the conversion
+generically; neither `refs.bib` nor the generated `.bbl` is rewritten. Every
+rendered bibliography DOI is independently checked by citation key against the
+authoritative literal DOI field in `refs.bib`, including presence, destination
+and displayed URL. DOI URLs elsewhere on the site are also checked for malformed
+syntax. These checks are offline and do not depend on DOI resolver availability.
+Unsupported DOI metadata expressions fail for review instead of being guessed.
+The bounded BibTeX scanner reads field boundaries independently of line layout,
+including complete single-line entries and a DOI following another field on the
+same line. Balanced braces and quoted values protect embedded commas;
+text mentioning `doi` inside another field is not treated as a DOI field.
+Backslashes do not escape structural braces or quotes at the BibTeX parsing
+layer. The scanner therefore counts those delimiters even after a backslash,
+so an unrelated field cannot consume and conceal a following DOI. Regression
+tests include the audited escaped-delimiter record, its actual Springer BibTeX
+output, and rejection of a rendered entry that omits its DOI.
+DOIs must be single braced or quoted literals. Macros, concatenations, duplicate
+DOI fields and malformed expressions fail explicitly. `crossref` inheritance is
+unsupported and fails explicitly rather than silently losing an inherited DOI;
+the current bibliography does not use it. This is not a general
+BibTeX evaluator; the canonical BibTeX build still processes the bibliography.
+
+Only publisher/page-layout machinery changes in the wrapper: `sn-jnl` becomes
+`article`, the title-page minipage and print spacing are removed, `Needspace`
+is a no-op, and the publisher's bibliography containers become neutral
+containers. Original independently numbered formal environments and continuous
+equation/figure/table numbers are retained. Unsupported front-matter commands and duplicate author/affiliation fields fail
+rather than silently producing empty or truncated metadata.
+The classification heading comes from the optional argument of `\pacs`, rather
+than a fixed `MSC2020` label. One explicit literal label is supported (letters,
+digits, spaces, periods, parentheses, `/` and `-`); omitted, empty, duplicate or
+macro-based labels fail for review. The classification value, supported author
+metadata and declarations continue to come from the authoritative source.
+
+Paragraph heading levels follow their actual enclosing section heading. For
+example, a paragraph under a subsection uses `h4` even if LaTeXML reserved `h4`
+for an absent subsubsection. Heading classes, text, anchors and CSS presentation
+are preserved; the validator and browser checks reject skipped heading levels.
+
+The seven SVGs are direct `pdftocairo -svg` conversions of the committed vector
+PDF illustrations. No scientific plot is recomputed or redrawn. Captions remain
+in the HTML, images have caption-derived alternative text, and each figure
+links to its full-size SVG. The SVGs use vector paths, including outlined text;
+accessible descriptions are supplied by the HTML captions, not SVG text
+extraction. Wide equations and tables scroll within their own keyboard-focusable
+regions on narrow screens. Prose never requires horizontal page scrolling.
+
+`provenance.json` records the checked-out build commit, whether the working tree
+was dirty, the latest authored-manuscript commit/date, all source hashes, the
+PDF hash, the PDF-to-SVG mapping and converter version. The revision date is
+source-history metadata, not a submission or acceptance date. On pull requests
+the build commit can be GitHub's tested merge commit. The HTML and PDF are built
+from that same checkout. See [archive semantics](../docs/archives.md).
+
+## Converter evaluation
+
+The evaluation used the complete manuscript at
+`f4010fcb967767b4263a465ad2a2eb92d1b1458f`, including all appendices and the
+fresh canonical bibliography. Tools were make4ht 0.4c / TeX4ht with TeX Live
+2024 and LaTeXML 0.8.8. Trials ran on the original Springer entry point and an
+article-class wrapper with unchanged section/appendix inputs.
+
+| Approach | Observed result on this manuscript | Decision |
+|---|---|---|
+| make4ht, original `sn-jnl` | Produced a single HTML document and MathML with the sections and bibliography. Default graphics processing selected PNGs. Three `shortstack` table-heading fallbacks requested bitmap images (`dvipng` was absent in the trial), leaving unresolved heading assets. | Viable with additional TeX4ht configuration, but the default output needs more work to eliminate raster fallbacks and adapt publication markup. |
+| make4ht, article wrapper | Same three table-heading bitmap fallbacks and default PNG illustrations. Changing the class alone did not remove these fallbacks. | Not selected. |
+| LaTeXML, original `sn-jnl` | No class binding; seven undefined macros (publisher front matter plus `Needspace`), missing class/package bindings and warnings. | Do not convert the publisher wrapper directly. |
+| LaTeXML, generated article wrapper | Structured sections, appendices, formal statements/proofs, author–year citations, multi-line table headings and native MathML. Neutralizing `Needspace` and unwrapping the title-page minipage removed conversion/schema errors. | **Selected**, with the existing BibTeX output and separately converted SVGs. |
+
+Representative evaluation commands, run in disposable copies of `manuscript/`:
+
+```bash
+make4ht -u -f html5 manuscript.tex 'mathml'
+make4ht -u -f html5 article.tex 'mathml'
+latexml --dest=manuscript.xml manuscript.tex
+latexml --nocomments --dest=article.xml article.tex
+latexmlpost --format=html5 --nosplit --pmml --mathtex \
+  --nographicimages --dest=article.html article.xml
+```
+
+The generated `article.tex` is retained in `build/site-work/` for inspection.
+A successful exit alone is not accepted: unexpected warnings, errors, missing
+files/macros, unresolved references, invalid intermediate XML, missing content
+or numbering differences fail the build. The site build uses no TeX4ht runtime
+dependency; make4ht was an evaluation candidate.
+
+### Known conversion limits
+
+LaTeXML 0.8.8 reports **13 `Warning:not_parsed` mathematical grammar notices**
+on this manuscript. They concern semantic interpretation of some mathematical
+expressions, not undefined commands or failed presentation rendering. The
+selected output is **Presentation MathML with original TeX annotations**, not
+Content MathML or a claim of computer-algebra interpretation. Those notices are
+retained in `conversion.log` and explicitly listed in
+[`reviewed-math-warnings.txt`](reviewed-math-warnings.txt). New messages,
+locations or additional occurrences fail the build, as do other warning classes
+and all errors. Resolved warnings may disappear. Never regenerate the allowance
+automatically: inspect affected source and rendered mathematics before changing
+it. Postprocessing has no warning allowance.
+Representative affected boxed/aligned, norm, Laplacian and clearance formulas
+must also be inspected visually when changing converter versions.
+
+LaTeXML 0.8.8 omits the TeX annotation for the literal formula `0` because it
+treats that string as false. Assembly adds that annotation for the two affected
+formulas, preserving their existing MathML. All 710 displayed/inline MathML
+nodes are checked against their converter source strings. The intermediate
+XML also contains duplicate list captions and unused aligned-equation fallback
+branches; those are not additional formulas to publish.
+
+Modern Chromium, Firefox and Safari support native MathML. Older browsers and
+assistive technologies may differ in mathematical rendering and navigation;
+the PDF is an additional reading format. The HTML preserves article content
+and numbering, not the Springer page layout or PDF page numbers. Browsers'
+print output is not the canonical downloadable PDF.
+
+**Boxed emphasis (O1, deferred):** Chromium does not draw the border for the
+article's twelve `menclose notation="box"` expressions, including equation (41).
+The expression, enclosure element and children remain intact; the canonical
+Springer PDF shows the intended boxes. A disposable rendering probe confirmed
+that a CSS border draws a box in Chromium, but CSS has no native-enclosure
+capability query. An unconditional border risks a second box in browsers with
+native enclosure support. Reliable conditional rendering detection and coverage
+of those browsers are deferred rather than added to this focused correction.
+
+## Validation and browser inspection
+
+The validator independently checks the 128 source labels against the canonical
+PDF `.aux`, including all equation, section, appendix, figure, table and formal
+statement numbers. It requires equations (1)–(75), nine main sections, five
+appendices, seven figures, four numbered tables, three propositions, one
+corollary, five proofs and 34 bibliography entries. The unnumbered algorithm
+summary table in Appendix D is preserved as well.
+
+Every converter element with an ID is compared with the assembled article,
+covering paragraphs, table cells, formal environments and mathematical text.
+Every Presentation MathML tree is also compared structurally: element names,
+hierarchy, child/token order and all attributes, including scripts, fractions,
+radicals, limits, grouping and table alignment. Only attribute ordering, comments
+and non-token indentation are ignored. The non-rendered `semantics` wrapper and
+annotations are separated from presentation, so the literal-`0` annotation repair
+is allowed only with unchanged presentation children. TeX annotations retain
+their independent comparison with the converter XML.
+Long literal prose spans from all 15 authored TeX files are independently
+checked against visible HTML (545 spans for this revision). TeX annotations do
+not count as visible prose. This is a content-loss guard, not a formal proof
+that arbitrary future LaTeX constructs are correctly converted. New structures
+or changed inventories require deliberate review of the checks.
+
+Converter-to-page structural parity does **not** prove the converter interpreted
+the LaTeX correctly. Independent source checks remain in place. Three small
+regression expectations also check selected mathematical roles without copying
+whole formulas: equation (70)'s half powers and square-root denominators,
+equation (69)'s sum limits and squared norm, and equation (41)'s two-row minimum
+constraint followed by a fraction. These are spot checks, not symbolic algebra
+or a proof of equivalence; review them if the corresponding science changes.
+
+The existing fixed manuscript inventories (for example, 75 numbered equations
+and 710 MathML expressions) remain unchanged in this PR. A separate follow-up
+should derive appropriate inventories from source so CI detects conversion
+failures without rejecting legitimate scientific edits merely for changing
+counts. That work must preserve the content checks, not relax them.
+
+Mutation tests remove an appendix, proof, equation, paragraph, formula, figure,
+table or bibliography entry; corrupt an equation number or table cell; break a
+reference or base-path URL; redirect a citation to the wrong existing entry; swap a figure; alter the PDF; or add an unapproved
+file. A separate mutation removes prose from both converter output and the
+assembled page, proving the source-prose check is independent.
+DOI mutations corrupt or remove links in both converter and assembled output,
+including a syntactically valid but wrong DOI, to prove metadata validation is
+independent too. Diagnostic tests reject new parser warnings, changed source
+locations and excess occurrences.
+New mutations change a superscript to a subscript in equation (70) while retaining
+the same token text and TeX annotation, change MathML alignment, and reintroduce
+a skipped paragraph heading. Unit regressions cover structural normalization,
+high-risk mathematical roles, BibTeX field layouts and invalid DOI expressions,
+changed classification labels, supported metadata/declarations and section-aware
+paragraph heading levels. The valid-but-wrong DOI mutation remains in place.
+
+For browser QA:
+
+```bash
+python -m pip install -r site/requirements-browser.txt
+python -m playwright install chromium
+python site/browser_check.py
+```
+
+To use an existing Chromium executable, set `POWERFIT_BROWSER` to its path.
+CI installs the Playwright browser and system dependencies. Checks use 1440,
+390 and 320 px viewports and `/powerfit/` URLs. At each size they exercise System,
+Light and Dark, live OS changes, explicit overrides, cross-page/reload persistence,
+keyboard focus, mobile contents disclosure, actual TOC/equation/citation clicks,
+MathML dimensions, all seven loaded SVGs, the PDF response and page overflow.
+Contrast checks cover text, links, controls, focus rings, mathematics and tables;
+figures must remain white and uninverted. CSS-only OS preference is checked with
+JavaScript disabled; storage denial and white print backgrounds are checked too.
+Browser errors and external runtime requests fail QA.
+Screenshots in **both Light and Dark at all three widths** cover the landing page,
+article front matter, Section 4, clearance equations, Appendices C/D, Table 4 and
+a scientific figure. Additional captures cover equations (41), (69) and (70),
+and the paragraph headings in Section 4.4, Appendix B.2 and Appendix D.2.
+Inspect the images as well as the JSON report.
+
+## Actions and GitHub Pages configuration
+
+[`.github/workflows/site.yml`](../.github/workflows/site.yml) builds and validates
+on every pull request, `main` push and manual workflow dispatch. A separate job
+deploys only successful builds on `main`, never pull requests or dispatches on
+other branches. It uses `actions/upload-pages-artifact@v3`,
+`actions/configure-pages@v5` and `actions/deploy-pages@v4`, with deployment-only
+`pages: write` and `id-token: write` permissions and the `github-pages`
+environment. Scientific experiments are not part of this workflow.
+
+The existing [repro-smoke workflow](../.github/workflows/repro-smoke.yml) and
+required `smoke` branch check remain unchanged. Its source/PDF/archive checks
+continue independently. Review artifacts include logs and browser screenshots;
+**the Pages artifact contains only `build/site/`**.
+
+Repository settings were inspected on 2026-11-14: Pages already reports
+`build_type: workflow`, HTTPS enforced, and the intended project URL. No
+settings were changed and this PR does not claim a deployment. To configure a
+new or reset repository, or verify the existing configuration:
+
+1. Open **Settings → Pages → Build and deployment → Source** and select
+   **GitHub Actions** (not a branch/folder publisher).
+2. In **Settings → Environments → github-pages**, permit deployment from
+   `main`. Keep any required reviewers or other existing protections.
+3. Keep the required `smoke` check and existing branch protection unchanged.
+   Ensure Actions are enabled for the repository.
+4. After merging this PR, inspect the **research-site** workflow's build and
+   deploy jobs. If needed, use **Run workflow** on `main`.
+5. Confirm the deployment URL, then check `/powerfit/`, `article.html`,
+   `manuscript.pdf` and figure links. A successful PR artifact is not evidence
+   of a production deployment.
+
+No tag, GitHub Release, journal submission or Zenodo deposit is created by this
+workflow. The immutable v2.0.0 DOI is never presented as the DOI of the live
+manuscript.

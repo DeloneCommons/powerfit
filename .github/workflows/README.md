@@ -76,3 +76,24 @@ bookmark-level notices in the logs, as documented in the
 [manuscript build guide](../../manuscript/README.md#compile-the-article).
 Unresolved citations/references, bibliography warnings, overfull boxes,
 unexpected warnings, and font-quality failures still fail the build.
+
+## Public research website
+
+`site.yml` is an independent workflow. Pull requests build the current HTML,
+canonical PDF and seven SVG figures, validate scientific content and links,
+run mutation tests, and exercise desktop/mobile browsers under `/powerfit/`.
+It installs conversion/browser dependencies only; it performs no scientific
+experiment or upstream molecular calculation.
+
+Only successful `main` pushes and manual dispatches on `main` can deploy the
+explicit `build/site/` artifact. Deployment uses GitHub's Pages actions and the
+`github-pages` environment, with `pages: write` and `id-token: write` limited
+to the deployment job. PR builds have read-only repository permissions and
+cannot deploy. Full Git history supplies manuscript revision metadata.
+
+The existing `repro-smoke.yml` and required `smoke` check are unchanged and
+remain responsible for scientific verification. Neither workflow bypasses
+branch protection. See the [website guide](../../site/README.md) for exact
+Pages settings, converter evaluation and limitations. Its downloadable review
+artifact includes the assembled website, converter logs, screenshots and the
+browser report; only the assembled website goes into the Pages artifact.
