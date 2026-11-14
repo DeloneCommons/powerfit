@@ -103,17 +103,11 @@ jobs:
 
       - name: Verify CAM title page and bibliography pagination
         run: |
-          pdftotext -f 1 -l 1 manuscript/manuscript.pdf build/reports/cam-title-page.txt
-          for marker in 'Keywords' 'MSC2020' 'Acknowledgments' 'Author contributions' '0000-0002-4452-2025'; do
-            if ! grep -Fq -- "$marker" build/reports/cam-title-page.txt; then
-              echo "error: CAM title page is missing $marker" >&2
-              exit 1
-            fi
-          done
-          pdftotext manuscript/manuscript.pdf build/reports/manuscript-text.txt
-          for marker in D1516 D1525; do
-            grep -Fq -- "$marker" build/reports/manuscript-text.txt
-          done
+          python scripts/check_manuscript_titlepage.py \
+            --manuscript manuscript/manuscript.tex \
+            --pdf manuscript/manuscript.pdf \
+            --bbl manuscript/manuscript.bbl \
+            --text-output build/reports/cam-title-page.txt
 
       - name: Compile the arXiv archive in isolation
         run: |
