@@ -57,6 +57,19 @@ jobs:
             build/site/
             build/site-reports/
             build/site-work/*.log
+            build/site-work/article.tex
+            build/site-work/article.xml
+            build/site-work/article.html
+            build/site-work/manuscript.aux
+            build/site-work/manuscript.bbl
+            build/site-work/manuscript.fls
+            build/site-work/source-inventory.json
+            build/site-work/source-validation.json
+            build/site-work/warning-matches.json
+            build/site-work/tool-versions.json
+            manuscript/manuscript.toc
+            manuscript/manuscript.lof
+            manuscript/manuscript.lot
       - name: Upload the explicitly assembled Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

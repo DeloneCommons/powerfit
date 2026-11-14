@@ -11,6 +11,8 @@ import subprocess
 from lxml import etree
 from source import ROOT, authored_sources, collect_dependencies, make_wrapper, read_tex, source_metadata
 from render import assemble
+from inventory import read_inventory
+from conversion_warnings import check_conversion_warnings
 
 
 def digest(path):
@@ -41,14 +43,10 @@ def git(*args):
     return subprocess.check_output(['git', *args], cwd=ROOT, text=True).strip()
 
 
-def check_conversion_log(path, allow_math_parser=False):
+def check_conversion_log(path):
     text = path.read_text(errors='replace')
-    allowed = Counter()
-    if allow_math_parser:
-        allowed.update(line for line in (ROOT / 'site/reviewed-math-warnings.txt').read_text().splitlines()
-                       if line and not line.startswith('#'))
     diagnostics = Counter(line for line in text.splitlines() if re.match(r'(?:Error:|Fatal:|Warning:)', line))
-    errors = list((diagnostics - allowed).elements())
+    errors = list(diagnostics.elements())
     if errors or re.search(r'\b[1-9]\d* (?:errors?|undefined macros?|missing files?)\b', text):
         raise RuntimeError(f'Unexpected converter diagnostics in {path}: ' + '\n'.join(errors))
 
@@ -66,6 +64,8 @@ def main():
             shutil.rmtree(path)
         path.mkdir(parents=True)
     (output / 'figures').mkdir()
+    inventory = read_inventory(manuscript / 'manuscript.tex')
+    (work / 'source-inventory.json').write_text(json.dumps(inventory, indent=2) + '\n')
     deps = collect_dependencies(manuscript)
     figure_paths = figure_destinations(p for p in deps if p.suffix == '.pdf')
     source_hashes = {p.relative_to(ROOT).as_posix(): digest(p) for p in deps}
@@ -74,14 +74,20 @@ def main():
         target = work / path.relative_to(manuscript)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, target)
-    for name in ('manuscript.bbl', 'manuscript.aux'):
+    for name in ('manuscript.bbl', 'manuscript.aux', 'manuscript.fls'):
         shutil.copy2(manuscript / name, work / name)
     text = read_tex(manuscript / 'manuscript.tex')
     (work / 'article.tex').write_text(make_wrapper(text), encoding='utf-8')
+    version = subprocess.check_output(['latexml', '--VERSION'], stderr=subprocess.STDOUT, text=True).strip()
+    (work / 'tool-versions.json').write_text(json.dumps({
+        'latexml': version, 'pdflatex': subprocess.check_output(['pdflatex', '--version'], text=True).splitlines()[0],
+        'latexmlpost': subprocess.check_output(['latexmlpost', '--VERSION'], stderr=subprocess.STDOUT, text=True).strip(),
+    }, indent=2) + '\n')
     # Source-location comments otherwise leak through Springer's \doiurl -> \url
     # expansion at 25-line boundaries in the canonical .bbl. Never edit the .bbl.
     run(['latexml', '--nocomments', '--dest=article.xml', 'article.tex'], work, work / 'conversion.log')
-    check_conversion_log(work / 'conversion.log', allow_math_parser=True)
+    check_conversion_warnings(work / 'conversion.log', work / 'article.latexml.log', inventory,
+                              version, ROOT / 'site/reviewed-math-warnings.json', work / 'warning-matches.json')
     run(['latexmlpost', '--format=html5', '--nosplit', '--pmml', '--mathtex',
          '--nographicimages', '--dest=article.html', 'article.xml'], work, work / 'postprocess.log')
     check_conversion_log(work / 'postprocess.log')
@@ -110,7 +116,7 @@ def main():
         'source_sha256': source_hashes,
         'pdf_sha256': digest(output / 'manuscript.pdf'),
         'figures': figures,
-        'converter': subprocess.check_output(['latexml', '--VERSION'], stderr=subprocess.STDOUT, text=True).strip(),
+        'converter': version,
     }
     assemble(work / 'article.html', etree.parse(str(work / 'article.xml')), output, source_metadata(text), provenance)
     (output / 'provenance.json').write_text(json.dumps(provenance, indent=2) + '\n', encoding='utf-8')

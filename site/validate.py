@@ -10,9 +10,14 @@ import unicodedata
 from urllib.parse import unquote, urlsplit
 
 from lxml import etree, html
-from source import ROOT, authored_sources, collect_dependencies, read_tex
+from source import ROOT, collect_dependencies
 from bibliography import is_doi_url, parse_doi_url, source_dois, validate_bibliography_dois
 from mathml import presentation_structure
+from inventory import read_inventory
+from coverage import validate_inventory
+from canonical import (read_aux, validate_labels, validate_reference_text, validate_recorder,
+                       canonical_bibliography, validate_canonical_bibliography)
+from scientific import validate_scientific_math, resolve_scientific_math, REVIEWED_TEX
 
 NS = {'l': 'http://dlmf.nist.gov/LaTeXML'}
 XID = '{http://www.w3.org/XML/1998/namespace}id'
@@ -33,22 +38,6 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def prose_fragments(source):
-    """Long literal prose spans provide a source-to-converter omission check.
-
-    Math and TeX controls break spans; they are checked separately by the
-    equation/label inventories and the converter's MathML/TeX pairs.
-    """
-    source = re.sub(r'\\\[.*?\\\]|\$[^$]*\$', '\n#\n', source, flags=re.S)
-    source = re.sub(r'\\(?:begin|end)\{(?:equation\*?|align\*?|aligned|cases)\}', '#', source)
-    source = re.sub(r'\\(?:label|cite\w*|ref|eqref|input|includegraphics)(?:\[[^\]]*\])*\{[^}]*\}', '#', source)
-    source = re.sub(r'\\[A-Za-z]+\*?(?:\[[^\]]*\])?', '#', source)
-    for chunk in re.split(r'[#{}$&\\\n]\s*', source):
-        # Match across ordinary source line wraps below, not command boundaries.
-        if len(words(chunk).split()) >= 10:
-            yield words(chunk)
-
-
 def validate(output, work, manuscript):
     errors = []
     try:
@@ -64,6 +53,23 @@ def validate(output, work, manuscript):
         return ['Missing complete article']
     ids = Counter(page.xpath('//@id'))
     by_id = {node.get('id'): node for node in page.xpath('//*[@id]')}
+    report = {'schema_version': 1, 'valid': False}
+    try:
+        inventory = read_inventory(manuscript / 'manuscript.tex')
+        independent_errors, report = validate_inventory(inventory, xml, raw, page)
+        errors.extend(independent_errors)
+        aux = read_aux(work / 'manuscript.aux')
+        errors.extend(validate_labels(inventory['labels'], aux, xml, page))
+        errors.extend(validate_reference_text(aux, xml, raw))
+        errors.extend(validate_reference_text(aux, xml, page))
+        errors.extend(validate_recorder(work / 'manuscript.fls', manuscript, inventory['sources']))
+        errors.extend(validate_canonical_bibliography(work / 'manuscript.bbl', xml, raw))
+        errors.extend(validate_canonical_bibliography(work / 'manuscript.bbl', xml, page))
+        errors.extend(validate_scientific_math(xml, page))
+        report['source_sha256'] = {item['path']: item['sha256'] for item in inventory['sources']}
+        report['browser'] = browser_expectations(inventory, xml, page, work / 'manuscript.bbl')
+    except (ValueError, OSError, KeyError) as exc:
+        errors.append(f'Independent source validation failed: {exc}')
     if any(n != 1 for n in ids.values()):
         errors.append('Duplicate article anchors')
     # Exact parity with the converter output includes every paragraph, math
@@ -90,30 +96,6 @@ def validate(output, work, manuscript):
     final_links = [(n.get('href'), text(n)) for n in page.xpath(reference_query)]
     if original_links != final_links:
         errors.append('Citation or cross-reference destinations differ from converter output')
-    for name, query, expected in [
-        ('main sections', './l:section[l:tags]', 9), ('appendices', './l:appendix', 5),
-        ('figures', '//l:figure', 7), ('tables', '//l:table', 4),
-        ('bibliography entries', '//l:bibitem', 34), ('proofs', '//l:proof', 5),
-        ('formal statements', '//l:theorem', 4),
-    ]:
-        if len(xml.xpath(query, namespaces=NS)) != expected:
-            errors.append(f'Expected {expected} {name}')
-    # Source labels and numbering must agree with the canonical PDF's auxiliary file.
-    aux = (work / 'manuscript.aux').read_text()
-    labels = dict(re.findall(r'\\newlabel\{([^}]+)\}\{\{([^}]*)\}', aux))
-    for label, number in labels.items():
-        nodes = xml.xpath('//*[@labels and contains(concat(" ",@labels," "),$label)]', label=' LABEL:' + label + ' ')
-        if len(nodes) != 1:
-            errors.append(f'Missing or duplicate source label: {label}')
-            continue
-        actual = nodes[0].xpath('./l:tags/l:tag[@role="refnum"]/text()', namespaces=NS)
-        if actual != [number]:
-            errors.append(f'PDF/HTML numbering mismatch: {label}: {actual} != {number}')
-        if label not in ids:
-            errors.append(f'Missing named source anchor: {label}')
-    equation_numbers = [text(n) for n in page.xpath('//td//span[contains(@class,"ltx_tag_equation")]')]
-    if equation_numbers != [f'({n})' for n in range(1, 76)]:
-        errors.append('Numbered equations must be complete and ordered (1)–(75)')
     # LaTeXML emits a duplicate short caption for lists and a fallback MathFork
     # branch. Neither is selected by its HTML transform; all other math is required.
     maths = xml.xpath('//l:Math[not(ancestor::l:toccaption) and not(parent::l:MathFork)]', namespaces=NS)
@@ -126,19 +108,6 @@ def validate(output, work, manuscript):
             errors.append(f'Changed mathematical source: {node.get(XID)}')
     if page.xpath('//*[contains(@class,"ltx_ERROR") or contains(@class,"ltx_missing")] | //merror'):
         errors.append('Unresolved converter output')
-    # Compare independent literal source prose against rendered content, excluding
-    # hidden annotations so raw TeX cannot falsely satisfy the check.
-    visible = deepcopy(article)
-    for node in visible.xpath('.//annotation'):
-        node.getparent().remove(node)
-    corpus = words(text(visible))
-    for source in authored_sources(manuscript):
-        for fragment in prose_fragments(read_tex(source)):
-            if fragment not in corpus:
-                errors.append(f'Missing source prose ({source.name}): {fragment[:100]}')
-    expected_bib = set(re.findall(r'\\bibitem(?:\[[^\]]*\])?\{([^}]+)\}', (work / 'manuscript.bbl').read_text()))
-    if {n.get('key') for n in xml.xpath('//l:bibitem', namespaces=NS)} != expected_bib:
-        errors.append('Bibliography differs from the canonical PDF bibliography')
     try:
         metadata = source_dois(manuscript / 'refs.bib')
         errors.extend(validate_bibliography_dois(page, xml.xpath('//l:bibitem', namespaces=NS), metadata, XID))
@@ -201,12 +170,52 @@ def validate(output, work, manuscript):
                 errors.append(f'Missing publication status: {filename}')
         if provenance['manuscript_revision']['date'] not in text(doc.getroot()):
             errors.append(f'Missing revision date: {filename}')
+    report.update(valid=not errors, errors=errors, article_sha256=sha(output / 'article.html'))
+    (work / 'source-validation.json').write_text(json.dumps(report, indent=2) + '\n')
     return errors
+
+
+def browser_expectations(inventory, xml, page, bbl):
+    """Presentation targets become trusted only when every validation gate passes."""
+    labels = {label.removeprefix('LABEL:'): node.get(XID) for node in xml.xpath('//*[@labels]')
+              for label in node.get('labels').split()}
+    unique = lambda values: list(dict.fromkeys(value for value in values if value))
+    toc = []
+    for section in xml.xpath('/l:document/l:section | /l:document/l:appendix | /l:document/l:bibliography', namespaces=NS):
+        toc.append(section.get(XID))
+        toc.extend(node.get(XID) for node in section.xpath('./l:subsection', namespaces=NS))
+    captures = []
+    for query in ('//l:section', '//l:equation[l:tags]', '//l:appendix', '//l:table', '//l:paragraph'):
+        nodes = xml.xpath(query, namespaces=NS)
+        if nodes:
+            captures.append(nodes[0].get(XID))
+    for label in REVIEWED_TEX:
+        captures.append(resolve_scientific_math(xml, page, label).get('id'))
+    selectors = [('math', '//math'), ('.ltx_eqn_eqno', '//*[contains(concat(" ",@class," ")," ltx_eqn_eqno ")]'),
+                 ('.ltx_table th', '//figure[contains(@class,"ltx_table")]//th'),
+                 ('.ltx_table tbody tr:nth-child(even) td', '//figure[contains(@class,"ltx_table")]//tbody/tr[position() mod 2 = 0]/td')]
+    return {
+        'math': sum(len(m['cells']) for m in inventory['math'] if m.get('representation') != 'container' and not m['pure_script']),
+        'numbered_equations': sum(bool(m['numbered']) for m in inventory['math']),
+        'figures': sum(obj['kind'] == 'graphic' for obj in inventory['objects']),
+        'tables': sum(obj['kind'] == 'table' for obj in inventory['objects']),
+        'bibliography': len(canonical_bibliography(bbl)),
+        'toc_targets': unique(toc),
+        'reference_targets': unique(labels.get(node.get('labelref').removeprefix('LABEL:')) for node in xml.xpath('//l:ref[@labelref]', namespaces=NS)),
+        'bibliography_targets': [n.get(XID) for n in xml.xpath('//l:bibitem', namespaces=NS)],
+        'capture_targets': unique(captures),
+        'contrast_targets': [selector for selector, query in selectors if page.xpath(query)],
+    }
 
 
 if __name__ == '__main__':
     errors = validate(ROOT / 'build/site', ROOT / 'build/site-work', ROOT / 'manuscript')
     if errors:
         raise SystemExit('\n'.join(errors))
-    print('Site validated: 9 sections, 5 appendices, 75 numbered equations, 4 formal statements, '
-          '5 proofs, 7 vector figures, 4 tables, 34 references; source prose, numbering, links, provenance and asset allowlist checked.')
+    report = json.loads((ROOT / 'build/site-work/source-validation.json').read_text())
+    expected = report['browser']
+    print('Site validated against original authored sources and canonical PDF evidence: '
+          f"{expected['math']} MathML cells, {expected['numbered_equations']} numbered equations, "
+          f"{expected['figures']} vector graphics, {expected['tables']} numbered tables, "
+          f"{expected['bibliography']} bibliography entries; "
+          'ordered content, mathematical roles, links, provenance and asset allowlist checked.')
