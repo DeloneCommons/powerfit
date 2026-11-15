@@ -80,7 +80,7 @@ def assemble(raw_html, xml, output, metadata, provenance):
             semantics.append(child)
         semantics.append(element('annotation', '0', encoding='application/x-tex'))
         math.append(semantics)
-    # Convert only the seven committed vector illustrations, never experiments.
+    # Associate active source illustrations with their converted vector assets.
     ns = {'l': 'http://dlmf.nist.gov/LaTeXML'}
     xid = '{http://www.w3.org/XML/1998/namespace}id'
     for graphic in xml.xpath('//l:graphics', namespaces=ns):

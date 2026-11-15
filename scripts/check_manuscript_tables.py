@@ -13,6 +13,8 @@ from pathlib import Path
 import re
 import sys
 
+from check_manuscript import INPUT_RE, LABEL_RE, _resolve, read_tex
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 METHODS = ("one_shot_fit", "self_consistent_refinement")
 PAIR_CONFIGURATION = ("seed", "dimension", "n_sites", "measurement", "candidate_graph", "candidate_parameter")
@@ -153,14 +155,67 @@ def j3_metrics(candidates, selected, reference):
             true_positive / len(visible), true_positive / len(reference)]
 
 
+def _active_tex(manuscript_dir):
+    """Expand ordered literal inputs; repeated includes retain multiplicity.
+
+    Resolve from the canonical TeX working directory, like check_manuscript.
+    Only active TeX sources are read; orphan files and graphics are irrelevant
+    to locating reviewed tables. This is not a general TeX interpreter.
+    """
+    root = manuscript_dir.resolve()
+    active = set()
+
+    def visit(path):
+        if path in active:
+            raise ValueError(f"Cyclic TeX input: {path.relative_to(root)}")
+        active.add(path)
+        text = read_tex(path)
+        text = INPUT_RE.sub(lambda match: "\n" + visit(_resolve(root, match[1], (".tex",))) + "\n", text)
+        active.remove(path)
+        return text
+
+    return visit(_resolve(root, "manuscript.tex", (".tex",)))
+
+
+def _environment_spans(text):
+    """Find balanced environments without crossing an enclosing table's end."""
+    stack, spans = [], []
+    for match in re.finditer(r"\\(begin|end)\s*\{([^{}]+)\}", text):
+        command, name = match.groups()
+        if command == "begin":
+            stack.append((name, match.start()))
+        else:
+            if not stack or stack[-1][0] != name:
+                raise ValueError(f"unbalanced TeX environment: {name}")
+            _, start = stack.pop()
+            spans.append((name, start, match.end()))
+    if stack:
+        raise ValueError(f"unbalanced TeX environment: {stack[-1][0]}")
+    return spans
+
+
 def literal_rows(path, label):
-    """Read only the current literal rows between midrule and bottomrule."""
-    text = path.read_text(encoding="utf-8")
-    marker = rf"\label{{{label}}}"
-    if text.count(marker) != 1:
-        raise ValueError(f"expected exactly one {marker}")
-    tail = text.split(marker, 1)[1]
-    match = re.search(r"\\begin\{tabular\}.*?\\midrule(.*?)\\bottomrule.*?\\end\{tabular\}", tail, re.S)
+    """Read reviewed literal rows from a file or the active manuscript tree.
+
+    Stable scientific labels identify their enclosing table, irrespective of
+    source filenames and whether the label precedes or follows its tabular.
+    """
+    path = Path(path)
+    text = _active_tex(path) if path.is_dir() else read_tex(path)
+    markers = [match for match in LABEL_RE.finditer(text) if match[1].strip() == label]
+    if len(markers) != 1:
+        raise ValueError(f"expected exactly one \\label{{{label}}}, found {len(markers)}")
+    spans = _environment_spans(text)
+    owners = [(start, end) for name, start, end in spans
+              if name in {"table", "table*"} and start < markers[0].start() < end]
+    if len(owners) != 1:
+        raise ValueError(f"expected exactly one enclosing table for {label}")
+    start, end = owners[0]
+    tabulars = [(a, b) for name, a, b in spans if name == "tabular" and start < a < b < end]
+    if len(tabulars) != 1:
+        raise ValueError(f"expected exactly one literal tabular block for {label}")
+    a, b = tabulars[0]
+    match = re.search(r"\\midrule(.*?)\\bottomrule", text[a:b], re.S)
     if match is None:
         raise ValueError("missing current literal tabular block")
     body = re.sub(r"\\cmidrule(?:\([^)]*\))?\{[^}]*\}", "", match[1])
@@ -213,7 +268,7 @@ def check_tables(results_root=REPO_ROOT / "results", manuscript_dir=REPO_ROOT / 
         em, hm = refinement_metrics(e, "E"), refinement_metrics(h, "H")
         expected = [["E (20)", "RMSE", *em["RMSE"]], ["", "F1", *em["F1"]],
                     [r"H ($\eta>0$, 72)", "RMSE", *hm["RMSE"]], ["", "F1", *hm["F1"]]]
-        errors += compare_table(manuscript_dir / "sections/06_experiments.tex", label, expected,
+        errors += compare_table(manuscript_dir, label, expected,
                                 ["Study", "Score", "One pass", "Refined", "Better", "Tied", "Worse"],
                                 [None, None, 5, 5, 0, 0, 0])
     except (OSError, ValueError, KeyError, OverflowError) as exc:
@@ -228,7 +283,7 @@ def check_tables(results_root=REPO_ROOT / "results", manuscript_dir=REPO_ROOT / 
         if populations != (3975, 3703, 272) or len({row["system_key"] for row in rows}) != 100:
             raise ValueError(f"J2 population: expected 3975/3703/272 pairs and 100 systems, found {populations}")
         j2_ids = set(unique_edges(rows))
-        errors += compare_table(manuscript_dir / "sections/07_molecular.tex", label,
+        errors += compare_table(manuscript_dir, label,
                                 [[subset, *values] for subset, values in metrics.items()],
                                 ["Subset", "Midpoint", "Proatomic", "Proatomic fit", "QTAIM-target fit"], [None, 4, 4, 4, 4])
     except (OSError, ValueError, KeyError, OverflowError) as exc:
@@ -258,7 +313,7 @@ def check_tables(results_root=REPO_ROOT / "results", manuscript_dir=REPO_ROOT / 
             aps = [average_precision(labels, [row[field] for row in eligible], descending=descending)
                    for field, descending in (("intersection_edge_min_dist", True), ("bond_length_angstrom", False), ("face_area", True))]
             expected.append([name, len(eligible), sum(labels), *aps])
-        errors += compare_table(manuscript_dir / "sections/07_molecular.tex", label, expected,
+        errors += compare_table(manuscript_dir, label, expected,
                                 ["Model", "Visible pairs", "QTAIM+", "Clearance AP", "Short-dist. AP", "Area AP"], [None, 0, 0, 3, 3, 3])
     except (OSError, ValueError, KeyError, OverflowError) as exc:
         errors.append(f"{label}: {exc}")
@@ -279,7 +334,7 @@ def check_tables(results_root=REPO_ROOT / "results", manuscript_dir=REPO_ROOT / 
             if j2_ids is not None and reference_ids != j2_ids:
                 raise ValueError(f"J3 cutoff {cutoff}: reference identity differs from J2")
             expected.append([f"{cutoff:.1f}", *j3_metrics(candidates, selected, reference)])
-        errors += compare_table(manuscript_dir / "appendices/appendix_e.tex", label, expected,
+        errors += compare_table(manuscript_dir, label, expected,
                                 ["Cutoff", "Candidates", "Realized", "Visible", "RMSE", "Visible precision", "Visible recall"], [None, 0, 0, 0, 4, 4, 4])
     except (OSError, ValueError, KeyError, OverflowError) as exc:
         errors.append(f"{label}: {exc}")

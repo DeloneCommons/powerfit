@@ -1,0 +1,351 @@
+{
+  "schema_version": 1,
+  "converter_version": "0.8.8",
+  "stage": "conversion",
+  "reviewed_baseline": "09650f83c85549a7f168c61bcdc5ff68ab019e43",
+  "binding_provenance": "LaTeXML upstream 0.8.8. Relevant files verified byte-identical between Ubuntu 24.04 latexml 0.8.8-1 (CI) and Debian 13 latexml 0.8.8-2 (local review). Any effective binding/core hash change requires review.",
+  "binding_context": [
+    {
+      "name": "MathParser.pm",
+      "sha256": "7bb9cef6d3042dec6d5d2e47c14e0fa432a50d45a1b26ad889bbbbca1c788fde"
+    },
+    {
+      "name": "MathGrammar.pm",
+      "sha256": "94018fc222d72df04b2cd1e0bd1bc1f614d733ca6c53a891c98bd77037ccf58e"
+    },
+    {
+      "name": "TeX.pool.ltxml",
+      "sha256": "f42ccd8365fc4bfa1459e99fbb91ea4081914a44ef875636b9b055de4ee4e766"
+    },
+    {
+      "name": "LaTeX.pool.ltxml",
+      "sha256": "ab0281fdd847f706728627042b2fc3b6a3dbe5b8bc9a0f31f741b2629c06a559"
+    },
+    {
+      "name": "amsmath.sty.ltxml",
+      "sha256": "4b442f8574d9ef0d628d1cf4f5d75d1884076d912cfe27ce73ca5e150e459dd5"
+    },
+    {
+      "name": "amssymb.sty.ltxml",
+      "sha256": "27c0c4c81fc7d35b734e0ba8385582ace6aeefa7ebbba7356130d4eb2e714e8e"
+    },
+    {
+      "name": "amsfonts.sty.ltxml",
+      "sha256": "cdb91cb13223514412ba10693a1bf3559c00a9c7a6239c3493bfd2786f2c9285"
+    },
+    {
+      "name": "mathtools.sty.ltxml",
+      "sha256": "d478ea0933de6371d350ae280b58c899debb3b1b86346fa69693533881a922a7"
+    }
+  ],
+  "expressions": [
+    {
+      "id": "eq:pair-coordinate",
+      "source_hint": "sections/02_separators.tex",
+      "labels": [
+        "eq:pair-coordinate"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "e70b1c677dbe60c1638da32aa61133dc75d7708aa3449919cfb2b1b04d37a3ea",
+      "reviewed_tex": "\\boxed{t_{ij}(w)=\\frac12+\\frac{w_i-w_j}{2d_{ij}^2}.}\n\\label{eq:pair-coordinate}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Boxed pair-coordinate formula: parser punctuation at terminal period; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:ATOM.ADDOP.ATOM>PERIOD",
+          "rule": "Anything",
+          "in_fingerprint": "d921b68b76bf55bbbd12012d8d4ba5856394c51dde6275b648661dc4f94ea1fa",
+          "trace_fingerprint": "1d9e6dbc48af8529b92216b5f6529ed3da8092d9dc6e3d3cc5e23267e67732bc",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{t_{ij}(w)=\\frac{1}{2}+\\frac{w_{i}-w_{j}}{2d_{ij}^{2}}.}\\end{equation}",
+          "reviewed_trace": "t[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] =[[RELOP]] \\frac{1}{2}[[UNKNOWN]] +[[ADDOP]] \\frac{w_{i}-w_{j}}{2d_{ij}^{2}}[[UNKNOWN]]\n        > .[[PERIOD]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:difference-least-squares",
+      "source_hint": "sections/03_graph_fitting.tex",
+      "labels": [
+        "eq:difference-least-squares"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "4ed37c9c1c986510a132381dc6c8a77906401666a6724c7c316b907ee43f4189",
+      "reviewed_tex": "\\boxed{\n\\mathcal E(w)=\\frac12\\sum_{r=1}^{m}\n\\rho_r\\left[(w_{i_r}-w_{j_r})-z_r\\right]^2,\n\\qquad \\rho_r=\\lambda_r\\alpha_r^2.\n}\n\\label{eq:difference-least-squares}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Boxed least-squares energy and coefficient definition: terminal period parser role; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:UNKNOWN.POSTSUBSCRIPT.POSTSUPERSCRIPT>PERIOD",
+          "rule": "Anything",
+          "in_fingerprint": "9d9fac4ed41bd4648a5522708e9c90665866e3ec52784a4df7c7119aceeb5a8c",
+          "trace_fingerprint": "e6610418ee7aeb7ce24310ebe45bc04abf83c42c0ff88f3b3815b35f4af9ef5e",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{\\mathcal{E}(w)=\\frac{1}{2}\\sum_{r=1}^{m}\\rho_{r}\\left[(%\nw_{i_{r}}-w_{j_{r}})-z_{r}\\right]^{2},\\qquad\\rho_{r}=\\lambda_{r}\\alpha_{r}^{2}%\n.}\\end{equation}",
+          "reviewed_trace": "E[[UNKNOWN]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] =[[RELOP]] \\frac{1}{2}[[UNKNOWN]] ∑[[SUMOP]] _{r=1}[[POSTSUBSCRIPT]] ^{m}[[POSTSUPERSCRIPT]] ρ[[UNKNOWN]] _{r}[[POSTSUBSCRIPT]] \\left[[[OPEN]] ([[OPEN]] w[[UNKNOWN]] _{i_{r}}[[POSTSUBSCRIPT]] -[[ADDOP]] w[[UNKNOWN]] _{j_{r}}[[POSTSUBSCRIPT]] )[[CLOSE]] -[[ADDOP]] z[[UNKNOWN]] _{r}[[POSTSUBSCRIPT]] \\right][[CLOSE]] ^{2}[[POSTSUPERSCRIPT]] ,[[PUNCT]] ρ[[UNKNOWN]] _{r}[[POSTSUBSCRIPT]] =[[RELOP]] λ[[UNKNOWN]] _{r}[[POSTSUBSCRIPT]] α[[UNKNOWN]] _{r}[[POSTSUBSCRIPT]] ^{2}[[POSTSUPERSCRIPT]]\n        > .[[PERIOD]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:laplacian-normal",
+      "source_hint": "sections/03_graph_fitting.tex",
+      "labels": [
+        "eq:laplacian-normal"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "f499b626a623a247f645bf326dc396cb0e35199c39d4a34ae531e367f010d8c2",
+      "reviewed_tex": "\\boxed{Lw=BRz,\\qquad L=BRB^T.}\n\\label{eq:laplacian-normal}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Boxed normal equations and Laplacian definition: terminal period parser role; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:UNKNOWN.UNKNOWN.POSTSUPERSCRIPT>PERIOD",
+          "rule": "Anything",
+          "in_fingerprint": "55ab06ee04d55653cb6f2544cb71395f60caab999c0856e4d49ae10b4c96ad6e",
+          "trace_fingerprint": "9b9da0f45d2199891257870b3a4b668a0ee23bba1ed19db3e648be59fa63287f",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{Lw=BRz,\\qquad L=BRB^{T}.}\\end{equation}",
+          "reviewed_trace": "L[[UNKNOWN]] w[[UNKNOWN]] =[[RELOP]] B[[UNKNOWN]] R[[UNKNOWN]] z[[UNKNOWN]] ,[[PUNCT]] L[[UNKNOWN]] =[[RELOP]] B[[UNKNOWN]] R[[UNKNOWN]] B[[UNKNOWN]] ^{T}[[POSTSUPERSCRIPT]]\n        > .[[PERIOD]]"
+        }
+      ]
+    },
+    {
+      "id": "unlabelled-spettl-reduction",
+      "source_hint": "sections/03_graph_fitting.tex",
+      "labels": [],
+      "environment": "[]",
+      "source_fingerprint": "4d1d14bd0f57d84ebcfdae95284bb4336e259c43306f6d2db74d7375ab522402",
+      "reviewed_tex": "\\begin{aligned}\nz_{ij}(x)\n &=2(p_j-p_i)\\cdot x+\\|p_i\\|^2-\\|p_j\\|^2,\\\\\n\\operatorname{dist}\\bigl(x,H_{ij}(w)\\bigr)^2\n &=\\frac{[(w_i-w_j)-z_{ij}(x)]^2}{4d_{ij}^2}.\n\\end{aligned}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Complete Spettl-reduction aligned display: equality and left-hand-side squared-distance roles. Full traces distinguish the locationless roles; both source rows, denominator and right-hand side are bound by the full expression fingerprint. Native presentation reviewed in PR8 and attribution audited for PR9.",
+      "roles": [
+        {
+          "signature": "not_parsed:UNKNOWN.CLOSE.CLOSE>POSTSUPERSCRIPT",
+          "rule": "Anything",
+          "in_fingerprint": "187691a129f5606562afe18db5614f065d7ba0f1d42d4ef42c8e1e6ad02b6ca6",
+          "trace_fingerprint": "4dcac2b2c1fa050609b27d82c318d9d99e30a6a1bdedd9f93965f5dd3af930e5",
+          "location": "none",
+          "max_occurrences": 1,
+          "reviewed_in": "$\\@@ENDINLINEMATH",
+          "reviewed_trace": "dist[[OPFUNCTION]] ([[OPEN]] x[[UNKNOWN]] ,[[PUNCT]] H[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] )[[CLOSE]]\n        > ^{2}[[POSTSUPERSCRIPT]] =[[RELOP]] \\frac{[(w_{i}-w_{j})-z_{ij}(x)]^{2}}{4d_{ij}^{2}}[[UNKNOWN]]"
+        },
+        {
+          "signature": "not_parsed:UNKNOWN.CLOSE.CLOSE>POSTSUPERSCRIPT",
+          "rule": "Anything",
+          "in_fingerprint": "8fb5c3c8b83060e07a134544b920d5e23f8ae5715d832bac7cc090e488ad9a90",
+          "trace_fingerprint": "b931eff63d399fc329479e82d482bd2f343e88d430564e97f99ecf7186539a51",
+          "location": "string",
+          "max_occurrences": 1,
+          "reviewed_in": "$\\displaystyle\\operatorname{dist}\\bigl{(}x,H_{ij}(w)\\bigr{)}^{2}\\@@ENDINLINEMATH",
+          "reviewed_trace": "dist[[OPFUNCTION]] ([[OPEN]] x[[UNKNOWN]] ,[[PUNCT]] H[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] )[[CLOSE]]\n        > ^{2}[[POSTSUPERSCRIPT]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:hard-weight-interval",
+      "source_hint": "sections/03_graph_fitting.tex",
+      "labels": [
+        "eq:hard-weight-interval"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "f46389abdc38c701a3058a27e117172ed0613aa9a39a416bcebf54a0f2a81825",
+      "reviewed_tex": "\\boxed{\\ell_h\\le w_{i_h}-w_{j_h}\\le u_h,}\n\\label{eq:hard-weight-interval}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Boxed interval constraint: terminal comma parser role; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:RELOP.UNKNOWN.POSTSUBSCRIPT>PUNCT",
+          "rule": "Anything",
+          "in_fingerprint": "8d547c7daf274828a7cef96928875a9b9a9d367f5b884d26d8f62f5c9c089cd5",
+          "trace_fingerprint": "38a816c250db1d7395ae60be6b75b62a65947dab92ecadc6ace399e5f041f3d5",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{\\ell_{h}\\leq w_{i_{h}}-w_{j_{h}}\\leq u_{h},}\\end{equation}",
+          "reviewed_trace": "ℓ[[UNKNOWN]] _{h}[[POSTSUBSCRIPT]] ≤[[RELOP]] w[[UNKNOWN]] _{i_{h}}[[POSTSUBSCRIPT]] -[[ADDOP]] w[[UNKNOWN]] _{j_{h}}[[POSTSUBSCRIPT]] ≤[[RELOP]] u[[UNKNOWN]] _{h}[[POSTSUBSCRIPT]]\n        > ,[[PUNCT]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:hard-constrained-fit",
+      "source_hint": "sections/03_graph_fitting.tex",
+      "labels": [
+        "eq:hard-constrained-fit"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "8100e72de15c07b879ed10929a669137f4e37da841f7573a91c4d83e6ffaca26",
+      "reviewed_tex": "\\boxed{\n\\min_{w\\in\\mathcal H}\n\\frac12(B^Tw-z)^TR(B^Tw-z).\n}\n\\label{eq:hard-constrained-fit}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Boxed constrained quadratic objective: terminal period parser role; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:ADDOP.UNKNOWN.CLOSE>PERIOD",
+          "rule": "Anything",
+          "in_fingerprint": "b1864ce700f10c6d2ec4569eff89fde91ec530c15b12392bca958e3b140e0e8c",
+          "trace_fingerprint": "59e1e6cd69d5992af1bf975019911e88b96a35ca06b3bf016f397ba2e4fe6164",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{\\min_{w\\in\\mathcal{H}}\\frac{1}{2}(B^{T}w-z)^{T}R(B^{T}w%\n-z).}\\end{equation}",
+          "reviewed_trace": "min[[OPFUNCTION]] _{w\\in\\mathcal{H}}[[POSTSUBSCRIPT]] \\frac{1}{2}[[UNKNOWN]] ([[OPEN]] B[[UNKNOWN]] ^{T}[[POSTSUPERSCRIPT]] w[[UNKNOWN]] -[[ADDOP]] z[[UNKNOWN]] )[[CLOSE]] ^{T}[[POSTSUPERSCRIPT]] R[[UNKNOWN]] ([[OPEN]] B[[UNKNOWN]] ^{T}[[POSTSUPERSCRIPT]] w[[UNKNOWN]] -[[ADDOP]] z[[UNKNOWN]] )[[CLOSE]]\n        > .[[PERIOD]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:full-dimensional-face",
+      "source_hint": "sections/04_realization.tex",
+      "labels": [
+        "eq:full-dimensional-face"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "caa513f0136b05ca98130b8802ff8ded239e20845771e71a48471c9541cf2573",
+      "reviewed_tex": "\\boxed{\\operatorname{int}_{H_{ij}}F_{ij}\\ne\\varnothing,}\n\\label{eq:full-dimensional-face}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Boxed nonempty relative-interior condition: terminal comma parser role; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:POSTSUBSCRIPT.RELOP.ID>PUNCT",
+          "rule": "Anything",
+          "in_fingerprint": "1bc32f3a6f94a204491edf66f050ba09381d0657f717438bdd8f14b62de5251a",
+          "trace_fingerprint": "dae70413a9060788a3d17430522478b7306a8001c53e531a68488c0d850e6eb2",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{\\operatorname{int}_{H_{ij}}F_{ij}\\neq\\varnothing,}\\end{equation}",
+          "reviewed_trace": "int[[OPFUNCTION]] _{H_{ij}}[[POSTSUBSCRIPT]] F[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ≠[[RELOP]] ∅[[ID]]\n        > ,[[PUNCT]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:weak-connector-visibility",
+      "source_hint": "sections/04_realization.tex",
+      "labels": [
+        "eq:weak-connector-visibility"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "6b89428701e4baea62e18e8994ed6752fa0b0e1f86c78c93196da7ed21f7de73",
+      "reviewed_tex": "\\boxed{q_{ij}(w)\\in F_{ij}(w)\n\\quad\\Longleftrightarrow\\quad\ng_{ijk}(w)\\ge0\n\\quad\\text{for all }k\\notin\\{i,j\\}.}\n\\label{eq:weak-connector-visibility}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Complete boxed visibility equivalence including all-competitor condition: punctuation role; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:PUNCT.UNKNOWN.CLOSE>PERIOD",
+          "rule": "Anything",
+          "in_fingerprint": "287da5188501efb266dad02a19488892b67e99a04d5adc8d54cc393dcbc1d950",
+          "trace_fingerprint": "88b72ba88b51d28dbf10f14ac7981c3505b8eb541add96f4638874e246d51da4",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{q_{ij}(w)\\in F_{ij}(w)\\quad\\Longleftrightarrow\\quad g_{%\nijk}(w)\\geq 0\\quad\\text{for all }k\\notin\\{i,j\\}.}\\end{equation}",
+          "reviewed_trace": "q[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] ∈[[RELOP]] F[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] \\boxed{q_{ij}(w)\\inF_{ij}(w)\\quad\\Longleftrightarrow\\quadg_{ijk}(w)\\geq0\\quad\\text{for all }k\\notin\\{i,j\\}.}[[PUNCT]] ⟺[[METARELOP]] \\boxed{q_{ij}(w)\\inF_{ij}(w)\\quad\\Longleftrightarrow\\quadg_{ijk}(w)\\geq0\\quad\\text{for all }k\\notin\\{i,j\\}.}[[PUNCT]] g[[UNKNOWN]] _{ijk}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] ≥[[RELOP]] 0[[NUMBER]] \\boxed{q_{ij}(w)\\inF_{ij}(w)\\quad\\Longleftrightarrow\\quadg_{ijk}(w)\\geq0\\quad\\text{for all }k\\notin\\{i,j\\}.}[[PUNCT]] \\text{for all }[[UNKNOWN]] k[[UNKNOWN]] ∉[[RELOP]] \\{[[OPEN]] i[[UNKNOWN]] ,[[PUNCT]] j[[UNKNOWN]] \\}[[CLOSE]]\n        > .[[PERIOD]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:minimum-signed-gap",
+      "source_hint": "sections/04_realization.tex",
+      "labels": [
+        "eq:minimum-signed-gap"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "7024df383216f6d6d57eee1e997e0ec1cc9d56a505246fff25640a1accb60aca",
+      "reviewed_tex": "\\boxed{\\sigma_{ij}(w)=\\min_{k\\notin\\{i,j\\}}g_{ijk}(w).}\n\\label{eq:minimum-signed-gap}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Boxed minimum-gap definition: terminal period parser role; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:OPEN.UNKNOWN.CLOSE>PERIOD",
+          "rule": "Anything",
+          "in_fingerprint": "647f768e7bbb49791a43276682cac922940bf003c98dbbbac77b329ee86b420b",
+          "trace_fingerprint": "5454ae0f8eb4d13a3114c07ead71a4c467bff192486631f21efec0cc7e9bdb61",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{\\sigma_{ij}(w)=\\min_{k\\notin\\{i,j\\}}g_{ijk}(w).}\\end{equation}",
+          "reviewed_trace": "σ[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] =[[RELOP]] min[[OPFUNCTION]] _{k\\notin\\{i,j\\}}[[POSTSUBSCRIPT]] g[[UNKNOWN]] _{ijk}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]]\n        > .[[PERIOD]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:connector-clearance",
+      "source_hint": "sections/04_realization.tex",
+      "labels": [
+        "eq:connector-clearance"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "fd1e3dc11c569d75fd162cb7c95babb1e60eebb6db314f9f3af406897954b4c9",
+      "reviewed_tex": "\\boxed{\nc_{ij}(w)=\n\\min_{\\substack{k\\notin\\{i,j\\}\\\\\\|e_{ijk}\\|>0}}\n\\frac{g_{ijk}(w)}{2\\|e_{ijk}\\|}.\n}\n\\label{eq:connector-clearance}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Boxed connector-clearance minimum with subarray constraint and denominator: terminal period parser role; presentation independently checked by structural predicate.",
+      "roles": [
+        {
+          "signature": "not_parsed:OPFUNCTION.POSTSUBSCRIPT.ATOM>PERIOD",
+          "rule": "Anything",
+          "in_fingerprint": "3fa454362bfa64243b59264884fead6afa2dd518c9740f225c6cc86208b13b28",
+          "trace_fingerprint": "b68125e72dc8e02ab4f088f51e2682f85555cce37cbc547618aa68de4b80932a",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{c_{ij}(w)=\\min_{\\begin{subarray}{c}k\\notin\\{i,j\\}\\\\\n\\|e_{ijk}\\|>0\\end{subarray}}\\frac{g_{ijk}(w)}{2\\|e_{ijk}\\|}.}\\end{equation}",
+          "reviewed_trace": "c[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] =[[RELOP]] min[[OPFUNCTION]] _{\\begin{subarray}{c}k\\notin\\{i,j\\}\\\\\n\\|e_{ijk}\\|>0\\end{subarray}}[[POSTSUBSCRIPT]] \\frac{g_{ijk}(w)}{2\\|e_{ijk}\\|}[[UNKNOWN]]\n        > .[[PERIOD]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:gap-lipschitz-bound",
+      "source_hint": "sections/04_realization.tex",
+      "labels": [
+        "eq:gap-lipschitz-bound"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "e10357b891362be8db4aa1d86ea918f9cad3ddab1ef424613f647a0e56a8047e",
+      "reviewed_tex": "\\boxed{\n|\\sigma_{ij}(w+\\Delta w)-\\sigma_{ij}(w)|\n\\le K_{ij}\\|\\Delta w\\|_\\infty.\n}\n\\label{eq:gap-lipschitz-bound}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Boxed Lipschitz bound: terminal period parser role; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:UNKNOWN.VERTBAR.POSTSUBSCRIPT>PERIOD",
+          "rule": "Anything",
+          "in_fingerprint": "735235c20c9dc26718042675929a6555d0e2eb00aa7381e88b5220992ba7b6b2",
+          "trace_fingerprint": "936687c57253dea2d6ca82a15e24c7c93295b475ea891b61668db9fd750a139e",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{|\\sigma_{ij}(w+\\Delta w)-\\sigma_{ij}(w)|\\leq K_{ij}\\|%\n\\Delta w\\|_{\\infty}.}\\end{equation}",
+          "reviewed_trace": "|[[VERTBAR]] σ[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] +[[ADDOP]] Δ[[UNKNOWN]] w[[UNKNOWN]] )[[CLOSE]] -[[ADDOP]] σ[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] )[[CLOSE]] |[[VERTBAR]] ≤[[RELOP]] K[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ∥[[VERTBAR]] Δ[[UNKNOWN]] w[[UNKNOWN]] ∥[[VERTBAR]] _{\\infty}[[POSTSUBSCRIPT]]\n        > .[[PERIOD]]"
+        }
+      ]
+    },
+    {
+      "id": "eq:observation-to-visibility",
+      "source_hint": "sections/04_realization.tex",
+      "labels": [
+        "eq:observation-to-visibility"
+      ],
+      "environment": "equation",
+      "source_fingerprint": "278eb08edad3cca9656fe5e1d0a8f7eaafcdb9c3aa215e9da9fdaa7b4895b12f",
+      "reviewed_tex": "\\boxed{\n|\\sigma_{ij}(\\widehat w)-\\sigma_{ij}(w^\\star)|\n\\le K_{ij}\\|G\\eta\\|_\\infty\n\\le K_{ij}\\|G\\|_{\\infty\\to\\infty}\\|\\eta\\|_\\infty.\n}\n\\label{eq:observation-to-visibility}",
+      "macro_context": "539a0a8d6520865f4caf509ffecc44e8862c1e9ddbefe067fb4230df4db807c9",
+      "review_reference": "PR8 reviewed-math-warnings.txt at 09650f83c85549a7f168c61bcdc5ff68ab019e43; PR9 independent architectural audit, Reviewed LaTeXML warning policy",
+      "rationale": "Complete boxed observation-to-visibility inequality chain: terminal period parser role; presentation reviewed in PR8.",
+      "roles": [
+        {
+          "signature": "not_parsed:UNKNOWN.VERTBAR.POSTSUBSCRIPT>PERIOD",
+          "rule": "Anything",
+          "in_fingerprint": "4f90cdff26891444aefca77149bde3ba0f71c8362308defc7db078edced3ffd2",
+          "trace_fingerprint": "3a5729bc3669b6e8f877331382c48f06a89a2bbaf44ce7786e99506719b80941",
+          "location": "source",
+          "max_occurrences": 1,
+          "reviewed_in": "\\begin{equation}\\boxed{|\\sigma_{ij}(\\widehat{w})-\\sigma_{ij}(w^{\\star})|\\leq K%\n_{ij}\\|G\\eta\\|_{\\infty}\\leq K_{ij}\\|G\\|_{\\infty\\to\\infty}\\|\\eta\\|_{\\infty}.}\\end{equation}",
+          "reviewed_trace": "|[[VERTBAR]] σ[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] \\widehat{w}[[UNKNOWN]] )[[CLOSE]] -[[ADDOP]] σ[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ([[OPEN]] w[[UNKNOWN]] ^{\\star}[[POSTSUPERSCRIPT]] )[[CLOSE]] |[[VERTBAR]] ≤[[RELOP]] K[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ∥[[VERTBAR]] G[[UNKNOWN]] η[[UNKNOWN]] ∥[[VERTBAR]] _{\\infty}[[POSTSUBSCRIPT]] ≤[[RELOP]] K[[UNKNOWN]] _{ij}[[POSTSUBSCRIPT]] ∥[[VERTBAR]] G[[UNKNOWN]] ∥[[VERTBAR]] _{\\infty\\to\\infty}[[POSTSUBSCRIPT]] ∥[[VERTBAR]] η[[UNKNOWN]] ∥[[VERTBAR]] _{\\infty}[[POSTSUBSCRIPT]]\n        > .[[PERIOD]]"
+        }
+      ]
+    }
+  ]
+}

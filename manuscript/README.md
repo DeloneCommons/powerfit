@@ -11,6 +11,9 @@ the published v1.0.0 and v2.0.0 archives retain their original contents and DOIs
 
 ## Source structure
 
+The paths and numbering below describe the pinned CAM layout. Later revisions
+use their active dependencies rather than this directory table as a CI inventory.
+
 | Path | Role |
 |---|---|
 | [manuscript.tex](manuscript.tex) | Article entry point, abstract, front matter, availability and acknowledgments, bibliography, and includes. |
@@ -22,9 +25,11 @@ the published v1.0.0 and v2.0.0 archives retain their original contents and DOIs
 | [TEMPLATE_PROVENANCE.md](TEMPLATE_PROVENANCE.md), [tex-support/README.md](tex-support/README.md) | Publisher-file provenance, checksums, and retained upstream license information. |
 | [CAM_SYNC.md](CAM_SYNC.md) | Public/CAM baselines, import scope, figure hashes, and packaging adaptations. |
 
-The article uses 15 authored TeX files, seven figure PDFs, and 34 cited
-references. A local TeX Live 2025 build is 52 pages. The four tables are literal TeX; there
-is no generated table-fragment dependency. The Experiment H candidate graphic
+At the pinned CAM baseline, the article used 15 authored TeX files, seven
+figure PDFs and 34 cited references; a local TeX Live 2025 build was 52 pages.
+These are dated observations, not current-manuscript acceptance counts. The four
+reviewed numerical tables are literal TeX; there is no generated table-fragment
+dependency. The Experiment H candidate graphic
 is not part of the article; the E/H table and accompanying discussion present
 that comparison.
 
@@ -34,7 +39,8 @@ that comparison.
 python scripts/check_manuscript_tables.py
 ```
 
-The standard-library checker reads the four labeled table blocks and compares
+The standard-library checker locates the four reviewed labels through recursive
+active inputs in source order, regardless of their current filenames, and compares
 their numeric cells with calculations from the CSVs below. It reports table,
 row and column on disagreement and never rewrites the TeX or results.
 
@@ -120,6 +126,65 @@ the checker permits underfull boxes and the specific hyperref notice
 unchanged CAM baseline is compiled. These layout notices are retained in the
 logs; no source or publisher file is patched to suppress them.
 
+## Revise the manuscript and review CI
+
+Edit the authoritative master and its active literal inputs. The website builds
+its inventory from those original sources in document order, so a file merely
+present in a section/appendix directory is not active. Supported changes to
+front metadata, ordinary prose/math, section structure, equation numbering,
+references, tables or non-colliding figures are validated against their new
+source-derived objects rather than fixed article totals. See the
+[site grammar and validation guide](../site/README.md#validation-and-browser-inspection)
+for the bounded command/environment support and evidence reports.
+
+The Springer adapter requires unambiguous title, author, affiliation, email,
+abstract, keywords and classification fields. It rejects unknown content before
+`\maketitle`, unsupported scientific preamble macros/packages/options and
+ambiguous metadata instead of omitting them. A new unsupported construct needs
+a focused reader/adapter test and conversion-support change; it is not a reason
+to skip coverage or weaken an unrelated check.
+
+Smoke preserves the CAM first-page contract with source-derived metadata and
+opening declaration text. Run it against the fresh PDF with:
+
+```bash
+python scripts/check_manuscript_titlepage.py \
+  --manuscript manuscript/manuscript.tex --pdf manuscript/manuscript.pdf \
+  --bbl manuscript/manuscript.bbl
+```
+
+It checks the supported plain-text fragments on page one, tolerating PDF
+hyphenation, ligatures and punctuation spacing. Math, references and citations
+within those fields are left to canonical compilation and independent site
+coverage; the first-page text check does not claim their full PDF projection.
+
+Fresh `.aux`, `.bbl` and `.fls` files supplement the original-source inventory
+with label numbering, full formatted bibliography content/order and compiler
+input evidence. Complete bibliography entry text is checked in HTML. A separate
+bounded PDF regression derives alphanumeric page ranges from the fresh `.bbl`
+and requires their full prefixes/digits in extracted PDF text. It supports
+literal page fields and Springer's `pp.` notes, tolerates dash/line wrapping,
+and does not claim complete PDF bibliography attribution or semantic validation.
+Inspect `build/site-work/source-validation.json` and the other
+[review artifacts](../site/README.md#actions-and-github-pages-configuration)
+when diagnosing a conversion failure.
+
+Some obligations intentionally require review. The four frozen numerical table
+recipes and original seven approved figure identities retain their independent
+scientific checks. The three selected mathematical role predicates are located
+by source identity and tolerate renumbering; changing or removing their reviewed
+expressions needs scientific review. A changed source expression with a reviewed
+LaTeXML warning, a new warning role, or converter/binding/context drift needs the
+finite JSON policy review described in the
+[warning guide](../site/README.md#known-conversion-limits). Disappeared warnings
+need not be recreated, and reports never grant automatic approval.
+
+Run both required checks: `smoke` retains the scientific/PDF/package boundary;
+`build` validates the website and browser reading behavior. The frozen manifest
+is authenticated independently before its protected file hashes are checked.
+Neither manuscript revisions nor checker maintenance authorize changing frozen
+scientific evidence, the manifest baseline, historical tags or archival metadata.
+
 ## Regenerate or check figures
 
 ```bash
@@ -149,17 +214,17 @@ The source ZIP preserves the layout required by the TeX `\input` and
 | Archive path | Contents |
 |---|---|
 | `manuscript.tex` | Main article source at the archive root. |
-| `sections/*.tex` | Nine included section files. |
-| `appendices/*.tex` | Five included appendix files. |
-| `figures/*.pdf` | The seven article figures. |
+| Active section `.tex` paths | Included section files; nested literal dependency paths are preserved. |
+| Active appendix `.tex` paths | Included appendix files; inactive orphan files are excluded. |
+| Active graphic paths | Article graphics, including the original seven approved vector PDFs. |
 | `refs.bib` | Bibliography source. |
 | `manuscript.bbl` | Bibliography generated by the fresh build. |
 | `sn-jnl.cls`, `sn-mathphys-ay.bst` | The pinned official class and author–year bibliography style. |
 | `TEMPLATE_PROVENANCE.md`, `CAM_SYNC.md`, `tex-support/README.md` | Publisher/source-baseline provenance and upstream license information. |
 | `tex-support/glyphtounicode-cmr.tex` | Unmodified upstream Computer Modern Unicode mappings and license notice. |
 
-The archive contains 30 files, carrying the same unmodified official
-class/style and provenance as the canonical build. The remaining packages are
+The archive contains the resolved active dependencies, carrying the same
+unmodified official class/style and provenance as the canonical build. The remaining packages are
 TeX-distribution dependencies. Unlike the journal portal's flat source export,
 this public bundle retains nested sources and original figure filenames, with
 no text expansion or figure renaming. Entries have stable timestamps and

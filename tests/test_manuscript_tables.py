@@ -5,11 +5,13 @@ import importlib.util
 import math
 from pathlib import Path
 import shutil
+import sys
 from tempfile import TemporaryDirectory
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "scripts/check_manuscript_tables.py"
+sys.path.insert(0, str(ROOT / "scripts"))
 
 
 def load_checker():
@@ -120,15 +122,117 @@ class AggregationTests(unittest.TestCase):
             self.checker.j3_metrics([candidate], selected, [reference])
 
 
-class InlineTableTests(unittest.TestCase):
+class TableLocationTests(unittest.TestCase):
     def setUp(self):
         self.checker = load_checker()
         self.tmp = TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
 
+    def write(self, relative, text):
+        path = self.root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def table(self, label="tab:reviewed", value="1.25"):
+        return (r"\begin{table}\begin{tabular}{lr}\midrule "
+                + f"A & {value}" + r" \\\bottomrule\end{tabular}"
+                + rf"\label{{{label}}}\end{{table}}")
+
+    def test_label_after_tabular_selects_its_owning_table(self):
+        path = self.write("table.tex", self.table() + self.table("tab:other", "9.99"))
+        self.assertEqual(self.checker.literal_rows(path, "tab:reviewed"), [["A", "1.25"]])
+
+    def test_nested_active_inputs_and_orphan_duplicate_are_resolved(self):
+        self.write("manuscript.tex", r"\input{chapter}")
+        self.write("chapter.tex", r"\input{relocated/reviewed}")
+        self.write("relocated/reviewed.tex", self.table())
+        self.write("orphan.tex", self.table(value="9.99"))
+        self.assertEqual(self.checker.literal_rows(self.root, "tab:reviewed"), [["A", "1.25"]])
+
+    def test_commented_labels_and_inputs_do_not_count(self):
+        self.write("manuscript.tex", "%\\input{absent}\n" + self.table() + "\n%\\label{tab:reviewed}\n")
+        self.assertEqual(self.checker.literal_rows(self.root, "tab:reviewed"), [["A", "1.25"]])
+
+    def test_orphan_table_cannot_satisfy_a_missing_active_label(self):
+        self.write("manuscript.tex", "Ordinary text.\n")
+        self.write("orphan.tex", self.table())
+        with self.assertRaisesRegex(ValueError, "exactly one.*tab:reviewed"):
+            self.checker.literal_rows(self.root, "tab:reviewed")
+
+    def test_duplicate_active_labels_and_repeated_inputs_are_ambiguous(self):
+        self.write("one.tex", self.table())
+        self.write("two.tex", self.table())
+        for inputs in (r"\input{one}\input{two}", r"\input{one}\input{one}"):
+            with self.subTest(inputs=inputs):
+                self.write("manuscript.tex", inputs)
+                with self.assertRaisesRegex(ValueError, "exactly one.*tab:reviewed"):
+                    self.checker.literal_rows(self.root, "tab:reviewed")
+
+    def test_label_outside_a_table_does_not_capture_the_next_table(self):
+        path = self.write("table.tex", r"\label{tab:reviewed}" + self.table("tab:other"))
+        with self.assertRaisesRegex(ValueError, "enclosing table"):
+            self.checker.literal_rows(path, "tab:reviewed")
+
+    def test_labelled_empty_table_does_not_capture_the_next_tabular(self):
+        path = self.write("table.tex", r"\begin{table}\label{tab:reviewed}\end{table}" + self.table("tab:other"))
+        with self.assertRaisesRegex(ValueError, "tabular"):
+            self.checker.literal_rows(path, "tab:reviewed")
+
+    def test_unbalanced_environments_are_rejected(self):
+        for bad in (self.table().replace(r"\end{table}", ""),
+                    self.table().replace(r"\end{tabular}", r"\end{table}")):
+            with self.subTest(bad=bad):
+                path = self.write("table.tex", bad)
+                with self.assertRaisesRegex(ValueError, "unbalanced"):
+                    self.checker.literal_rows(path, "tab:reviewed")
+
+    def test_input_cycle_is_rejected(self):
+        self.write("manuscript.tex", r"\input{again}")
+        self.write("again.tex", r"\input{manuscript}")
+        with self.assertRaisesRegex(ValueError, "Cyclic"):
+            self.checker.literal_rows(self.root, "tab:reviewed")
+
+
+class InlineTableTests(unittest.TestCase):
+    def setUp(self):
+        self.checker = load_checker()
+        self.tmp = TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        manuscript = self.root / "manuscript"
+        manuscript.mkdir()
+        # Existing corruption fixtures copy these source directories below.
+        # Supply their authoritative active tree without introducing orphans.
+        (manuscript / "manuscript.tex").write_text(
+            r"\input{sections/06_experiments}\input{sections/07_molecular}\input{appendices/appendix_e}")
+
     def test_frozen_csvs_agree_with_all_four_real_tables(self):
         self.assertEqual(self.checker.check_tables(ROOT / "results", ROOT / "manuscript"), [])
+
+    def test_all_reviewed_tables_can_move_to_new_active_source_paths(self):
+        manuscript = self.root / "relocated-manuscript"
+        manuscript.mkdir()
+        moved = []
+        for index, relative in enumerate(("sections/06_experiments.tex", "sections/07_molecular.tex", "appendices/appendix_e.tex")):
+            target = manuscript / f"renamed-{index}.tex"
+            original = (ROOT / "manuscript" / relative).read_text()
+            text = original
+            for label in ("tab:refinement-paired", "tab:molecular-fits", "tab:molecular-clearance-ranking", "tab:molecular-candidates"):
+                marker = rf"\label{{{label}}}"
+                if marker in text:
+                    self.assertEqual(text.count(marker), 1)
+                    text = text.replace(marker, "")
+                    position = original.index(marker)
+                    # Move the label to after its tabular while retaining its
+                    # enclosing table and every independently checked number.
+                    end = text.index(r"\end{tabular}", position) + len(r"\end{tabular}")
+                    text = text[:end] + marker + text[end:]
+            target.write_text(text)
+            moved.append(rf"\input{{{target.stem}}}")
+        (manuscript / "manuscript.tex").write_text("\n".join(moved))
+        self.assertEqual(self.checker.check_tables(ROOT / "results", manuscript), [])
 
     def test_changed_tex_number_reports_table_row_and_column(self):
         manuscript = self.root / "manuscript"

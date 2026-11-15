@@ -2,14 +2,77 @@
 """Exercise both reading themes under /powerfit/ at desktop and phone widths."""
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import tempfile
 from threading import Thread
+from urllib.parse import quote, unquote, urlsplit
 from playwright.sync_api import expect, sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_browser_expectations(report_path, article_path):
+    """Require successful independent validation bound to this exact article.
+
+    Expected inventories come only from this internal report, never from the
+    DOM under test. The digest prevents reuse after an article changes.
+    """
+    try:
+        report = json.loads(Path(report_path).read_text())
+        article_sha256 = hashlib.sha256(Path(article_path).read_bytes()).hexdigest()
+    except (OSError, ValueError) as exc:
+        raise ValueError(f'Missing or malformed source-validation report/article: {exc}') from exc
+    if (not isinstance(report, dict) or type(report.get('schema_version')) is not int
+            or report.get('schema_version') != 1 or report.get('valid') is not True):
+        raise ValueError('Browser checks require a successful schema-1 source-validation report')
+    if report.get('article_sha256') != article_sha256:
+        raise ValueError('Stale source-validation report: article hash differs')
+    expected = report.get('browser')
+    if not isinstance(expected, dict):
+        raise ValueError('Missing browser expectations in source-validation report')
+    for field in ('math', 'figures', 'tables', 'bibliography'):
+        value = expected.get(field)
+        if type(value) is not int or value < 0:
+            raise ValueError(f'Invalid source-validation report browser count: {field}')
+    for field in ('toc_targets', 'reference_targets', 'bibliography_targets', 'capture_targets', 'contrast_targets'):
+        values = expected.get(field)
+        if (not isinstance(values, list) or any(not isinstance(value, str) or not value.strip() for value in values)
+                or len(values) != len(set(values))):
+            raise ValueError(f'Invalid source-validation report browser targets: {field}')
+    return expected
+
+
+def visible_destination(page, anchor):
+    """Resolve a unique fragment and show its actual content container."""
+    target = page.locator('[id=' + json.dumps(anchor) + ']')
+    expect(target).to_have_count(1)
+    if target.evaluate('(n) => {const r=n.getBoundingClientRect(); return r.width === 0 || r.height === 0}'):
+        # Source label aliases are zero-size spans immediately preceding their
+        # visible equation/table/section (possibly after other label aliases).
+        assert 'source-anchor' in (target.get_attribute('class') or '').split(), anchor
+        target = target.locator('xpath=following-sibling::*[not(contains(concat(" ", normalize-space(@class), " "), " source-anchor "))][1]')
+        expect(target).to_have_count(1)
+    target.scroll_into_view_if_needed()
+    expect(target).to_be_visible()
+    return target
+
+
+def click_fragment(page, scope, anchor):
+    links = page.locator(scope + ' a[href=' + json.dumps('#' + anchor) + ']')
+    assert links.count() > 0, f'Missing validated navigation link: {anchor}'
+    links.first.click()
+    assert unquote(urlsplit(page.url).fragment) == anchor
+    visible_destination(page, anchor)
+
+
+def capture_key(index, anchor):
+    """Keep report-provided IDs out of filesystem path components."""
+    slug = re.sub(r'[^A-Za-z0-9_-]+', '-', anchor).strip('-')[:80] or 'target'
+    return f'{index:02d}-{slug}'
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -61,45 +124,42 @@ def layout(page, name, width):
         contrast(page, '.button')
 
 
-def article_checks(page, base, reports, width, mode):
-    assert page.locator('math').count() == 710
-    assert page.locator('math semantics annotation').count() == 710
-    assert page.locator('figure.ltx_figure img').count() == 7
-    assert page.locator('figure.ltx_table').count() == 4
-    assert page.locator('.ltx_bibitem').count() == 34
+def article_checks(page, base, reports, width, mode, expected):
+    assert page.locator('math').count() == expected['math']
+    assert page.locator('math semantics annotation').count() == expected['math']
+    assert page.locator('figure.ltx_figure img').count() == expected['figures']
+    assert page.locator('figure.ltx_table').count() == expected['tables']
+    assert page.locator('.ltx_bibitem').count() == expected['bibliography']
     assert page.locator('math').evaluate_all('(nodes) => nodes.every(n => n.getBoundingClientRect().width > 0 && n.getBoundingClientRect().height > 0)')
-    for selector in ['math', '.ltx_eqn_eqno', '.ltx_table th', '.ltx_table tbody tr:nth-child(even) td']:
+    for selector in expected['contrast_targets']:
         contrast(page, selector)
     details = page.locator('.toc details')
     assert details.evaluate('(n) => n.open') == (width > 760)
+    assert page.locator('.toc a').count() == len(expected['toc_targets'])
     if width <= 760:
         page.locator('.toc summary').focus()
         page.keyboard.press('Enter')
         assert details.evaluate('(n) => n.open')
-        assert page.locator('.toc li ol').first.is_visible()
-    page.locator('.toc a[href="#S4"]').click()
-    assert page.url.endswith('#S4')
-    page.locator('article a[href="#S2.E3"]').first.click()
-    assert page.url.endswith('#S2.E3')
-    page.locator('article a[href^="#bib."]').first.click()
-    assert '#bib.' in page.url
+        if expected['toc_targets']:
+            expect(page.locator('.toc a[href=' + json.dumps('#' + expected['toc_targets'][0]) + ']')).to_be_visible()
+    for field, scope in [('toc_targets', '.toc'), ('reference_targets', 'article'), ('bibliography_targets', 'article')]:
+        if expected[field]:
+            click_fragment(page, scope, expected[field][0])
     levels = page.locator('article h1, article h2, article h3, article h4, article h5, article h6').evaluate_all('(nodes) => nodes.map(n => Number(n.tagName.slice(1)))')
     assert all(level <= previous + 1 for previous, level in zip([0, *levels], levels)), 'Skipped heading level'
-    for anchor in ['S4', 'S4.E38', 'S4.E41', 'A3', 'A3.E69', 'A3.E70', 'A4', 'A5.T4',
-                   'S4.SS4.SSS0.Px1', 'A2.SS2.SSS0.Px1', 'A4.SS2.SSS0.Px1']:
-        page.goto(base + 'article.html#' + anchor)
-        target = page.locator(f'[id="{anchor}"]')
-        target.scroll_into_view_if_needed()
-        assert target.is_visible()
+    for index, anchor in enumerate(expected['capture_targets']):
+        page.goto(base + 'article.html#' + quote(anchor, safe=''))
+        visible_destination(page, anchor)
         assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1')
-        page.screenshot(path=str(reports / f'{width}-{mode}-{anchor}.png'))
+        page.screenshot(path=str(reports / f'{width}-{mode}-{capture_key(index, anchor)}.png'))
     for image in page.locator('img').all():
         image.scroll_into_view_if_needed()
-        page.wait_for_function('(id) => {const n=document.getElementById(id); return n.complete && n.naturalWidth > 0 && n.alt.length > 10}', arg=image.get_attribute('id'))
+        page.wait_for_function('(n) => n.complete && n.naturalWidth > 0 && n.alt.trim().length > 0', arg=image.element_handle())
         assert image.evaluate('(n) => getComputedStyle(n.parentElement).backgroundColor') == 'rgb(255, 255, 255)'
         assert image.evaluate('(n) => {for (; n; n=n.parentElement) if (getComputedStyle(n).filter !== "none") return false; return true}')
-    page.locator('.ltx_figure').first.scroll_into_view_if_needed()
-    page.screenshot(path=str(reports / f'{width}-{mode}-figure.png'))
+    if expected['figures']:
+        page.locator('.ltx_figure').first.scroll_into_view_if_needed()
+        page.screenshot(path=str(reports / f'{width}-{mode}-figure.png'))
 
 
 def preferences(page, base):
@@ -133,6 +193,7 @@ def preferences(page, base):
 
 
 def main():
+    expected = load_browser_expectations(ROOT / 'build/site-work/source-validation.json', ROOT / 'build/site/article.html')
     reports = ROOT / 'build/site-reports'
     reports.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory() as temporary:
@@ -161,7 +222,7 @@ def main():
                             layout(page, name, width)
                             page.screenshot(path=str(reports / f'{width}-{mode}-{name.removesuffix(".html")}.png'))
                             if name == 'article.html':
-                                article_checks(page, base, reports, width, mode)
+                                article_checks(page, base, reports, width, mode, expected)
                     pdf = context.request.get(base + 'manuscript.pdf')
                     assert pdf.ok and pdf.body().startswith(b'%PDF-')
                     assert not failures, failures
@@ -189,7 +250,7 @@ def main():
                     assert page.locator('html').evaluate('(n) => getComputedStyle(n).colorScheme') == mode
                     assert page.get_by_label('Theme', exact=True).is_hidden()
                     assert page.locator('.toc details').evaluate('(n) => n.open')
-                    assert page.locator('math').count() == 710
+                    assert page.locator('math').count() == expected['math']
                     page.emulate_media(media='print')
                     assert page.locator('body').evaluate('(n) => getComputedStyle(n).backgroundColor') == 'rgb(255, 255, 255)'
                     context.close()
