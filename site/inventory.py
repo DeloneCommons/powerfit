@@ -11,7 +11,7 @@ from pathlib import Path
 import re
 
 from texsyntax import command_at, group, skip_space, strip_comments
-from mathsyntax import normalize_math, math_cells, split_top_level, ALIASES
+from mathsyntax import normalize_math, math_cells, math_rows, split_top_level, ALIASES
 
 HEADINGS = {"section": 1, "subsection": 2, "subsubsection": 3, "paragraph": 4}
 STATEMENTS = {"proposition", "theorem", "corollary", "definition", "remark", "proof"}
@@ -158,9 +158,41 @@ class _Reader:
                 }
             )
             self.seen.add(relative)
-        text = path.read_text()
+        # Input begins in TeX's new-line state, which ignores indentation.
+        text = path.read_text().lstrip(" \t")
+        # TeX supplies an endline to the last physical line, including an empty
+        # input. A final percent comment consumes it just like an authored LF.
+        if not text.endswith("\n"):
+            text += "\n"
         parts = []
         maps = []
+        word_tail = False
+        after_input = False
+
+        def append(piece, locations):
+            nonlocal word_tail, after_input
+            if not piece:
+                return
+            if word_tail:
+                if after_input and piece[0].isspace():
+                    # Returning to the caller resumes its token stream. Its
+                    # space must not become the input's word terminator.
+                    parts.append("\\ ")
+                    maps.extend([locations[0]] * 2)
+                    word_tail = False
+                elif parts[-1][-1].isalpha() and re.match(r"[A-Za-z]", piece):
+                    # This separator terminates a control word and is invisible
+                    # to TeX; it never separates ordinary authored letters.
+                    parts.append(" ")
+                    maps.append(locations[0])
+            parts.append(piece)
+            maps.extend(locations)
+            if not piece.isspace():
+                # The odd final backslash run denotes a control word, not the
+                # letters following an escaped backslash (a row break).
+                word_tail = bool(re.search(r"(?<!\\)(?:\\\\)*\\[A-Za-z]+\s*$", piece))
+            after_input = False
+
         pos = 0
         line = 1
         while pos < len(text):
@@ -174,16 +206,6 @@ class _Reader:
                 # indentation while entering the following physical line.
                 while pos < len(text) and text[pos] in " \t":
                     pos += 1
-                if (
-                    parts
-                    and re.fullmatch(r"\\[A-Za-z]+", parts[-1])
-                    and pos < len(text)
-                    and text[pos].isascii()
-                    and text[pos].isalpha()
-                ):
-                    # The endline did not join distinct TeX control tokens.
-                    parts.append(" ")
-                    maps.append((relative, line))
                 continue
             if text[pos] == "\\":
                 name, end = command_at(text, pos)
@@ -215,21 +237,25 @@ class _Reader:
                         locations = [(relative, line)]
                     else:
                         replacement, locations = self.expand(target, stack + (path,))
-                    parts.append(replacement)
-                    maps.extend(locations)
+                    append(replacement, locations)
+                    after_input = True
                     line += text[pos:finish].count("\n")
                     pos = finish
                     continue
                 # Escape/control words must be consumed together, otherwise the
                 # second slash in \\input would become a false dependency.
                 piece = text[pos:end]
-                parts.append(piece)
-                maps.extend((relative, line) for _ in piece)
+                append(piece, [(relative, line)] * len(piece))
+                line += piece.count("\n")
                 pos = end
                 continue
             char = text[pos]
-            parts.append(char)
-            maps.append((relative, line))
+            if pos == 0 and char == "\n":
+                # A blank initial input line (including an empty file) is a
+                # paragraph token, represented by the reader's blank-line form.
+                append("\n\n", [(relative, line)] * 2)
+            else:
+                append(char, [(relative, line)])
             line += char == "\n"
             pos += 1
         return "".join(parts), maps
@@ -382,6 +408,7 @@ class _Reader:
             "normalized": normalized,
             "cells": [normalize_math(c) for c in cells],
             "cell_tex": cells,
+            "cell_rows": math_rows(clean),
             "numbered": numbered and not suppressed,
             "labels": labels,
             "pure_script": bool(re.fullmatch(r"\^\s*(?:\\[A-Za-z]+|\{[^{}]+\}|[^\s{}])", clean)),
@@ -771,8 +798,16 @@ class _Reader:
                 continue
             if name == "[":
                 flush()
-                close = self.text.find("\\]", finish)
-                if close < 0:
+                close = finish
+                while close < end:
+                    if self.text[close] == "\\":
+                        command, after = command_at(self.text, close)
+                        if command == "]":
+                            break
+                        close = after
+                    else:
+                        close += 1
+                if close == end:
                     raise ValueError("Unclosed display mathematics")
                 obj = self.new("display", owner, pos)
                 self.math_record(self.text[finish:close], finish, close, obj, "display", "[]")

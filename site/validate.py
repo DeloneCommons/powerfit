@@ -14,9 +14,10 @@ from source import ROOT, collect_dependencies
 from bibliography import is_doi_url, parse_doi_url, source_dois, validate_bibliography_dois
 from mathml import presentation_structure
 from inventory import read_inventory
-from coverage import validate_inventory
+from coverage import source_stream, validate_inventory
 from canonical import (read_aux, validate_labels, validate_reference_text, validate_recorder,
-                       canonical_bibliography, validate_canonical_bibliography)
+                       canonical_bibliography, validate_canonical_bibliography,
+                       read_natbib, validate_citation_display)
 from scientific import validate_scientific_math, resolve_scientific_math, REVIEWED_TEX
 
 NS = {'l': 'http://dlmf.nist.gov/LaTeXML'}
@@ -62,6 +63,10 @@ def validate(output, work, manuscript):
         errors.extend(validate_labels(inventory['labels'], aux, xml, page))
         errors.extend(validate_reference_text(aux, xml, raw))
         errors.extend(validate_reference_text(aux, xml, page))
+        citations = [event['value'] for event in source_stream(inventory, {}) if event['kind'] == 'cite']
+        natbib = read_natbib(work / 'manuscript.aux')
+        errors.extend(validate_citation_display(citations, natbib, xml, raw, 'raw HTML'))
+        errors.extend(validate_citation_display(citations, natbib, xml, page, 'final HTML'))
         errors.extend(validate_recorder(work / 'manuscript.fls', manuscript, inventory['sources']))
         errors.extend(validate_canonical_bibliography(work / 'manuscript.bbl', xml, raw))
         errors.extend(validate_canonical_bibliography(work / 'manuscript.bbl', xml, page))

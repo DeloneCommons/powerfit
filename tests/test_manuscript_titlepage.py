@@ -1,5 +1,6 @@
 """Small source/PDF-text fixtures for the independent CAM first-page contract."""
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -76,6 +77,74 @@ class TitlePageTests(unittest.TestCase):
                 errors = validate_titlepage(self.master, PAGE.replace(value, 'OTHER'))
                 self.assertTrue(any(f'[{role}]' in e for e in errors), errors)
 
+    def test_extended_field_tokens_are_rejected_by_role(self):
+        for role, target, replacement in (
+            ('title', 'first-page study', 'first-page studying'),
+            ('title', 'A tiny first-page study', 'BA tiny first-page study'),
+            ('author', 'Ada Example1*', 'Ada Examples1*'),
+            ('author', 'Ada Example1*', 'Bada Example1*'),
+            ('email', 'ada@example.org', 'xada@example.org'),
+            ('email', 'ada@example.org', 'ada@example.org.evil'),
+            ('email', 'ada@example.org', 'ada@example.org\n.evil'),
+            ('affiliation', 'Bath, UK.', 'Bath, UKs.'),
+            ('abstract', 'scientific significance.', 'scientific significances.'),
+            ('keywords', 'inverse fitting', 'inverse fittings'),
+            ('classification', '52C22', '52C220'),
+            ('classification label', 'MSC2010', 'MSC20100'),
+            ('declaration', 'careful reader.', 'careful readers.'),
+        ):
+            with self.subTest(role=role, replacement=replacement):
+                self.assertEqual(PAGE.count(target), 1, target)
+                changed = PAGE.replace(target, replacement)
+                self.assertNotEqual(changed, PAGE)
+                errors = validate_titlepage(self.master, changed)
+                self.assertTrue(any(f'[{role}]' in error for error in errors), errors)
+
+    def test_reported_prefix_counterexamples_in_independent_source_fixture(self):
+        source = SOURCE.replace(r'\fnm{Ada} \sur{Example}',
+                                r'\fnm{Ivan Yu.} \sur{Chernyshov}')
+        page = PAGE.replace('Ada Example1*', 'Ivan Yu. Chernyshov1*')
+        for original, replacement in (
+            ('A tiny first-page study', 'A study from pairwise separator data'),
+            ('ada@example.org', 'ivan.chernyshoff@gmail.com'),
+            ('52C22', '65F20'),
+        ):
+            source = source.replace(original, replacement)
+            page = page.replace(original, replacement)
+        self.master.write_text(source)
+        self.assertEqual(validate_titlepage(self.master, page), [])
+        for role, target, replacement in (
+            ('author', 'Ivan Yu. Chernyshov1*', 'Ivan Yu. Chernyshova1*'),
+            ('title', 'from pairwise separator data', 'from pairwise separator database'),
+            ('classification', '65F20', '65F200'),
+            ('email', 'ivan.chernyshoff@gmail.com', 'xivan.chernyshoff@gmail.com'),
+            ('email', 'ivan.chernyshoff@gmail.com', 'ivan.chernyshoff@gmail.com.evil'),
+        ):
+            with self.subTest(role=role, replacement=replacement):
+                self.assertEqual(page.count(target), 1, target)
+                changed = page.replace(target, replacement)
+                self.assertNotEqual(changed, page)
+                errors = validate_titlepage(self.master, changed)
+                self.assertTrue(any(f'[{role}]' in error for error in errors), errors)
+
+    def test_email_boundaries_allow_layout_without_accepting_other_addresses(self):
+        for email in ('ada @ example . org', 'ada@\nexample.org', 'ada@exam\nple.org'):
+            with self.subTest(email=email):
+                page = PAGE.replace('ada@example.org', email)
+                self.assertEqual(validate_titlepage(self.master, page), [])
+        # The exact email elsewhere on page one cannot repair a changed address
+        # before the abstract, even when punctuation removal makes them equal.
+        changed = PAGE.replace('ada@example.org', 'adaexample.org') + '\nada@example.org'
+        errors = validate_titlepage(self.master, changed)
+        self.assertTrue(any('[email]' in error for error in errors), errors)
+
+    def test_author_numeric_footnote_markers_and_wrapping_remain_supported(self):
+        for author in ('Ada Example1*', 'Ada Example¹*', 'Ada Example1,2*',
+                       'Ada\nExample12†', 'Ada Example'):
+            with self.subTest(author=author):
+                self.assertEqual(validate_titlepage(
+                    self.master, PAGE.replace('Ada Example1*', author)), [])
+
     def test_supported_source_revisions_change_the_expectations(self):
         revised_source = SOURCE.replace('MSC2010', 'MSC2020').replace('Ada', 'Grace').replace(
             'Tiny Institute', 'New Laboratory').replace('0000-0000-1111-2222', '9999-8888-7777-6666')
@@ -133,6 +202,21 @@ class TitlePageTests(unittest.TestCase):
                                 text=True, capture_output=True)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('[classification]', result.stdout + result.stderr)
+
+
+@unittest.skipUnless((ROOT / 'manuscript/manuscript.pdf').is_file() and shutil.which('pdftotext'),
+                     'canonical PDF and pdftotext are required for real extraction regressions')
+class CanonicalTitlePageTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.master = ROOT / 'manuscript/manuscript.tex'
+        cls.pdf_text = subprocess.run(
+            ['pdftotext', str(cls.master.with_suffix('.pdf')), '-'],
+            check=True, capture_output=True, text=True).stdout
+
+    def test_unmodified_full_pdf_extraction_passes(self):
+        self.assertGreater(self.pdf_text.count('\f'), 1)
+        self.assertEqual(validate_titlepage(self.master, self.pdf_text), [])
 
 
 class BibliographyPaginationTests(unittest.TestCase):

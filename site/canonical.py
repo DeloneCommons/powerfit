@@ -137,6 +137,129 @@ def validate_reference_text(aux_labels, xml, page):
     return [] if actual == expected else ['Canonical reference text/destination mismatch']
 
 
+def read_natbib(path):
+    """Read canonical four-field natbib bibcite author/year records.
+
+    Supported years are four ASCII digits and an optional lowercase suffix.
+    Author text uses the same finite text/escape grammar as the Springer bbl.
+    Numeric citations, arbitrary year macros and malformed records fail closed;
+    the full-author field is decoded but starred citation commands are unsupported.
+    """
+    text, pos, labels = strip_comments(Path(path).read_text()), 0, {}
+    try:
+        while pos < len(text):
+            if text[pos] == '{':
+                _, pos = group(text, pos)
+            elif text[pos] == '\\':
+                name, pos = command_at(text, pos)
+                if name != 'bibcite':
+                    continue
+                key, pos = group(text, skip_space(text, pos))
+                value, pos = group(text, skip_space(text, pos))
+                fields, inner = [], 0
+                while skip_space(value, inner) < len(value):
+                    field, inner = group(value, skip_space(value, inner))
+                    fields.append(field)
+                if not key or key in labels:
+                    raise ValueError(f'empty or duplicate bibcite key: {key}')
+                if (len(fields) != 4 or not re.fullmatch(r'[1-9][0-9]*', fields[0]) or
+                        not re.fullmatch(r'[0-9]{4}[a-z]?', fields[1])):
+                    raise ValueError(f'unsupported natbib fields for {key}')
+                author = _normalize(_bibtext(fields[2]))
+                _bibtext(fields[3])  # Do not silently discard unknown full-author syntax.
+                if not author:
+                    raise ValueError(f'empty natbib author for {key}')
+                labels[key] = {'author': author, 'year': fields[1]}
+            else:
+                pos += 1
+    except ValueError as exc:
+        raise ValueError(f'Invalid canonical citation metadata: {exc}') from exc
+    return labels
+
+
+def _citation_tokens(value):
+    value = unicodedata.normalize('NFKC', value)
+    value = value.translate(str.maketrans({'’': "'", '‘': "'", '“': '"', '”': '"'}))
+    return re.findall(r'\w+|[^\w\s]', value)
+
+
+def _citation_display(source, labels):
+    """Bounded author/year notation from aux labels and independent source notes.
+
+    citep and citet retain source key order. Adjacent identical short authors
+    share a group; adjacent identical base years show suffix-only subsequent
+    years. Literal pre/post notes are outside citep groups and inside each citet
+    group's parentheses. This is not a configurable natbib style interpreter.
+    """
+    command, keys, pre, post = source
+    if command not in ('citep', 'citet') or not keys or len(keys) != len(set(keys)):
+        raise ValueError('expected citep/citet with a nonempty, nonduplicate key group')
+    if any(token in ('\\', '{', '}', '$', '^') for token in (*pre, *post)):
+        raise ValueError('citation notes must be literal text, without TeX commands or mathematics')
+    groups, linked_years = [], []
+    for key in keys:
+        if key not in labels:
+            raise ValueError(f'missing canonical author/year for {key}')
+        author, year = labels[key]['author'], labels[key]['year']
+        if not groups or groups[-1]['author'] != author:
+            groups.append({'author': author, 'years': [], 'previous': None})
+        current = groups[-1]
+        previous = current['previous']
+        display_year = year
+        if previous and previous[:4] == year[:4]:
+            if len(previous) != 5 or len(year) != 5 or previous == year:
+                raise ValueError(f'ambiguous repeated author/year for {key}')
+            display_year = year[4:]
+        current['previous'] = year
+        current['years'].append(display_year)
+        linked_years.append(display_year)
+    body = []
+    for current in groups:
+        if body:
+            body.append(';')
+        body.extend(_citation_tokens(current['author']))
+        body.extend([','] if command == 'citep' else ['(', *pre])
+        body.extend(_citation_tokens(', '.join(current['years'])))
+        if command == 'citet':
+            body.extend([',', *post] if post else [])
+            body.append(')')
+    if command == 'citep':
+        body = ['(', *pre, *body, *([',', *post] if post else []), ')']
+    return body, linked_years
+
+
+def validate_citation_display(citations, labels, xml, page, stage):
+    """Check visible author/year, notes and linked years against source + aux.
+
+    Converter bibliography IDs supply only link identities, never expected
+    authors, years, punctuation or notes. Existing bbl validation separately
+    verifies those IDs' complete bibliography content and source membership.
+    """
+    errors, destinations = [], {}
+    for node in xml.xpath('//l:bibitem', namespaces=NS):
+        destinations.setdefault(node.get('key'), []).append('#' + node.get(XID, ''))
+    nodes = page.xpath('//article//cite')
+    category = f'Canonical citation display mismatch ({stage})'
+    if len(nodes) != len(citations):
+        errors.append(f'{category}: expected {len(citations)} source groups, found {len(nodes)}')
+    for index, (source, node) in enumerate(zip(citations, nodes), 1):
+        command, keys, _, _ = source
+        try:
+            expected, years = _citation_display(source, labels)
+        except ValueError as exc:
+            errors.append(f'Unsupported canonical citation display ({stage}): group {index}: {exc}')
+            continue
+        links = node.xpath('.//a[@href]')
+        targets = [destinations.get(key, []) for key in keys]
+        if (any(len(target) != 1 for target in targets) or
+                [link.get('href') for link in links] != [target[0] for target in targets if target] or
+                [visible_text(link) for link in links] != years or
+                _citation_tokens(visible_text(node)) != expected or
+                'ltx_citemacro_' + command not in node.get('class', '').split()):
+            errors.append(f'{category}: group {index}, keys {", ".join(keys)}')
+    return errors
+
+
 SYSTEM_ROOTS = tuple(Path(value) for value in (
     '/usr/share/texlive', '/usr/share/texmf', '/usr/local/texlive',
     '/var/lib/texmf', '/etc/texmf',

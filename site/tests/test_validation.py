@@ -12,6 +12,10 @@ from lxml import etree, html
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from validate import validate
+from canonical import read_aux, validate_labels
+from inventory import read_inventory
+from selection_helpers import (funding_declaration, declaration_fragment, reviewed_math,
+                               labelled_equation_and_section, swap_label_destinations)
 
 ROOT = Path(__file__).resolve().parents[2]
 BUILD = ROOT / 'build'
@@ -34,7 +38,7 @@ def remove(node):
             previous.tail = (previous.tail or '') + tail
 
 
-class ContentIntegrityTests(unittest.TestCase):
+class ContentIntegrityFixture(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if not (BUILD / 'site/article.html').is_file():
@@ -113,6 +117,22 @@ class ContentIntegrityTests(unittest.TestCase):
         doc = self.documents()['final HTML']
         self.change(doc, self.first(doc.xpath(query), query), 'final HTML', operation)
 
+    def remove_fragment(self, source, fragment):
+        for stage, doc in self.documents().items():
+            owner = self.identified(doc, source.get(XID), stage)
+            slots = owner.xpath('.//text()[not(ancestor::*[local-name()="Math" or local-name()="math"])]')
+            slot = self.one([s for s in slots if fragment in str(s)], 'authored text fragment in ' + stage)
+            self.assertEqual(str(slot).count(fragment), 1)
+            def operation(_):
+                value = str(slot).replace(fragment, '', 1)
+                if slot.is_tail:
+                    slot.getparent().tail = value
+                else:
+                    slot.getparent().text = value
+            self.change(doc, owner, stage, operation)
+
+
+class ContentIntegrityTests(ContentIntegrityFixture):
     def test_complete_generated_site_passes(self):
         self.assertEqual(validate(self.site, self.work, ROOT / 'manuscript'), [])
 
@@ -141,20 +161,6 @@ class ContentIntegrityTests(unittest.TestCase):
             self.change(doc, scripts[index], stage, remove)
         self.reject('Source mathematics', all_stages=True)
 
-    def remove_fragment(self, source, fragment):
-        for stage, doc in self.documents().items():
-            owner = self.identified(doc, source.get(XID), stage)
-            slots = owner.xpath('.//text()[not(ancestor::*[local-name()="Math" or local-name()="math"])]')
-            slot = self.one([s for s in slots if fragment in str(s)], 'authored text fragment in ' + stage)
-            self.assertEqual(str(slot).count(fragment), 1)
-            def operation(_):
-                value = str(slot).replace(fragment, '', 1)
-                if slot.is_tail:
-                    slot.getparent().tail = value
-                else:
-                    slot.getparent().text = value
-            self.change(doc, owner, stage, operation)
-
     def test_short_proof_fragment_omitted_everywhere_is_rejected(self):
         slots = self.documents()['XML'].xpath('//l:proof//l:p/text()', namespaces=NS)
         slot = self.first([s for s in slots if len(re.findall(r'\w+', str(s))) >= 3], 'proof body fragment')
@@ -166,20 +172,16 @@ class ContentIntegrityTests(unittest.TestCase):
         self.reject('Source content', all_stages=True)
 
     def test_short_funding_declaration_omitted_everywhere_is_rejected(self):
-        owner = self.one(self.documents()['XML'].xpath(
-            '//l:subsection[l:title[normalize-space()="Funding"]]/l:para', namespaces=NS), 'funding declaration')
-        slot = self.one(owner.xpath('./l:p/text()[normalize-space()]', namespaces=NS), 'funding text')
-        words = list(re.finditer(r'\w+', str(slot)))
-        self.assertGreaterEqual(len(words), 3)
-        fragment = str(slot)[words[0].start():words[min(7, len(words)) - 1].end()]
-        self.assertLess(len(re.findall(r'\w+', fragment)), 10)
+        inventory = read_inventory(ROOT / 'manuscript/manuscript.tex')
+        owner = funding_declaration(self, inventory, self.documents())
+        fragment = declaration_fragment(self, owner)
         self.remove_fragment(owner, fragment)
         self.reject('Source content', all_stages=True)
 
     def test_source_funding_hidden_in_every_representation_is_rejected(self):
         docs = self.documents()
-        owner = self.one(docs['XML'].xpath(
-            '//l:subsection[l:title[normalize-space()="Funding"]]/l:para', namespaces=NS), 'funding declaration')
+        inventory = read_inventory(ROOT / 'manuscript/manuscript.tex')
+        owner = funding_declaration(self, inventory, docs)
         for stage, doc in docs.items():
             node = self.identified(doc, owner.get(XID), stage)
             content = ''.join(node.itertext())
@@ -344,12 +346,12 @@ class ContentIntegrityTests(unittest.TestCase):
             with self.subTest(label=label):
                 self.restore()
                 docs = self.documents()
-                source = self.one(self.labelled(docs['XML'], label).xpath('.//l:Math', namespaces=NS), label)
                 for stage in ('raw HTML', 'final HTML'):
                     doc = docs[stage]
-                    math = self.identified(doc, source.get(XID), stage)
+                    _, math = reviewed_math(self, docs['XML'], doc, label)
                     operators = math.xpath(query)
-                    self.assertTrue(operators, 'Reviewed operand-role target must exist')
+                    self.assertEqual(len(operators), 2 if action == 'script' else 1,
+                                     'Reviewed operand-role targets must have their independent multiplicity')
                     annotation = self.one(math.xpath('./semantics/annotation'), 'source annotation').text
                     def operation(_):
                         for operator in operators:
@@ -409,39 +411,25 @@ class ContentIntegrityTests(unittest.TestCase):
                                                         other.get('labels').split()[0] if stage == 'XML' else '#' + other.get(XID)))
         self.reject('Source content', all_stages=True)
 
-    def test_coordinated_label_and_destination_swap_with_equal_numbers_is_rejected(self):
+    def test_coordinated_label_and_destination_swap_is_rejected(self):
         docs = self.documents()
-        labels = ('eq:exact-incidence', 'sec:discussion')
-        owners = [self.labelled(docs['XML'], label) for label in labels]
-        numbers = [self.one(owner.xpath('./l:tags/l:tag[@role="refnum"]/text()', namespaces=NS),
-                            label + ' canonical number') for owner, label in zip(owners, labels)]
-        self.assertEqual(numbers[0], numbers[1], 'The mutation must preserve the existing numbering checks')
-        keys = [owner.get(XID) for owner in owners]
-        self.assertNotEqual(keys[0], keys[1])
+        inventory = read_inventory(ROOT / 'manuscript/manuscript.tex')
+        labels = labelled_equation_and_section(self, inventory)
+        aux = read_aux(self.work / 'manuscript.aux')
+        self.assertEqual(validate_labels(inventory['labels'], aux, docs['XML'], docs['final HTML']), [])
+        before = {stage: etree.tostring(doc) for stage, doc in docs.items()}
+        swap_label_destinations(self, docs, labels)
         for stage, doc in docs.items():
-            links = doc.xpath('//a[@href=$first or @href=$second]',
-                              first='#' + keys[0], second='#' + keys[1]) if stage != 'XML' else []
-            if stage == 'raw HTML' and not links:
-                # An unreferenced label has no HTML destination to rewrite.
-                self.assertEqual(self.paths[stage].read_bytes(), self.original[stage])
-                continue
-            def operation(_):
-                if stage == 'XML':
-                    targets = [self.identified(doc, key, stage) for key in keys]
-                    values = [target.get('labels') for target in targets]
-                    self.assertNotEqual(values[0], values[1])
-                    targets[0].set('labels', values[1])
-                    targets[1].set('labels', values[0])
-                else:
-                    destinations = {'#' + keys[0]: '#' + keys[1], '#' + keys[1]: '#' + keys[0]}
-                    for link in links:
-                        link.set('href', destinations[link.get('href')])
-                    if stage == 'final HTML':
-                        # Move named deep links to the same corrupted meanings.
-                        anchors = [self.identified(doc, label, stage) for label in labels]
-                        anchors[0].set('id', labels[1])
-                        anchors[1].set('id', labels[0])
-            self.change(doc, doc.getroot(), stage, operation)
+            if etree.tostring(doc) != before[stage]:
+                self.paths[stage].write_bytes(etree.tostring(doc, encoding='utf-8') if stage == 'XML' else
+                                             html.tostring(doc, encoding='utf-8', doctype='<!doctype html>'))
+                self.assertNotEqual(self.paths[stage].read_bytes(), self.original[stage])
+        # Canonical checks may also reject this swap after an innocent equation
+        # insertion. Ownership must reject it regardless of numbering equality.
+        canonical = validate_labels(inventory['labels'], aux, docs['XML'], docs['final HTML'])
+        for label in labels:
+            self.assertEqual(any('Canonical numbering mismatch: ' + label + ':' in error for error in canonical),
+                             aux[labels[0]]['number'] != aux[labels[1]]['number'], canonical)
         self.reject('Source label ownership')
 
     def test_named_source_anchor_moved_to_another_valid_object_is_rejected(self):

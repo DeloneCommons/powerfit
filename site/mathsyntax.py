@@ -254,8 +254,8 @@ def normalize_math(tex):
     return json.dumps(_Math(tex).sequence(), ensure_ascii=False, separators=(",", ":"))
 
 
-def math_cells(tex):
-    """Authored cells corresponding to LaTeXML's split aligned Math elements."""
+def math_rows(tex):
+    """Authored rows/cells; nested non-numbering structures stay in their cell."""
     stripped = tex.strip()
     match = re.match(r"\\begin\{(aligned|split|gathered)\}", stripped)
     if match:
@@ -266,11 +266,12 @@ def math_cells(tex):
             raise ValueError("Unbalanced aligned math")
         suffix = stripped[finish + len(ending) :]
         if suffix.strip() and not re.fullmatch(r"[\s.,;:!?]*", suffix):
-            return [tex.strip()]
+            return [[tex.strip()]]
         stripped = stripped[match.end() : finish] + suffix
-    return [
-        cell.strip()
-        for row in split_top_level(stripped, ("\\\\",))
-        for cell in split_top_level(row, ("&",))
-        if cell.strip()
-    ]
+    return [[cell.strip() for cell in split_top_level(row, ("&",))]
+            for row in split_top_level(stripped, ("\\\\",)) if row.strip()]
+
+
+def math_cells(tex):
+    """Nonempty mathematical occurrences, retaining math_rows for ownership."""
+    return [cell for row in math_rows(tex) for cell in row if cell]

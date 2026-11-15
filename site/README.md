@@ -247,12 +247,22 @@ constructs fail rather than being approximated by a general TeX interpreter.
 See the explicit command/environment/token sets in `inventory.py` and
 `mathsyntax.py` when extending the grammar.
 
+Literal input expansion preserves TeX's physical endline and comment semantics,
+including files without a final LF. Control-word boundaries survive input and
+comment expansion; delimiter scans consume whole control sequences, so an
+alignment row break followed by `]` is not a display terminator. Small lexical
+fixtures are cross-checked by actual TeX compilation.
+
 Supported statement declarations are literal `\newtheorem{name}{Heading}`
 with separate global counters. Shared/section counters, custom list markers,
 alternate short captions/headings, content-inserting column specifications and
 unmapped statement environments fail explicitly. Tables support the checked
 `l`/`c`/`r`/literal-width `p` columns, empty intercolumn spacing and bounded
 layout commands. `\citep`, `\citet`, `\ref` and `\eqref` have explicit mappings.
+Source table cells require an effective unit grid in XML and both HTML stages:
+absent spans and explicit `1` are accepted; all other span values fail. Authored
+`\multicolumn`/`\multirow` remain unsupported and would need an explicit source
+grid model. Generated equation-layout spans are outside this restriction.
 New converter projections, such as math consisting solely of text, need an
 explicit representation rule before they can pass source coverage.
 
@@ -272,6 +282,17 @@ headings. Rendered reference numbers use the canonical auxiliary records, and
 named source anchors must sit at the corresponding visible destination. Hidden
 content cannot satisfy the ordered source comparison.
 
+Every equation, including unlabelled and unnumbered displays, has a matched
+source owner and an expected number or explicit absence of numbering in each
+representation. Alignment rows retain ordered scientific cells within that
+owner, including supported nested non-numbering environments. Moving numbers
+between equations or moving cells across row boundaries fails even when the
+flattened math and global number sequence are unchanged. Layout padding is
+transparent; scientific row wrappers and number cells must remain visible.
+After independent content matching, equation destinations must bind the same
+source owner across XML and HTML, preventing swapped IDs from redirecting
+references while leaving all visible equation text unchanged.
+
 Fresh canonical evidence has separate roles: balanced `.aux` records confirm
 source-label membership and numbering; `.fls` confirms which local inputs the
 canonical compiler consumed, with explicit Unicode-support/generated/system
@@ -284,6 +305,17 @@ inventory of numbered equations. Literal DOI expectations still come separately
 from `refs.bib`. The canonical build and converter share sources and the `.bbl`,
 so these layers have complementary roles rather than supplying a universal proof
 of scientific equivalence.
+
+Fresh natbib `\bibcite` records in the canonical `.aux` independently constrain
+visible citation authors, years, linked year text, grouping and literal notes in
+raw and final HTML. The bounded mapping supports `\citep`/`\citet`, ordered key
+groups, adjacent repeated authors and literal four-digit years with optional
+lowercase suffixes. It is not a general natbib interpreter: numeric/starred
+forms, duplicate keys within a group, macro-bearing notes, unknown author
+commands and nonliteral years fail explicitly. Expected attribution never comes
+from the LaTeXML citation display. Canonical PDF first-page identity comparisons
+use whole field tokens and exact email boundaries while tolerating supported
+wrapping, hyphenation, ligatures and author footnote markers.
 
 Every converter element with an ID is compared with the assembled article.
 Presentation MathML parity preserves element names, hierarchy, child/token order

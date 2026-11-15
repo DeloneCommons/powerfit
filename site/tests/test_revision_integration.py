@@ -15,8 +15,9 @@ from lxml import etree, html
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from bibliography import source_dois, validate_bibliography_dois
 from canonical import (canonical_bibliography, read_aux, validate_labels,
-                       validate_recorder, validate_canonical_bibliography)
-from coverage import validate_inventory
+                       validate_recorder, validate_canonical_bibliography,
+                       read_natbib, validate_citation_display)
+from coverage import source_stream, validate_inventory
 from inventory import read_inventory
 from render import assemble
 from source import argument, make_wrapper, source_metadata, read_tex
@@ -72,8 +73,10 @@ No external funding.
 A short observation uses $x_i$.
 \subsection{First case}
 \begin{equation}x_i=y_i+1.\label{eq:old}\end{equation}
+\begin{equation}\begin{aligned}u&=v\\r&=s\end{aligned}\label{eq:nested}\end{equation}
 \begin{equation}z=2.\end{equation}
 Equation~\eqref{eq:old} is useful; see \citep{Shared2020,Removed2021}.
+Compare \citet[see][Sec.~2]{Shared2020,Removed2021} and \citep[see][Sec.~3]{Shared2020}.
 \begin{proposition}[Small claim]We have $x_i>0$.\end{proposition}
 \begin{proof}It follows immediately.\end{proof}
 \begin{figure}\centering
@@ -226,7 +229,23 @@ class SupportedRevisionIntegrationTests(unittest.TestCase):
                     self.assertEqual(validate_canonical_bibliography(directory / 'manuscript.bbl', case['xml'], representation), [])
                     self.assertEqual(validate_bibliography_dois(representation, case['xml'].xpath('//l:bibitem', namespaces=NS),
                                                               source_dois(directory / 'refs.bib'), XID), [])
+                    citations = [event['value'] for event in source_stream(case['inventory'], {})
+                                 if event['kind'] == 'cite']
+                    self.assertTrue(citations, 'Each actual fixture must exercise citation display checks')
+                    self.assertEqual(validate_citation_display(citations, read_natbib(directory / 'manuscript.aux'),
+                                                               case['xml'], representation, 'fixture HTML'), [])
                 self.assertTrue((directory / 'manuscript.pdf').is_file())
+
+    def test_numbered_nested_alignment_keeps_rows_and_permits_layout_rowspan(self):
+        case = self.cases[0]
+        source = next(m for m in case['inventory']['math'] if 'eq:nested' in m['labels'])
+        self.assertEqual(source['cell_rows'], [['u', '=v'], ['r', '=s']])
+        self.assertTrue(source['numbered'])
+        equation = case['xml'].xpath('//*[@labels="LABEL:eq:nested"]')[0]
+        self.assertEqual(etree.QName(equation).localname, 'equationgroup')
+        rendered = case['page'].xpath('//*[@id=$key]', key=equation.get(XID))[0]
+        self.assertTrue(rendered.xpath('.//td[@rowspan="2"]'), 'Number spans two generated equation rows')
+        self.assertEqual(validate_inventory(case['inventory'], case['xml'], case['raw'], case['page'])[0], [])
 
     def test_comment_wordjoins_agree_with_fresh_canonical_and_all_site_stages(self):
         case = self.cases[0]

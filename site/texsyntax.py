@@ -8,9 +8,11 @@ import re
 
 
 def command_at(text, pos):
-    """Return (control-sequence name, end) at a literal backslash."""
+    """Return (control-sequence name, end); a physical endline is control space."""
     if pos >= len(text) or text[pos] != '\\' or pos + 1 >= len(text):
         raise ValueError('Expected TeX command')
+    if text[pos + 1] == '\n':
+        return ' ', pos + 2
     match = re.match(r'[A-Za-z]+|[^\n]', text[pos + 1:])
     if not match:
         raise ValueError('Expected TeX command')
@@ -31,7 +33,7 @@ def strip_comments(text):
     """
     kept, pos = [], 0
     while pos < len(text):
-        if text[pos] == '\\' and pos + 1 < len(text) and text[pos + 1] != '\n':
+        if text[pos] == '\\' and pos + 1 < len(text):
             _, end = command_at(text, pos)
             kept.append(text[pos:end])
             pos = end

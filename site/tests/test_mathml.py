@@ -7,6 +7,8 @@ from lxml import etree, html
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from mathml import presentation_structure
 from scientific import resolve_scientific_math, scientific_math_errors, validate_scientific_math
+from selection_helpers import (NS, XID, REVIEWED_LABELS, reviewed_math,
+                               rename_reviewed_ids, rename_reviewed_labels)
 
 
 class MathStructureTests(unittest.TestCase):
@@ -54,7 +56,7 @@ class RepresentativeMathTests(unittest.TestCase):
 
     def math(self, label):
         self.assertIsNotNone(resolve_scientific_math, 'reviewed mathematical-role resolver is not implemented')
-        return resolve_scientific_math(self.xml, self.page, label)
+        return reviewed_math(self, self.xml, self.page, label)[1]
 
     def check_bound(self, node):
         self.assertEqual(scientific_math_errors('eq:reduced-spectral-bound', node), [])
@@ -77,15 +79,15 @@ class RepresentativeMathTests(unittest.TestCase):
     def test_role_swaps_fail_independent_expectations(self):
         # These checks must catch defects already present in converter output,
         # where converter/final parity and unchanged TeX annotations cannot help.
-        for key, query, first, second, check in [
-            ('eq:reduced-spectral-bound', './/msup[mi="R"]', 0, 1, self.check_bound),
-            ('eq:measurement-error-energy', './/munderover', 1, 2, self.check_sum),
-            ('eq:connector-clearance', './/munder', 0, 1, self.check_clearance),
+        for key, query, count, first, second, check in [
+            ('eq:reduced-spectral-bound', './/msup[mi="R"]', 2, 0, 1, self.check_bound),
+            ('eq:measurement-error-energy', './/munderover', 1, 1, 2, self.check_sum),
+            ('eq:connector-clearance', './/munder', 1, 0, 1, self.check_clearance),
         ]:
             with self.subTest(key=key):
                 node = deepcopy(self.math(key))
                 operators = node.xpath(query)
-                self.assertTrue(operators, "role-swap mutation target must exist")
+                self.assertEqual(len(operators), count, 'Independent role-swap target multiplicity')
                 before = etree.tostring(node)
                 for operator in operators:
                     children = list(operator)
@@ -95,57 +97,40 @@ class RepresentativeMathTests(unittest.TestCase):
                 with self.assertRaises(AssertionError):
                     check(node)
                 page = deepcopy(self.page)
-                original = resolve_scientific_math(self.xml, page, key)
+                _, original = reviewed_math(self, self.xml, page, key)
                 original.getparent().replace(original, node)
                 errors = validate_scientific_math(self.xml, page)
                 self.assertTrue(any('Scientific MathML role mismatch' in error and key in error for error in errors), errors)
 
     def test_generated_ids_can_change_without_changing_reviewed_roles(self):
         xml, page = deepcopy(self.xml), deepcopy(self.page)
-        changed = 0
-        for label in ('eq:connector-clearance', 'eq:measurement-error-energy', 'eq:reduced-spectral-bound'):
-            source = xml.xpath('//*[@labels=$label]', label='LABEL:' + label)
-            self.assertEqual(len(source), 1)
-            maths = source[0].xpath('.//l:Math', namespaces={'l':'http://dlmf.nist.gov/LaTeXML'})
-            self.assertEqual(len(maths), 1)
-            math = maths[0]
-            old = math.get('{http://www.w3.org/XML/1998/namespace}id')
-            nodes = page.xpath('//math[@id=$key]', key=old)
-            self.assertEqual(len(nodes), 1)
-            math.set('{http://www.w3.org/XML/1998/namespace}id', 'revised.' + label)
-            nodes[0].set('id', 'revised.' + label)
-            changed += 1
-        self.assertEqual(changed, 3)
+        rename_reviewed_ids(self, xml, page)
         self.assertIsNotNone(validate_scientific_math, 'reviewed mathematical-role validation is not implemented')
         self.assertEqual(validate_scientific_math(xml, page), [])
 
     def test_all_reviewed_labels_can_be_renamed_without_changing_science(self):
         xml = deepcopy(self.xml)
-        for label in ('eq:connector-clearance', 'eq:measurement-error-energy', 'eq:reduced-spectral-bound'):
-            owners = xml.xpath('//*[@labels=$label]', label='LABEL:' + label)
-            self.assertEqual(len(owners), 1)
-            owners[0].set('labels', 'LABEL:renamed:' + label)
-            self.assertNotEqual(owners[0].get('labels'), 'LABEL:' + label)
+        rename_reviewed_labels(self, xml, self.page)
         self.assertEqual(validate_scientific_math(xml, self.page), [])
 
     def test_each_independent_role_rejects_a_targeted_mutation(self):
         # Each target is specified independently of production's role table.
         mutations = [
-            ('eq:reduced-spectral-bound', './/msup[mi="w"]/mo', 'text', 'x', 'two starred weights'),
-            ('eq:reduced-spectral-bound', './/msup[mi="R"]/mrow/mn', 'text', '3', 'two half powers of R'),
-            ('eq:reduced-spectral-bound', './/mfrac/msqrt', 'tag', 'mrow', 'two square-root minimum-eigenvalue denominators'),
-            ('eq:measurement-error-energy', './/munderover/mrow/mn', 'text', '0', 'sum lower and upper limits'),
-            ('eq:measurement-error-energy', './/msubsup/mn', 'text', '3', 'squared two-norm'),
-            ('eq:connector-clearance', './/munder/mtable/mtr', 'remove', '', 'two minimum constraint rows'),
-            ('eq:connector-clearance', './/munder/following-sibling::mfrac', 'tag', 'mrow', 'fraction following minimum'),
-            ('eq:connector-clearance', './semantics/menclose', 'notation', 'circle', 'boxed clearance'),
+            ('eq:reduced-spectral-bound', './/msup[mi="w"]/mo', 2, 'text', 'x', 'two starred weights'),
+            ('eq:reduced-spectral-bound', './/msup[mi="R"]/mrow/mn', 4, 'text', '3', 'two half powers of R'),
+            ('eq:reduced-spectral-bound', './/mfrac/msqrt', 2, 'tag', 'mrow', 'two square-root minimum-eigenvalue denominators'),
+            ('eq:measurement-error-energy', './/munderover/mrow/mn', 1, 'text', '0', 'sum lower and upper limits'),
+            ('eq:measurement-error-energy', './/msubsup/mn', 2, 'text', '3', 'squared two-norm'),
+            ('eq:connector-clearance', './/munder/mtable/mtr', 2, 'remove', '', 'two minimum constraint rows'),
+            ('eq:connector-clearance', './/munder/following-sibling::mfrac', 1, 'tag', 'mrow', 'fraction following minimum'),
+            ('eq:connector-clearance', './semantics/menclose', 1, 'notation', 'circle', 'boxed clearance'),
         ]
-        for label, query, action, value, role in mutations:
+        for label, query, count, action, value, role in mutations:
             with self.subTest(label=label, role=role):
                 page = deepcopy(self.page)
-                node = resolve_scientific_math(self.xml, page, label)
+                _, node = reviewed_math(self, self.xml, page, label)
                 targets = node.xpath(query)
-                self.assertTrue(targets, 'mathematical-role mutation target must exist')
+                self.assertEqual(len(targets), count, 'Independent mathematical-role target multiplicity')
                 target = targets[0]
                 before = etree.tostring(node)
                 if action == 'remove':
@@ -157,6 +142,40 @@ class RepresentativeMathTests(unittest.TestCase):
                 self.assertNotEqual(etree.tostring(node), before)
                 errors = validate_scientific_math(self.xml, page)
                 self.assertTrue(any('Scientific MathML role mismatch' in error and label in error and role in error for error in errors), errors)
+
+
+class RenamedScientificSelectionTests(RepresentativeMathTests):
+    """Run the same selectors and independent mutations on three small copies.
+
+    Every original monitored label is absent before the inherited tests run.
+    Expressions and role expectations remain unchanged; no rebuild is needed.
+    """
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        test = unittest.TestCase()
+        xml = etree.Element('{http://dlmf.nist.gov/LaTeXML}document', nsmap={None: NS['l']})
+        page = html.Element('article')
+        cls.identities = {}
+        for label in REVIEWED_LABELS:
+            source, rendered = reviewed_math(test, cls.xml, cls.page, label)
+            owners = source.xpath('ancestor::l:equation[1]', namespaces=NS)
+            test.assertEqual(len(owners), 1, 'Each compact copy needs one source equation owner')
+            xml.append(deepcopy(owners[0]))
+            page.append(deepcopy(rendered))
+            cls.identities[label] = (source.get(XID), source.get('tex'))
+        rename_reviewed_labels(test, xml, page)
+        cls.xml, cls.page = xml, page
+
+    def test_all_three_renamed_expressions_remain_unique_mutation_targets(self):
+        self.assertEqual(len(self.xml), 3)
+        self.assertEqual(len(self.page), 3)
+        for label in REVIEWED_LABELS:
+            self.assertEqual(self.xml.xpath('//*[@labels=$label]', label='LABEL:' + label), [])
+            source, rendered = reviewed_math(self, self.xml, self.page, label)
+            self.assertEqual((source.get(XID), source.get('tex')), self.identities[label])
+            self.assertEqual(scientific_math_errors(label, rendered), [])
+        self.assertEqual(validate_scientific_math(self.xml, self.page), [])
 
 
 class ScientificResolutionTests(unittest.TestCase):

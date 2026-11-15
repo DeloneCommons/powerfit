@@ -99,13 +99,34 @@ class IndependentCoverageTests(unittest.TestCase):
             self.assertTrue(any('Source content' in error and stage in error for error in errors), errors)
 
     def test_equation_layout_tables_do_not_become_scientific_tables(self):
+        # An actual source display owns its generated layout table. Inventing
+        # an equation wrapper around inline math must no longer be transparent.
+        inventory = {'sources': [], 'labels': {}, 'objects': [
+            {'id': 'document', 'kind': 'document', 'owner': None,
+             'content': [{'kind': 'object', 'id': 'display'}]},
+            {'id': 'display', 'kind': 'display', 'owner': 'document',
+             'content': [{'kind': 'math', 'id': 'formula'}]},
+        ], 'math': [{'id': 'formula', 'owner': 'display', 'mode': 'display',
+                    'tex': 'x_i', 'cells': [normalize_math('x_i')], 'numbered': False}]}
+        xml = etree.fromstring('''<document xmlns="http://dlmf.nist.gov/LaTeXML">
+          <equation xml:id="fixture.display"><Math tex="x_i" xml:id="fixture.math"/></equation>
+        </document>''')
+        raw = html.fromstring('''<article><table class="ltx_equation" id="fixture.display">
+          <tbody><tr class="ltx_eqn_row"><td class="ltx_eqn_cell" colspan="2">
+            <math alttext="x_i" id="fixture.math"/>
+          </td></tr></tbody></table></article>''')
+        self.assertEqual(validate_inventory(inventory, xml, raw, deepcopy(raw))[0], [])
+
+    def test_equation_wrapper_cannot_invent_an_owner_for_inline_math(self):
         raw = deepcopy(self.raw)
         math = raw.xpath('//math')[0]
-        wrapper = html.fromstring('<table class="ltx_equation"><tr><td></td></tr></table>')
+        wrapper = html.fromstring('<table class="ltx_equation"><tr class="ltx_eqn_row"><td></td></tr></table>')
         math.getparent().replace(math, wrapper)
         wrapper.xpath('.//td')[0].append(math)
         wrapper.tail, math.tail = math.tail, None
-        self.assertEqual(self.check(raw=raw, final=deepcopy(raw)), [])
+        errors = self.check(raw=raw, final=deepcopy(raw))
+        for stage in ('raw HTML', 'final HTML'):
+            self.assertTrue(any('Equation ownership' in error and stage in error for error in errors), errors)
 
     def test_literal_path_is_text_not_a_generated_hyperlink(self):
         self.inventory['objects'][2]['content'][0]['text'] = 'Let folder/name '

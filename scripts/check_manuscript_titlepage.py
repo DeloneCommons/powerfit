@@ -9,9 +9,11 @@ no website build, converter output or third-party Python package is needed.
 
 This checks content presence on page one, not typography or precise placement.
 PDF comparison ignores case, punctuation, whitespace and compatibility ligatures
-so line wrapping/hyphenation cannot freeze current pagination. Email receives an
-additional punctuation-preserving comparison. Mathematical/reference/citation
-runs are left to independent site coverage and canonical TeX compilation; each
+so line wrapping/hyphenation cannot freeze current pagination. Plain-text runs
+require whole-token boundaries, allowing attached numeric author footnotes.
+Email requires an exact, punctuation-preserving address token in the metadata
+region. Mathematical/reference/citation runs are left to independent site
+coverage and canonical TeX compilation; each
 surrounding plain-text run remains required. Math-only fields add no PDF-text
 claim. This check does not verify mathematical roles or rendered reference values.
 With --bbl, this also checks literal alphanumeric bibliography pages/ranges
@@ -140,24 +142,47 @@ def _letters(value):
     return ' '.join(''.join(char for char in value if char.isalnum() or char.isspace()).split())
 
 
+def _text_pattern(value, role=None):
+    # Normalization removes punctuation but must not turn an extended word or
+    # code into the expected token. Only authors permit attached footnote digits.
+    markers = r'\d*' if role == 'author' else ''
+    return r'(?<!\w)' + re.escape(_letters(value)) + markers + r'(?!\w)'
+
+
+def _email_present(value, text, abstract_start):
+    # Match layout whitespace inside the address without compacting neighboring
+    # words into it. Dots and other email characters belong to the same token,
+    # so neither an extended local part nor an extended domain can match.
+    email_char = r"[\w.!#$%&'*+/=?^`{|}~@-]"
+    address = ''.join(unicodedata.normalize('NFKC', value).split())
+    pattern = (rf'(?<!{email_char})' + r'\s*'.join(re.escape(char) for char in address)
+               + rf'(?!{email_char}|\s*\.\s*\w)')
+    # A domain extension remains part of the address when PDF extraction wraps
+    # before its dot. Ordinary following prose separated by whitespace does not.
+    return any(abstract_start < 0 or len(_letters(text[:match.end()])) <= abstract_start
+               for match in re.finditer(pattern, text))
+
+
 def validate_titlepage(master, first_page_text):
     """Return diagnostics for missing source-derived first-page content."""
-    first_page_text = first_page_text.split('\f', 1)[0]
+    first_page_text = unicodedata.normalize('NFKC', first_page_text.split('\f', 1)[0])
     letters = _letters(first_page_text)
-    compact = ''.join(unicodedata.normalize('NFKC', first_page_text).split())
     errors = []
     expectations = titlepage_expectations(master)
     abstract = next(entry for entry in expectations if entry['role'] == 'abstract')
     abstract_parts = abstract.get('fragments', [])
-    abstract_start = letters.find(_letters(abstract_parts[0])) if abstract_parts else -1
+    abstract_match = re.search(_text_pattern(abstract_parts[0]), letters) if abstract_parts else None
+    abstract_start = abstract_match.start() if abstract_match else -1
     for entry in expectations:
         value = entry['text']
         region = letters
         if entry['role'] in ('title', 'author', 'email', 'affiliation') and abstract_start >= 0:
             region = letters[:abstract_start]
-        present = all(_letters(fragment) in region for fragment in entry.get('fragments', [value]))
         if entry['role'] == 'email':
-            present = present and ''.join(value.split()) in compact
+            present = _email_present(value, first_page_text, abstract_start)
+        else:
+            present = all(re.search(_text_pattern(fragment, entry['role']), region)
+                          for fragment in entry.get('fragments', [value]))
         if not present:
             errors.append(f'CAM first page missing [{entry["role"]}] '
                           f'{entry["source"]}:{entry["line"]}: {value[:100]}')

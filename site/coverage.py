@@ -10,7 +10,7 @@ import re
 import unicodedata
 
 from lxml import etree
-from mathsyntax import normalize_math
+from mathsyntax import normalize_math, math_rows
 from canonical import visible_text
 
 NS = {'l': 'http://dlmf.nist.gov/LaTeXML'}
@@ -48,6 +48,17 @@ def source_stream(inventory, labels, *, html=False):
     maths = {obj['id']: obj for obj in inventory['math']}
     stream = Stream()
 
+    def mathematical_rows(math):
+        for row in math.get('cell_rows', math_rows(math['tex'])):
+            stream.add('open', 'alignment-row')
+            for cell in row:
+                stream.add('open', 'alignment-cell')
+                if cell:
+                    stream.add('math', normalize_math(cell))
+                    stream.events[-1]['node_id'] = math['id']
+                stream.add('close', 'alignment-cell')
+            stream.add('close', 'alignment-row')
+
     def mixed(tokens):
         for token in tokens:
             kind = token['kind']
@@ -59,9 +70,18 @@ def source_stream(inventory, labels, *, html=False):
                 math = maths[token['id']]
                 if math.get('representation') == 'container':
                     continue
-                for cell in math['cells']:
-                    stream.add('math', cell)
-                    stream.events[-1]['node_id'] = math['id']
+                if math.get('mode') in ('display', 'row'):
+                    owner = 'equation-block' if math['mode'] == 'display' else 'equation-row-owner'
+                    stream.add('open', owner)
+                    if math['mode'] == 'display':
+                        stream.add('equation-form', 'equation')
+                    stream.add('equation-number', [str(math['number'])] if math['numbered'] else [])
+                    mathematical_rows(math)
+                    stream.add('close', owner)
+                else:
+                    for cell in math['cells']:
+                        stream.add('math', cell)
+                        stream.events[-1]['node_id'] = math['id']
             elif kind in ('ref', 'eqref'):
                 if kind == 'eqref':
                     stream.text('(')
@@ -111,6 +131,12 @@ def source_stream(inventory, labels, *, html=False):
         elif kind == 'graphic':
             target = obj['target']
             stream.add('graphic', 'figures/' + Path(target).with_suffix('.svg').name if html else target)
+        elif kind == 'align':
+            stream.add('open', 'equation-block')
+            stream.add('equation-form', 'align')
+            stream.add('equation-number', [])
+            mixed(obj['content'])
+            stream.add('close', 'equation-block')
         else:
             if kind == 'section' and obj.get('appendix'):
                 kind = 'appendix'
@@ -149,6 +175,14 @@ def _cite_notes(node, command):
     if command == 'citep':
         if not prefix.startswith('(') or not suffix.endswith(')'):
             raise ValueError('Unsupported parenthetical citation delimiters')
+        prefix, suffix = prefix[1:], suffix[:-1]
+    elif command == 'citet':
+        phrases = refs[0].xpath('./l:bibrefphrase', namespaces=NS)
+        if len(phrases) != 2:
+            raise ValueError('Unsupported textual citation notes')
+        prefix, suffix = [visible_text(phrase) for phrase in phrases]
+        if not prefix.startswith('(') or not suffix.endswith(')'):
+            raise ValueError('Unsupported textual citation delimiters')
         prefix, suffix = prefix[1:], suffix[:-1]
     return tuple(text_tokens(prefix)), tuple(text_tokens(suffix.lstrip(', ')))
 
@@ -216,17 +250,129 @@ def converted_stream(tree, xml, *, is_html=False, raw=False):
         if start == len(stream.events) - 1:
             del stream.events[-2:]
 
+    def hidden(node):
+        style = re.sub(r'\s+', '', node.get('style', '')).lower()
+        return ('hidden' in node.attrib or node.get('aria-hidden') == 'true' or
+                'display:none' in style or 'visibility:hidden' in style)
+
+    def require_visible_equation(node, category):
+        # Equation projections traverse layout wrappers directly. Their hidden
+        # state, including MathFork/MathBranch and tbody ancestors, still counts.
+        if hidden(node) or any(hidden(parent) for parent in node.iterancestors()):
+            raise ValueError(f'{category}: hidden equation content')
+
+    def equation_number(node, *, group=False):
+        role = 'ltx_tag_equationgroup' if group else 'ltx_tag_equation'
+        tags = (node.xpath('.//*[contains(concat(" ",@class," "),$role)]', role=' ' + role + ' ')
+                if is_html else node.xpath('./l:tags/l:tag[@role="refnum"]', namespaces=NS))
+        for tag in tags:
+            require_visible_equation(tag, 'Equation ownership')
+        values = [visible_text(tag) for tag in tags]
+        if not is_html:
+            return values
+        if any(not re.fullmatch(r'\([0-9]+\)', value) for value in values):
+            raise ValueError('Equation ownership: unsupported or hidden equation number')
+        return [value[1:-1] for value in values]
+
+    def equation_rows(node):
+        """Yield actual rows and their scientific cells, excluding only padding."""
+        if not is_html:
+            if _local(node) == 'equationgroup':
+                children = node.xpath('./l:equation', namespaces=NS)
+                for child in children:
+                    if equation_number(child):
+                        raise ValueError('Equation ownership: unexpected number on a nested non-numbering row')
+                    yield from equation_rows(child)
+                return
+            branches = node.xpath('./l:MathFork/l:MathBranch', namespaces=NS)
+            if branches:
+                if len(branches) != 1:
+                    raise ValueError('Alignment-row ownership: ambiguous mathematical branch')
+                branch = branches[0]
+                rows = branch.xpath('./l:tr', namespaces=NS)
+                if rows:
+                    for row in rows:
+                        yield row, row.xpath('./l:td', namespaces=NS)
+                else:
+                    yield node, branch.xpath('./l:td', namespaces=NS)
+            else:
+                maths = node.xpath('./l:Math', namespaces=NS)
+                if len(maths) != 1:
+                    raise ValueError('Alignment-row ownership: expected one direct mathematical cell')
+                yield node, maths
+        else:
+            rows = node.xpath('.//tr[contains(concat(" ",@class," ")," ltx_eqn_row ")]')
+            if not rows:
+                # Simple non-table equations are also emitted by LaTeXML.
+                maths = node.xpath('./math')
+                if len(maths) != 1:
+                    raise ValueError('Alignment-row ownership: missing equation row')
+                yield node, maths
+            for row in rows:
+                cells = [cell for cell in row if _local(cell) in ('td', 'th') and
+                         not classes(cell).intersection({'ltx_eqn_center_padleft', 'ltx_eqn_center_padright',
+                                                          'ltx_eqn_leftpad', 'ltx_eqn_rightpad', 'ltx_eqn_eqno'})]
+                yield row, cells
+
+    def emit_rows(node):
+        for row, cells in equation_rows(node):
+            require_visible_equation(row, 'Alignment-row ownership')
+            previous_id = stream.node_id
+            stream.node_id = row.get('id') if is_html else row.get(XID)
+            stream.add('open', 'alignment-row')
+            if not cells:
+                raise ValueError('Alignment-row ownership: missing scientific cells')
+            for cell in cells:
+                require_visible_equation(cell, 'Alignment-row ownership')
+                stream.add('open', 'alignment-cell')
+                visit(cell)
+                stream.add('close', 'alignment-cell')
+            stream.add('close', 'alignment-row')
+            stream.node_id = previous_id
+
+    def equation_block(node):
+        aligned = 'ltx_eqn_align' in classes(node)
+        group = _local(node) == 'equationgroup' or 'ltx_equationgroup' in classes(node)
+        stream.add('open', 'equation-block')
+        stream.add('equation-form', 'align' if aligned else 'equation')
+        stream.add('equation-number', equation_number(node, group=group))
+        if aligned:
+            if is_html:
+                bodies = node.xpath('./tbody')
+                owners = []
+                for body in bodies:
+                    owners.extend([body] if body.get('id') else body.xpath('./tr[@id]'))
+            else:
+                owners = node.xpath('./l:equation | ./l:equationgroup', namespaces=NS)
+            if not owners:
+                raise ValueError('Alignment-row ownership: missing align owners')
+            for owner in owners:
+                previous_id = stream.node_id
+                stream.node_id = owner.get('id') if is_html else owner.get(XID)
+                stream.add('open', 'equation-row-owner')
+                stream.add('equation-number', equation_number(owner))
+                emit_rows(owner)
+                stream.add('close', 'equation-row-owner')
+                stream.node_id = previous_id
+        else:
+            if group and is_html and equation_number(node):
+                raise ValueError('Equation ownership: unexpected number on a nested non-numbering row')
+            emit_rows(node)
+        stream.add('close', 'equation-block')
+
     def visit(node, *, table=False, proof=False):
         tag, css = _local(node), classes(node)
         if not tag:
             return
         # Hidden authored content cannot satisfy visible coverage. Generated
         # annotations/fallback branches are handled separately below.
-        style = re.sub(r'\s+', '', node.get('style', '')).lower()
-        if ('hidden' in node.attrib or node.get('aria-hidden') == 'true' or
-                'display:none' in style or 'visibility:hidden' in style):
+        if hidden(node):
             return
         kind = kind_of(node)
+        if kind == 'cell' and table:
+            for attribute in ('colspan', 'rowspan'):
+                if node.get(attribute, '1') != '1':
+                    raise ValueError(f'Table-grid span violation: {attribute}={node.get(attribute)!r}')
         previous = stream.owner
         node_id = node.get('id') if is_html else node.get(XID)
         previous_id, stream.node_id = stream.node_id, node_id
@@ -236,6 +382,9 @@ def converted_stream(tree, xml, *, is_html=False, raw=False):
             pass
         elif not is_html and tag == 'Math' and _local(node.getparent()) == 'MathFork':
             pass  # Only the explicit MathBranch is delivered by the HTML transform.
+        elif (not is_html and tag in ('equation', 'equationgroup') or
+              is_html and tag in ('table', 'div') and classes(node).intersection({'ltx_equation', 'ltx_equationgroup'})):
+            equation_block(node)
         elif tag == ('math' if is_html else 'Math'):
             tex = node.get('alttext') if is_html else node.get('tex')
             if tex is None:
@@ -272,7 +421,9 @@ def converted_stream(tree, xml, *, is_html=False, raw=False):
                     if not suffix.endswith(')'):
                         raise ValueError('Unsupported textual citation delimiters')
                     suffix = suffix[:-1]
-                pre = tuple(text_tokens(prefix)[:len(expected_pre)])
+                # Canonical natbib display validation independently checks the
+                # repeated textual-note placement inside each author group.
+                pre = expected_pre if command == 'citet' else tuple(text_tokens(prefix)[:len(expected_pre)])
                 post = tuple(text_tokens(suffix.lstrip(', ')))
             else:
                 targets = tuple(key for ref in node.xpath('.//l:bibref', namespaces=NS)
@@ -331,10 +482,18 @@ def _differences(expected, observed, stage):
     i = next((i for i, pair in enumerate(zip(a, b)) if pair[0] != pair[1]), min(len(a), len(b)))
     want, got = expected[i:i + 1], observed[i:i + 1]
     kinds = {e['kind'] for e in want + got}
+    boundaries = {e['value'] for e in want + got if e['kind'] in ('open', 'close')}
     owner = (want or expected[max(0, i - 1):i] or got)[0]['owner']
     categories = ['Source content']
-    if 'math' in kinds:
+    equation = bool(kinds.intersection({'equation-number', 'equation-form'}) or
+                    boundaries.intersection({'equation-block', 'equation-row-owner'}))
+    alignment = bool(boundaries.intersection({'alignment-row', 'alignment-cell'}))
+    if 'math' in kinds or equation or alignment:
         categories.append('Source mathematics')
+    if equation:
+        categories.append('Equation ownership')
+    if alignment:
+        categories.append('Alignment-row ownership')
     return [f'{category} mismatch ({stage}, {owner}, event {i}): expected {a[i:i + 3]!r}; observed {b[i:i + 3]!r}'
             for category in categories]
 
@@ -343,8 +502,8 @@ def validate_label_ownership(inventory, xml, matches):
     """Bind labels to independently matched owners, not converter label names.
 
     Numbering alone is insufficient: a section and an equation can share a
-    number. Equations are transparent in the content stream, so their matched
-    mathematical cells identify the enclosing equation/align row instead.
+    number. Source equation blocks and align-row owners are explicitly matched;
+    mathematical cell matches also retain their independently inventoried owner.
     """
     nodes = {node.get(XID): node for node in xml.xpath('//*[@xml:id]', namespaces={'xml': 'http://www.w3.org/XML/1998/namespace'})}
     objects = {obj['id']: obj for obj in inventory['objects']}
@@ -354,7 +513,10 @@ def validate_label_ownership(inventory, xml, matches):
             labelled.setdefault(label.removeprefix('LABEL:'), []).append(node)
     structural, mathematical = {}, {}
     for match in matches:
-        if match['kind'] == 'open' and match['value'] in STRUCTURES:
+        obj = objects.get(match['source_id'], {})
+        equation_owner = (match['value'] == 'equation-block' and obj.get('kind') in ('equation', 'display', 'align') or
+                          match['value'] == 'equation-row-owner' and obj.get('kind') == 'equation_row')
+        if match['kind'] == 'open' and (match['value'] in STRUCTURES or equation_owner):
             structural.setdefault(match['source_id'], set()).add(match['xml_id'])
         elif match['kind'] == 'math':
             mathematical.setdefault(match['source_id'], set()).add(match['xml_id'])
@@ -434,7 +596,7 @@ def validate_inventory(inventory, xml, raw, page):
     """Return errors and a report; counts are reported only after object matching."""
     labels = {label.removeprefix('LABEL:'): node.get(XID) for node in xml.xpath('//*[@labels]')
               for label in node.get('labels').split()}
-    errors, streams, matches = [], {}, []
+    errors, streams, matches, equation_destinations = [], {}, [], {}
     for stage, tree, is_html, is_raw in [('XML', xml, False, False), ('raw HTML', raw, True, True), ('final HTML', page, True, False)]:
         try:
             expected = source_stream(inventory, labels, html=is_html)
@@ -442,6 +604,10 @@ def validate_inventory(inventory, xml, raw, page):
             differences = _differences(expected, observed, stage)
             errors.extend(differences)
             streams[stage] = {'expected_events': len(expected), 'matched': not differences}
+            if not differences:
+                equation_destinations[stage] = {
+                    wanted['node_id']: actual['node_id'] for wanted, actual in zip(expected, observed)
+                    if wanted['kind'] == 'open' and wanted['value'] in ('equation-block', 'equation-row-owner')}
             if stage == 'XML' and not differences:
                 matches = [{'source_id': wanted['node_id'], 'kind': wanted['kind'], 'value': wanted['value'],
                             'xml_id': actual['node_id'], 'owner': wanted['owner']}
@@ -451,15 +617,25 @@ def validate_inventory(inventory, xml, raw, page):
             errors.append(f'Source content mismatch ({stage}): {exc}')
     destinations = {}
     if streams.get('XML', {}).get('matched'):
+        # The independent source comparison establishes content/number owners
+        # in every stage first. Link destinations must then follow those same
+        # owners, even when both HTML stages swap their generated container IDs.
+        for stage in ('raw HTML', 'final HTML'):
+            if stage in equation_destinations:
+                for owner, key in equation_destinations['XML'].items():
+                    if not key or equation_destinations[stage].get(owner) != key:
+                        errors.append(f'Equation ownership destination mismatch ({stage}): {owner}')
         label_errors, destinations = validate_label_ownership(inventory, xml, matches)
         errors.extend(label_errors)
         errors.extend(validate_generated_identities(inventory, xml, raw, page, matches))
     expected_numbers = [str(m['number']) for m in inventory['math'] if m.get('numbered')]
-    xml_numbers = xml.xpath('//l:equation/l:tags/l:tag[@role="refnum"]/text()', namespaces=NS)
+    xml_numbers = xml.xpath('//l:equation/l:tags/l:tag[@role="refnum"]/text() | '
+                            '//l:equationgroup/l:tags/l:tag[@role="refnum"]/text()', namespaces=NS)
     if xml_numbers != expected_numbers:
         errors.append(f'Source equation numbering mismatch (XML): {xml_numbers} != {expected_numbers}')
     for stage, tree in [('raw HTML', raw), ('final HTML', page)]:
-        numbers = [visible_text(n) for n in tree.xpath('//*[contains(concat(" ",@class," ")," ltx_tag_equation ")]')]
+        numbers = [visible_text(n) for n in tree.xpath('//*[contains(concat(" ",@class," ")," ltx_tag_equation ") or '
+                                                      'contains(concat(" ",@class," ")," ltx_tag_equationgroup ")]')]
         if numbers != ['(' + number + ')' for number in expected_numbers]:
             errors.append(f'Source equation numbering mismatch ({stage}): {numbers} != {expected_numbers}')
     report = {'schema_version': 1, 'valid': not errors, 'representations': streams, 'matches': matches,

@@ -28,6 +28,13 @@ class LexicalTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'command'):
             command_at('text', 0)
 
+    def test_backslash_physical_endline_is_a_control_space(self):
+        self.assertEqual(command_at('\\\nnext', 0), (' ', 2))
+        self.assertEqual(group('{left\\\nright}', 0), ('left\\\nright', 13))
+        self.assertEqual(strip_comments('left\\\nright% hidden\n.'), 'left\\\nright.')
+        with self.assertRaisesRegex(ValueError, 'command'):
+            command_at('\\', 0)
+
     def test_groups_balance_nesting_and_control_symbols(self):
         self.assertEqual(group(r'{A {nested} \{literal\} \\}tail', 0),
                          (r'A {nested} \{literal\} \\', 27))
