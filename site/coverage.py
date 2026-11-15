@@ -189,6 +189,7 @@ def _cite_notes(node, command):
 
 def converted_stream(tree, xml, *, is_html=False, raw=False):
     stream = Stream()
+    visited_math = set()
     root = _root(tree)
     if is_html and root.tag != 'article':
         articles = root.xpath('.//article')
@@ -314,7 +315,109 @@ def converted_stream(tree, xml, *, is_html=False, raw=False):
                                                           'ltx_eqn_leftpad', 'ltx_eqn_rightpad', 'ltx_eqn_eqno'})]
                 yield row, cells
 
-    def emit_rows(node):
+    def equation_scaffolding(node, consumed):
+        """Account for the entire layout against its consumed scientific cells.
+
+        Mathematical leaves retain the existing source/MathML checks. Only the
+        explicit MathFork fallback and validated numbering metadata are exempt
+        from that projection; layout itself must contain no prose or math.
+        """
+        def unexpected(current, reason):
+            key = current.get('id') if is_html else current.get(XID)
+            raise ValueError(f'Unexpected equation content: {_local(current)} {key or ""}: {reason}')
+
+        def layout(current, allowed, consume):
+            if (current.text or '').strip():
+                unexpected(current, 'text outside an authored mathematical cell or numbering tag')
+            for child in current:
+                if isinstance(child.tag, str):
+                    if (_local(child) not in allowed or
+                            not is_html and etree.QName(child).namespace != NS['l']):
+                        unexpected(child, 'unsupported child in equation layout')
+                    consume(child)
+                if (child.tail or '').strip():
+                    unexpected(current, 'unconsumed text after an equation-layout child')
+
+        def empty(current):
+            # Formatting can occupy space, but neither CSS nor a padding class
+            # authorizes content. Even hidden math/annotations are not padding.
+            layout(current, {'span', 'br'} if is_html else set(), empty)
+
+        def number_tag(current):
+            if len(current):
+                unexpected(current, 'unsupported markup inside a numbering tag')
+            if is_html and not re.fullmatch(r'\([0-9]+\)', visible_text(current)):
+                unexpected(current, 'invalid numbering tag')
+
+        def html_node(current):
+            tag, css = _local(current), classes(current)
+            if tag == 'math':
+                if current not in visited_math:
+                    unexpected(current, 'mathematics outside the consumed source cells')
+                return  # Source annotation and Presentation MathML checks own this leaf.
+            if tag == 'span' and css.intersection({'ltx_tag_equation', 'ltx_tag_equationgroup'}):
+                number_tag(current)
+            elif tag in ('td', 'th') and css.intersection({
+                    'ltx_eqn_center_padleft', 'ltx_eqn_center_padright', 'ltx_eqn_leftpad', 'ltx_eqn_rightpad'}):
+                empty(current)
+            elif tag in ('td', 'th') and 'ltx_eqn_eqno' in css:
+                tags = current.xpath('.//span[contains(concat(" ",@class," ")," ltx_tag_equation ") or '
+                                     'contains(concat(" ",@class," ")," ltx_tag_equationgroup ")]')
+                if len(tags) > 1:
+                    unexpected(current, 'multiple numbering tags in one number cell')
+                def number_layout(child):
+                    if child in tags:
+                        number_tag(child)
+                    else:
+                        layout(child, {'span', 'br'}, number_layout)
+                layout(current, {'span', 'br'}, number_layout)
+            elif tag in ('td', 'th'):
+                if current not in consumed:
+                    unexpected(current, 'scientific cell excluded from the equation projection')
+                layout(current, {'math'}, html_node)
+            else:
+                allowed = {'table': {'tbody', 'tr'}, 'tbody': {'tr'}, 'tr': {'td', 'th'},
+                           'div': {'math', 'span'}}.get(tag)
+                if allowed is None:
+                    unexpected(current, 'unsupported equation wrapper')
+                layout(current, allowed, html_node)
+
+        def xml_node(current):
+            tag = _local(current)
+            if tag == 'Math':
+                if _local(current.getparent()) != 'MathFork' and current not in visited_math:
+                    unexpected(current, 'mathematics outside the consumed source cells')
+                return  # Includes only the recognized MathFork fallback at that position.
+            if tag == 'tags':
+                numbers = current.xpath('./l:tag[@role="refnum"]/text()', namespaces=NS)
+                if len(numbers) != 1 or not re.fullmatch(r'[0-9]+', numbers[0]):
+                    unexpected(current, 'unsupported equation numbering metadata')
+                expected = {None: '(' + numbers[0] + ')', 'refnum': numbers[0], 'autoref': 'Equation ' + numbers[0]}
+                seen = set()
+                def metadata(child):
+                    number_tag(child)
+                    role = child.get('role')
+                    if role not in expected or role in seen or visible_text(child) != expected[role]:
+                        unexpected(child, 'unexpected equation numbering metadata')
+                    seen.add(role)
+                layout(current, {'tag'}, metadata)
+                return
+            allowed = {'equation': {'tags', 'Math', 'MathFork'},
+                       'equationgroup': {'tags', 'equation', 'equationgroup'},
+                       'MathFork': {'Math', 'MathBranch'}, 'MathBranch': {'tr', 'td'},
+                       'tr': {'td'}, 'td': {'Math'}}[tag]
+            children = [_local(child) for child in current if isinstance(child.tag, str)]
+            if tag == 'td' and current not in consumed:
+                unexpected(current, 'scientific cell excluded from the equation projection')
+            if tag == 'equation' and children.count('Math') + children.count('MathFork') != 1:
+                unexpected(current, 'expected one mathematical representation')
+            if tag == 'MathFork' and children != ['Math', 'MathBranch']:
+                unexpected(current, 'expected one fallback Math followed by one delivered MathBranch')
+            layout(current, allowed, xml_node)
+
+        (html_node if is_html else xml_node)(node)
+
+    def emit_rows(node, consumed):
         for row, cells in equation_rows(node):
             require_visible_equation(row, 'Alignment-row ownership')
             previous_id = stream.node_id
@@ -323,6 +426,7 @@ def converted_stream(tree, xml, *, is_html=False, raw=False):
             if not cells:
                 raise ValueError('Alignment-row ownership: missing scientific cells')
             for cell in cells:
+                consumed.add(cell)
                 require_visible_equation(cell, 'Alignment-row ownership')
                 stream.add('open', 'alignment-cell')
                 visit(cell)
@@ -331,6 +435,7 @@ def converted_stream(tree, xml, *, is_html=False, raw=False):
             stream.node_id = previous_id
 
     def equation_block(node):
+        consumed = set()
         aligned = 'ltx_eqn_align' in classes(node)
         group = _local(node) == 'equationgroup' or 'ltx_equationgroup' in classes(node)
         stream.add('open', 'equation-block')
@@ -351,13 +456,14 @@ def converted_stream(tree, xml, *, is_html=False, raw=False):
                 stream.node_id = owner.get('id') if is_html else owner.get(XID)
                 stream.add('open', 'equation-row-owner')
                 stream.add('equation-number', equation_number(owner))
-                emit_rows(owner)
+                emit_rows(owner, consumed)
                 stream.add('close', 'equation-row-owner')
                 stream.node_id = previous_id
         else:
             if group and is_html and equation_number(node):
                 raise ValueError('Equation ownership: unexpected number on a nested non-numbering row')
-            emit_rows(node)
+            emit_rows(node, consumed)
+        equation_scaffolding(node, consumed)
         stream.add('close', 'equation-block')
 
     def visit(node, *, table=False, proof=False):
@@ -391,6 +497,7 @@ def converted_stream(tree, xml, *, is_html=False, raw=False):
                 raise ValueError('Missing mathematical source annotation')
             tex = re.sub(r'^\\displaystyle\s*', '', tex)
             stream.add('math', normalize_math(tex))
+            visited_math.add(node)
         elif tag == 'sup' and (not is_html or 'ltx_sup' in css):
             stream.add('math', normalize_math('^{' + visible_text(node) + '}'))
         elif not is_html and tag == 'graphics':

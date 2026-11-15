@@ -293,6 +293,14 @@ After independent content matching, equation destinations must bind the same
 source owner across XML and HTML, preventing swapped IDs from redirecting
 references while leaving all visible equation text unchanged.
 
+Equation projection also checks the entire surrounding layout for unconsumed
+content. Every scientific cell/Math leaf must belong to the consumed source
+projection; only the explicit MathFork fallback is exempt. Padding may contain
+whitespace and empty `span`/`br` scaffolding, never prose or mathematics. Number
+cells permit the checked numbering tag and empty layout only. Wrapper text,
+child tails, extra cells and unsupported metadata/projections fail with an
+`Unexpected equation content` diagnostic, even if all three products agree.
+
 Fresh canonical evidence has separate roles: balanced `.aux` records confirm
 source-label membership and numbering; `.fls` confirms which local inputs the
 canonical compiler consumed, with explicit Unicode-support/generated/system
